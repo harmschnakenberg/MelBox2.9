@@ -169,8 +169,8 @@ namespace MelBox2
                 query += "INSERT INTO SendWay (ID, Way) VALUES (3, 'SMS + Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (4, 'immer Email'); ";
 
-                query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285304', 'harm.schnakenberg@kreutztraeger.de', 4); ";
-                query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285304', 'harm.schnakenberg@kreutztraeger.de', 2); ";
+                query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
+                query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";
 
                 query += "INSERT INTO Message (Content, BlockDays, BlockStart, BlockEnd) VALUES ('Datenbank neu erstellt.', 127, 8, 8); ";
 
