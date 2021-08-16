@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>@Titel</title>
+    <link rel='shortcut icon' href='https://www.kreutztraeger-kaeltetechnik.de/wp-content/uploads/2016/12/favicon.ico'>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons+Outlined'>
+    <script src="https://www.w3schools.com/lib/w3.js"></script>
+    <script>
+        function setQuality() {
+            var obj = document.getElementById("gsmQuality");
+            obj.style.width = obj.innerHTML.trim();
+        }
+    </script>
+</head>
+<body onload="setQuality();">
+    <div class="w3-bar w3-light-grey w3-border">
+        <a href="/" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>login</i></a>
+        <a href="/in" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>drafts</i></a>
+        <a href="/out" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>forward_to_inbox</i></a>
+        <a href="/overdue" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>pending_actions</i></a>
+        <a href="/blocked" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>notifications_off</i></a>
+        <a href="/shift" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>event_note</i></a>
+        <a href="/account" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>assignment_ind</i></a>
+        <a href="/log" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>assignment</i></a>
+        <a href="/gsm" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>perm_device_information</i></a>
+
+        <div class="w3-margin w3-grey w3-round w3-right" style="width:100px">
+            <div id="gsmQuality" class="w3-blue w3-round w3-center" style="width:0%">@Quality%</div>
+        </div>
+        <i class='w3-margin-top w3-right material-icons-outlined'>signal_cellular_alt</i>
+    </div>
+
+    <header class="w3-container w3-cyan" id="header">
+        <h1>@Titel</h1>
+    </header>
+
+    <div class="w3-container w3-margin">
+        @Inhalt
+    </div>
+
+    <footer class="w3-container w3-cyan">
+        <span>@User</span>
+        <a href='#header' class='w3-button w3-cyan w3-right'><i class='w3-xlarge material-icons-outlined'>arrow_circle_up</i></a>
+    </footer>
+
+</body>
+</html>

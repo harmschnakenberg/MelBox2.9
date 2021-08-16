@@ -1,0 +1,52 @@
+﻿<div class="w3-container">
+    <h2>Status</h2>
+    <p>Informationen zum angeschlossenen Modem:</p>
+    <ul class="w3-ul w3-card" style="width:50%">
+        <li>
+            <label>Signal</label>
+            <div class="w3-light-grey w3-round-xlarge">
+                <div class="w3-container w3-blue w3-round-xlarge" id="quality" OnChange="this.width = this.innerHTML" style="width:0%">@Quality%</div>
+            </div>
+        </li>
+        <li>
+            <label>
+                Mobilfunknetz
+            </label>
+            <div id="registered" class="w3-light-grey">
+                @Registered
+            </div>
+        </li>
+        <li>
+            <label>Eigene Nummer</label>
+            <div class="w3-light-grey">
+                @OwnName @OwnNumber
+            </div>
+        </li>
+        <li>
+            <label>SMS-Servicecenter</label>
+            <div class="w3-light-grey">
+                @ProviderName: @ServiceCenter
+            </div>
+        </li>
+        <li>
+            <label>Sprachanrufe weiterleiten an</label>
+            <div class="w3-light-grey">
+                @RelayNumber
+            </div>
+        </li>
+        <li>
+            <label>PIN an SIM-Karte</label>
+            <div class="w3-light-grey">
+                @PinStatus
+            </div>
+        </li>
+        <li>
+            <label>Zuletzt aufgetretener Fehler</label>
+            <div class="w3-light-grey">
+                @ModemError
+            </div>
+        </li>
+    </ul>
+    <br>
+
+</div>

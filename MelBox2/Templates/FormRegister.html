@@ -1,0 +1,63 @@
+﻿<div id="id01">
+    <div class="w3-modal-content w3-card-4 w3-display-middle" style="max-width:600px">
+
+        <div class="w3-center">
+            <br>
+            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>person_add</i>
+        </div>
+
+        <form class="w3-container" action="/register/thanks" method="post">
+            <div class="w3-section">
+
+                <label><b>Benutzername</b></label>
+                <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Benutzernamen eingeben" value="@Name">
+
+                <label><b>Password</b></label>
+                <div class="w3-row">
+                    <div class="w3-col w3-right" style="width:100px">
+                        <div>&nbsp;</div>
+                    </div>
+                    <div class="w3-rest">
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort" name="password">
+                    </div>
+                </div>
+
+                <label><b>Firma</b></label>
+                <div class="w3-row">
+                    <div class="w3-col w3-right w3-margin-left w3-margin-right" style="width:30px">
+                        <div>&nbsp;</div>
+                    </div>
+                    <div class="w3-rest w3-margin-bottom">
+                        <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Firma eingeben" value="@Company">                      
+                    </div>
+                </div>
+
+                <label><b>Email</b></label>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:40px">
+                        <input name="viaEmail" type="checkbox" class="w3-check">
+                    </div>
+                    <div class="w3-rest">
+                        <input name="email" type="email" class="w3-input w3-border w3-margin-bottom" placeholder="Emailadresse" pattern="[^@\s]+@[^@\s]+">
+                    </div>
+                </div>
+
+                <label><b>Mobiltelefon</b></label>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:40px">
+                        <input name="viaPhone" type="checkbox" class="w3-check">
+                    </div>
+                    <div class="w3-rest">
+                        <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49-421-123456789" pattern="\+[0-9,\s]+">
+                    </div>
+                </div>
+
+                <div class="w3-row">
+                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Verwerfen</button>
+                    <button class="w3-button w3-block w3-cyan w3-section w3-padding w3-margin-left w3-col w3-third w3-right" type="submit">Registrieren</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
