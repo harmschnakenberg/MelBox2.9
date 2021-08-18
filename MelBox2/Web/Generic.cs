@@ -193,6 +193,14 @@ namespace MelBox2
                     {
                         html += "<td>" + WeekDayCheckBox(int.Parse(dt.Rows[i][j].ToString())) + "</td>";
                     }
+                    else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
+                    {
+                        string x = dt.Rows[i][j].ToString(); //Zeitzone richtig?!
+                        //if (DateTime.TryParse(x, out DateTime time))
+                        //    html += $"<td>{time.ToLocalTime()}</td>";
+                        //else
+                            html += $"<td>{x}</td>";
+                    }
                     else if (dt.Columns[j].ColumnName.StartsWith("Via"))
                     {
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int via))

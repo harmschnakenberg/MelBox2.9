@@ -15,7 +15,7 @@ namespace MelBox2
                 { "@LIMIT", count}
             };
 
-            const string query = "SELECT Nr, datetime(Empfangen, 'localtime') AS Empfangen, Von, Inhalt FROM View_Recieved ORDER BY Empfangen DESC LIMIT @LIMIT;";
+            const string query = "SELECT Nr, Empfangen, Von, Inhalt FROM View_Recieved ORDER BY Empfangen DESC LIMIT @LIMIT;";
 
             return SelectDataTable(query, args);
         }
@@ -56,7 +56,7 @@ namespace MelBox2
 
                 Dictionary<string, object> args = new Dictionary<string, object>
                 {
-                    { "@Time", sms.TimeUtc},
+                    { "@Time", sms.TimeUtc.ToString("yyyy-MM-dd HH:mm:ss")},
                     { "@SenderId", sender.Id},
                     { "@ContentId", msg.Id }
                 };

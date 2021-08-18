@@ -16,6 +16,8 @@ namespace MelBox2
             if (smsenIn.Count == 0) return;
 
             Sql.InsertRecieved(smsenIn); //Empfang in Datenbank protokollieren
+            
+            bool isWatchTime = Sql.IsWatchTime();
 
             foreach (SmsIn smsIn in smsenIn)
             {
@@ -23,8 +25,7 @@ namespace MelBox2
                 if (isSmsTest) continue;
                 bool isLifeMessage = IsLifeMessage(smsIn);
                 bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
-                bool isWatchTime = Sql.IsWatchTime();
-
+               
                 if (isWatchTime && !isLifeMessage && !isMessageBlocked)
                     SendSmsToShift(smsIn);
 
@@ -78,7 +79,13 @@ namespace MelBox2
 
             string subject = $"SMS-Eingang >{p.Name}< >{p.Company}<, SMS-Text >{smsIn.Message}<";
 
-            Email.Send(Sql.GetCurrentShiftEmailAddresses(), body, subject, true);
+            //Email An: nur an Bereitschaft
+            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked)  ? Sql.GetCurrentShiftEmailAddresses() : new System.Net.Mail.MailAddressCollection();
+
+            if (mc != null && mc.Count > 0)
+            Sql.InsertSent(mc[0], smsIn.Message, new Random().Next(0,int.MaxValue));  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+
+            Email.Send(mc, body, subject, true);
         }
 
     }

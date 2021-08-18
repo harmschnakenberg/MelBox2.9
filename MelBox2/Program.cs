@@ -10,6 +10,7 @@ namespace MelBox2
         static void Main()
         {
             Console.WriteLine("Progammstart.");
+            Console.WriteLine("'Exit' eingeben zum beenden.");
             Server.Start();
             Sql.CheckDbFile();
 
@@ -23,7 +24,7 @@ namespace MelBox2
             Gsm.AdminPhone = "+4916095285304";            
             Gsm.SetupModem("+4916095285304");
 
-            Console.WriteLine("Drücke ESC zum beenden.");
+            //Console.WriteLine("Drücke ESC zum beenden.");
             //do
             //{
             //    //while (!Console.KeyAvailable)
@@ -36,6 +37,28 @@ namespace MelBox2
             do {
                 key = Console.ReadKey();
             } while (key.Key != ConsoleKey.Escape);
+
+            bool run = true;
+            while(run)
+            {
+                string input = Console.ReadLine();
+
+                switch (input.ToLower())
+                {
+                    case "exit":
+                        run = false;
+                        break;
+                    case "sms sim":
+                        Sms_Sim();
+                        break;
+                    case "debug":
+                        Console.WriteLine($"Aktueller Debug: {ReliableSerialPort.Debug}. Neuer Debug?");
+                        string x = Console.ReadLine();
+                        if (byte.TryParse(x, out byte d))
+                            ReliableSerialPort.Debug = d;
+                        break;
+                }
+            }
 
             Server.Stop();
             Console.WriteLine("Progammende.");
@@ -62,7 +85,24 @@ namespace MelBox2
         }
 
 
+        private static void Sms_Sim()
+        {
+            SmsIn sms = new SmsIn
+            {
+                Index = 0,
+                Phone = "+4942122317123",
+                Status = "REC UNREAD",
+                TimeUtc = DateTime.UtcNow,
+                Message = "MelBox2: Simulierter SMS-Empfang"
+            };
 
-        
+            List<SmsIn> smsen = new List<SmsIn>
+            {
+                sms
+            };
+
+            ParseNewSms(smsen);
+        }
+
     }
 }

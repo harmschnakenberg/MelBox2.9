@@ -136,9 +136,9 @@ namespace MelBox2
         private static Message SelectOrCreateMessage(string message) //ungetestet
         {
             Dictionary<string, object> args = new Dictionary<string, object>
-{
-    { "@Message", message }
-};
+            {
+                { "@Message", message }
+            };
 
             const string query = "INSERT OR IGNORE INTO Message (Content) VALUES (@Message); SELECT ID, Time, Content, BlockDays, BlockStart, BlockEnd FROM Message WHERE Content = @Message; ";
 

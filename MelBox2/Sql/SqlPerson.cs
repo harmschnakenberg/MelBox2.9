@@ -96,13 +96,16 @@ namespace MelBox2
                 p.Company = company;
 
             if (payload.TryGetValue("viaEmail", out string viaEmail) && viaEmail.Length > 0)
-                p.Via += 2;
+                p.Via += (int)Via.Email;
+
+            if (payload.TryGetValue("viaAlwaysEmail", out string viaAlwaysEmail) && viaAlwaysEmail.Length > 0)
+                p.Via += (int)Via.PermanentEmail;
 
             if (payload.TryGetValue("email", out string email))
                 p.Email = email;
 
             if (payload.TryGetValue("viaPhone", out string viaPhone) && viaPhone.Length > 0)
-                p.Via += 1;
+                p.Via += (int)Via.Sms;
 
             if (payload.TryGetValue("phone", out string phoneStr))
                 p.Phone = phoneStr;
@@ -133,7 +136,7 @@ namespace MelBox2
 
             DataTable dt = SelectDataTable(query, args);
 
-            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_@Phone', 0, @Phone, @KeyWord); ", args))
+            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ", args))
                 return SelectOrCreatePerson(sms);
 
             return GetPerson(dt);

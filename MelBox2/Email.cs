@@ -45,9 +45,7 @@ namespace MelBox2
             int emailId = new Random().Next(256, int.MaxValue);
 
             MailMessage mail = new MailMessage();
-
-            Sql.InsertSent(toList[0], message.Substring(0, 64), emailId); //Protokollierung nur einmal pro mail, nicht für jden EMpfänger einzeln!
-
+                  
             try
             {
                 #region From

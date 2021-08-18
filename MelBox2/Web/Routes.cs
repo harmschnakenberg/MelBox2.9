@@ -55,7 +55,7 @@ namespace MelBox2
 
             string table = Html.FromTable(rec, isAdmin, "blocked");
 
-            await Html.PageAsync(context, "Eingang", table, user.Name);
+            await Html.PageAsync(context, "Eingang", table, user.Name ?? "");
         }
 
         [RestRoute("Get", "/out")]
@@ -198,10 +198,6 @@ namespace MelBox2
 
             Person account = Sql.SelectPerson(showId);
             #endregion
-
-            // bool viaSms = Html.IsBitSet((int)account.Via, (int)Sql.Via.Sms); //int 1= SMS - Siehe Tabelle SendWay
-            // bool viaEmail = Html.IsBitSet((int)account.Via, (int)Sql.Via.Email);
-            //bool viaAlwaysEmail = Html.IsBitSet((int)account.Via, (int)Sql.Via.PermanentEmail);  // int 2 = Email, int 4 = immerEmail - Siehe Tabelle SendWay
 
             bool viaSms = (account.Via & Sql.Via.Sms) > 0;
             bool viaEmail = (account.Via & Sql.Via.Email) > 0;
