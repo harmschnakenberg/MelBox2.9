@@ -46,7 +46,7 @@ namespace MelBox2
 
             MailMessage mail = new MailMessage();
 
-            Program.InsertSent(toList[0], message.Substring(0, 64), emailId); //Protokollierung nur einmal pro mail, nicht für jden EMpfänger einzeln!
+            Sql.InsertSent(toList[0], message.Substring(0, 64), emailId); //Protokollierung nur einmal pro mail, nicht für jden EMpfänger einzeln!
 
             try
             {
@@ -68,7 +68,7 @@ namespace MelBox2
 
                 if (cc)
                 {
-                    foreach (var CC in Program.GetCurrentShiftEmailAddresses(true))
+                    foreach (var CC in Sql.GetCurrentShiftEmailAddresses(true))
                     {
 #if DEBUG           //nur zu mir
                         if (CC.Address.ToLower() != Admin.Address.ToLower())
@@ -122,8 +122,8 @@ namespace MelBox2
                     if (status == SmtpStatusCode.MailboxBusy ||
                         status == SmtpStatusCode.MailboxUnavailable)
                     {
-                        Program.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
-                        Program.UpdateSent(emailId, 32); //Erneut senden
+                        Sql.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
+                        Sql.UpdateSent(emailId, 32); //Erneut senden
 
                         System.Threading.Thread.Sleep(5000);
                         using (var smtpClient = new SmtpClient())
@@ -131,28 +131,30 @@ namespace MelBox2
                     }
                     else
                     {
-                        Program.InsertLog(1, $"Fehler beim Senden der Email an >{ex.InnerExceptions[i].FailedRecipient}<: {ex.InnerExceptions[i].Message}");
-                        Program.UpdateSent(emailId, 64); //Abgebrochen                       
+                        Sql.InsertLog(1, $"Fehler beim Senden der Email an >{ex.InnerExceptions[i].FailedRecipient}<: {ex.InnerExceptions[i].Message}");
+                        Sql.UpdateSent(emailId, 64); //Abgebrochen                       
                     }
 
                 }
             }
             catch (System.Net.Mail.SmtpException ex_smtp)
             {
-                Program.InsertLog(1, "Fehler beim Versenden einer Email: " + ex_smtp.Message);
-                Log.Error(ex_smtp.Message, 2108161350);
+                Sql.InsertLog(1, "Fehler beim Versenden einer Email: " + ex_smtp.Message);
+                Log.Error(ex_smtp.Message, 61350);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
             {
 #if DEBUG
                 throw;
 #else
                 Program.InsertLog(1, "Unbekannter Fehler beim Versenden einer Email");
-                Log.Error("Unbekannter Fehler beim Versenden einer Email", 2108161351);
+                Log.Error("Unbekannter Fehler beim Versenden einer Email", 61351);
 #endif
             }
+#pragma warning restore CA1031 // Do not catch general exception types
 
-            Program.UpdateSent(emailId, 1); //Erfolgreich gesendet
+            Sql.UpdateSent(emailId, 1); //Erfolgreich gesendet
             mail.Dispose();
         }
 

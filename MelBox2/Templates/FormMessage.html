@@ -1,0 +1,53 @@
+﻿<div class="w3-container">
+    <h2>Nachricht bearbeiten</h2>
+
+    <form action="/blocked/update" method="post">
+        <input name="MsgId" type="hidden" value="@MsgId" />
+        <div class="w3-card-4 w3-margin-bottom">
+            <header class="w3-container w3-light-grey">
+                <h3>Nachricht [@MsgId]:</h3>
+            </header>
+            <div class="w3-container">
+                <p>
+                    <input type="text" name="Message" class="w3-input w3-border-0 w3-xlarge" value="@Message" readonly />
+                </p>
+                <hr>
+                <i class='w3-xxlarge material-icons-outlined w3-left w3-circle w3-margin-right' style='width:60px'>notifications_off</i>
+
+                <p>
+                    <input name="Mo" class="w3-check" type="checkbox" @Mo>
+                    <label>Mo</label>
+                    <input name="Tu" class="w3-check" type="checkbox" @Tu>
+                    <label>Di</label>
+                    <input name="We" class="w3-check" type="checkbox" @We>
+                    <label>Mi</label>
+                    <input name="Th" class="w3-check" type="checkbox" @Th>
+                    <label>Do</label>
+                    <input name="Fr" class="w3-check" type="checkbox" @Fr>
+                    <label>Fr</label>
+                    <input name="Sa" class="w3-check" type="checkbox" @Sa>
+                    <label>Sa</label>
+                    <input name="Su" class="w3-check" type="checkbox" @Su>
+                    <label>So</label>
+                </p>
+
+                <i class='w3-xxlarge material-icons-outlined w3-left w3-circle w3-margin-right' style='width:60px'>query_builder</i>
+
+                <p>
+                    <script>
+                        function limitHour(val) {
+                            document.getElementById("End").setAttribute("max", val);
+                        }
+                    </script>
+                    <label>von</label>
+                    <input name="Start" type="number" min="0" max="23" onchange="limitHour(this.value)" value="@Start" />
+                    <label>bis Folgetag</label>
+                    <input id="End" name="End" type="number" min="0" max="23" value="@End" />
+                </p>
+
+                <p>Zeiten, zu denen diese Nachricht nicht weitergeleitet wird</p><br>
+            </div>
+            <input type="submit" value="Speichern" class="w3-button w3-block w3-dark-grey" />
+        </div>
+    </form>
+</div>

@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         internal static bool CheckDbFile()
         {
@@ -41,7 +41,7 @@ namespace MelBox2
             }
 
             if (numTries == 0)
-              Log.Error("Die Datenbankdatei ist durch ein anderes Programm gesperrt.", 2108121354);
+              Log.Error("Die Datenbankdatei ist durch ein anderes Programm gesperrt.", 21354);
 
             return numTries > 0;
         }
@@ -73,7 +73,7 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Error("SqlNonQuery(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 2108121401);
+                Log.Error("SqlNonQuery(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 21401);
                 return false;
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -116,7 +116,7 @@ namespace MelBox2
                     catch
                     {
 #if DEBUG
-                        Console.WriteLine("SelectDataTable): Abfrage hat Schema nicht eingehalten."); //Debug-Info
+                        Console.WriteLine("SelectDataTable: Hinweis: Abfrage hat Schema nicht eingehalten."); //Debug-Info
 #endif
                         myTable = new DataTable();
 
@@ -161,7 +161,7 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Error("SqlSelectDataTable(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 2108121436);
+                Log.Error("SqlSelectDataTable(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 121436);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 

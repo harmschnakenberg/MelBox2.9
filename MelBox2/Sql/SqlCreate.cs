@@ -5,17 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using MelBoxGsm;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         private static readonly string DbPath = Path.Combine(@"C:\MelBox2", "DB", "MelBox2.db");
 
 
         private static void CreateNewDataBase()
         {
-            Log.Info("Erstelle eine neue Datenbank-Datei unter " + DbPath, 2108121405);
+            Log.Info("Erstelle eine neue Datenbank-Datei unter " + DbPath, 21405);
 
             try
             {
@@ -46,7 +47,7 @@ namespace MelBox2
                     "Email TEXT, " +
                     "Via INTEGER, " +
                     "KeyWord TEXT, " +
-                    "MaxInactive INTEGER, " +
+                    "MaxInactive INTEGER DEFAULT 0, " +
 
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL " +
                     "); ";
@@ -142,14 +143,6 @@ namespace MelBox2
                          "CASE WHEN s.End > DATE(s.Start, 'weekday 6', '+3 days') THEN '...' END AS mehr " +
                          "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID " +
                          "WHERE s.End > date('now', '-1 day') " +
-                         "UNION " +
-                         "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
-                         "strftime('%W', d) AS KW, " +
-                         "NULL AS Mo, NULL AS Di, NULL AS Mi, NULL AS Do, NULL AS Fr, NULL AS Sa, NULL AS So, NULL AS mehr " +
-                         " FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
-                         "UNION ALL " +
-                         "SELECT date(d, '+7 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
-                         " WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now') ) " +
                          "ORDER BY Start;";
 
                 NonQuery(query, null);
@@ -163,11 +156,11 @@ namespace MelBox2
             {
                 string query = "INSERT INTO Log (Prio, Content) VALUES (3, 'Datenbank neu erstellt.'); ";
 
-                query += "INSERT INTO SendWay (ID, Way) VALUES (0, 'nicht definiert'); ";
-                query += "INSERT INTO SendWay (ID, Way) VALUES (1, 'SMS'); ";
-                query += "INSERT INTO SendWay (ID, Way) VALUES (2, 'Email'); ";
-                query += "INSERT INTO SendWay (ID, Way) VALUES (3, 'SMS + Email'); ";
-                query += "INSERT INTO SendWay (ID, Way) VALUES (4, 'immer Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.Undefined + ", 'nicht definiert'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.Sms + ", 'SMS'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.Email + ", 'Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.SmsAndEmail + ", 'SMS + Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmail + ", 'immer Email'); ";
 
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";

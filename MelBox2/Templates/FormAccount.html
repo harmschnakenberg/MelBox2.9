@@ -1,0 +1,101 @@
+﻿<script>
+    function setCheckBox(obj) {        
+        if (obj.checked == true) {
+            var c = document.getElementsByClassName("radioCheck");
+            for (let i = 0; i < c.length; i++) {
+                if (c[i] != obj)
+                    c[i].checked = false;
+            }
+        }
+    }
+</script>
+
+<div id="id01">
+    <div class="w3-modal-content w3-card-4 w3-display-middle" style="max-width:600px">
+
+        <div class="w3-center">
+            <br>
+            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>assignment_ind</i>
+        </div>
+
+        <form class="w3-container" action="/account/update" method="post">
+            <div class="w3-section">
+                <input name="Id" type="hidden" value="@Id" />
+
+                <label><b>Benutzername</b></label>
+                <div class="w3-row">
+                    <div class="w3-col w3-right" style="width:110px">
+                        <input class="w3-input w3-border" value="@UserRole" disabled>
+                    </div>
+                    <div class="w3-rest">
+                        <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Benutzernamen eingeben" value="@Name">
+                    </div>
+                </div>
+
+                <label><b>Password</b></label>
+                <div class="w3-row">
+                    <div class="w3-col w3-right" style="width:110px">
+                        <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" qreadonly />
+                    </div>
+                    <div class="w3-rest">
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort" name="password">
+                    </div>
+                </div>
+
+                <label><b>Firma</b></label>
+                <div class="w3-row">                    
+                    <div class="w3-rest w3-margin-bottom">
+                        <input name="company" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Firmennamen und -Ort eingeben" value="@Company">  
+                    </div>
+                </div>
+
+                <label><b>Email</b></label>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:40px">
+                        <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail>
+                    </div>
+                    <div class="w3-rest">
+                        <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+">
+                    </div>
+                </div>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:40px">
+                        <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled>
+                    </div>
+                    <div class="w3-rest">
+                        <label>Immer bei eingehenden Meldungen benachrichtigen</label>
+                    </div>
+                </div>
+
+                <label><b>Mobiltelefon</b></label>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:40px">
+                        <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone />
+                    </div>
+                    <div class="w3-rest">
+                        <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49421123456789" pattern="\+[0-9,\s]+" value="@Phone">
+                    </div>
+                </div>
+
+                <label><b>Schlüsselwort</b></label>
+                <input name="KeyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly />
+
+                <label><b>Senderüberwachung: Maximale Zeit zwischen Meldungen</b></label>
+                <div class="w3-row">
+                    <div class="w3-col" style="width:75px">
+                        <input name="MaxInactiveHours" type="number" class="w3-input w3-border" value="@MaxInactiveHours" @disabled />
+                    </div>
+                    <div class="w3-rest w3-container w3-panel">Stunden <i>  (0 = keine &Uuml;berwachung)</i></div>
+                </div>
+
+                <div class="w3-row">
+                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Verwerfen</button>
+                    @NewContact
+                    @DeleteContact
+                    <button class="w3-button w3-block w3-teal w3-section w3-padding w3-col w3-quarter w3-margin-left  w3-right" type="submit">Speichern</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

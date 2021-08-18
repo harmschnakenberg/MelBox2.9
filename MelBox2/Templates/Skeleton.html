@@ -11,7 +11,12 @@
     <script>
         function setQuality() {
             var obj = document.getElementById("gsmQuality");
-            obj.style.width = obj.innerHTML.trim();
+            var bars = document.getElementsByClassName("quality");
+
+            for (let i = 0; i < bars.length; i++) {
+                bars[i].style.width = obj.innerHTML.trim();
+            }
+            //obj.style.width = obj.innerHTML.trim();
         }
     </script>
 </head>
@@ -28,7 +33,7 @@
         <a href="/gsm" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>perm_device_information</i></a>
 
         <div class="w3-margin w3-grey w3-round w3-right" style="width:100px">
-            <div id="gsmQuality" class="w3-blue w3-round w3-center" style="width:0%">@Quality%</div>
+            <div id="gsmQuality" class="quality w3-blue w3-round w3-center" style="width:0%">@Quality%</div>
         </div>
         <i class='w3-margin-top w3-right material-icons-outlined'>signal_cellular_alt</i>
     </div>
@@ -42,8 +47,8 @@
     </div>
 
     <footer class="w3-container w3-cyan">
-        <span>@User</span>
-        <a href='#header' class='w3-button w3-cyan w3-right'><i class='w3-xlarge material-icons-outlined'>arrow_circle_up</i></a>
+        <a href='#header' class='w3-button'>@User</a>
+        <a href='#header' class='w3-button w3-right'><i class='material-icons-outlined'>arrow_circle_up</i></a>
     </footer>
 
 </body>

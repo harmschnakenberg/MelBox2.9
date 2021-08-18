@@ -1,6 +1,7 @@
-﻿using MelBoxGsm;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MelBoxGsm;
+using static MelBoxGsm.Gsm;
 
 namespace MelBox2
 {
@@ -10,6 +11,7 @@ namespace MelBox2
         {
             Console.WriteLine("Progammstart.");
             Server.Start();
+            Sql.CheckDbFile();
 
             //Gsm.NewErrorEvent += Gsm_NewErrorEvent;
             //Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
@@ -18,38 +20,45 @@ namespace MelBox2
             Gsm.FailedSmsSendEvent += Gsm_FailedSmsSendEvent;
             Gsm.SmsReportEvent += Gsm_SmsReportEvent;
 
+            Gsm.AdminPhone = "+4916095285304";            
+            Gsm.SetupModem("+4916095285304");
 
             Console.WriteLine("Drücke ESC zum beenden.");
-            do
-            {                
-                //while (!Console.KeyAvailable)
-                //{
-                //    // Do something
-                //}
-            } while (Console.ReadKey().Key != ConsoleKey.Escape);
+            //do
+            //{
+            //    //while (!Console.KeyAvailable)
+            //    //{
+            //    //    // Do something
+            //    //}
+            //} while (Console.ReadKey().Key != ConsoleKey.Escape);
+
+            ConsoleKeyInfo key;
+            do {
+                key = Console.ReadKey();
+            } while (key.Key != ConsoleKey.Escape);
 
             Server.Stop();
             Console.WriteLine("Progammende.");
         }
 
-        private static void Gsm_SmsRecievedEvent(object sender, List<Gsm.SmsIn> e)
+        private static void Gsm_SmsRecievedEvent(object sender, List<SmsIn> e)
         {
             ParseNewSms(e);
         }
 
-        private static void Gsm_SmsReportEvent(object sender, Gsm.Report e)
+        private static void Gsm_SmsReportEvent(object sender, Report e)
         {
-            UpdateSent(e);
+            Sql.UpdateSent(e);
         }
 
-        private static void Gsm_FailedSmsSendEvent(object sender, Gsm.SmsOut e)
+        private static void Gsm_FailedSmsSendEvent(object sender, SmsOut e)
         {
-            InsertLog(Gsm.MaxSendTrysPerSms - e.SendTryCounter, $"Senden von SMS an >{e.Phone}< fehlgeschlagen. Noch {Gsm.MaxSendTrysPerSms - e.SendTryCounter} Versuche. Nachricht >{e.Message}<");
+            Sql.InsertLog(Gsm.MaxSendTrysPerSms - e.SendTryCounter, $"Senden von SMS an >{e.Phone}< fehlgeschlagen. Noch {Gsm.MaxSendTrysPerSms - e.SendTryCounter} Versuche. Nachricht >{e.Message}<");
         }
 
-        private static void Gsm_SmsSentEvent(object sender, Gsm.SmsOut e)
+        private static void Gsm_SmsSentEvent(object sender, SmsOut e)
         {
-            InsertSent(e);
+            Sql.InsertSent(e);
         }
 
 

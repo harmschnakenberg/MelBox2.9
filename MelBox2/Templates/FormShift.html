@@ -1,0 +1,44 @@
+﻿<div id="id01">
+    <script>
+        function minEndDate(x) {
+            var d = new Date(document.getElementById('Start').value);
+            d.setDate(d.getDate() + 1);
+            x.min = d.toISOString().substr(0, 10);
+        }
+    </script>
+
+    <div class="w3-modal-content w3-card-4 w3-display-middle" style="max-width:600px">
+
+        <div class="w3-center">
+            <br>
+            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>event_note</i>
+        </div>
+
+        <form class="w3-container" action="/shift/@Route" method="post">
+            <div class="w3-section">
+                <input name="Id" type="hidden" value="@Id" />
+
+                <label><b>Benutzername</b></label>
+                <select class="w3-select w3-border" name="PersonId">
+                    @ContactOptions
+                </select>
+
+                <div class="w3-row">
+                    <label class="w3-col w3-half"><b>von</b></label>
+                    <label class="w3-col w3-half"><b>bis</b></label>
+                </div>
+                <div class="w3-row">
+                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate">
+                    <input name="End" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate(this)">
+                </div>
+                
+                <div class="w3-row">
+                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Verwerfen</button>
+                    <button class="w3-button w3-block w3-teal w3-section w3-padding w3-margin-left w3-col w3-third w3-right" type="submit">Speichern</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

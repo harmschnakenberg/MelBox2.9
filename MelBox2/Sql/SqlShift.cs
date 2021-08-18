@@ -5,7 +5,7 @@ using System.Net.Mail;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         #region Feiertage
 
@@ -63,7 +63,7 @@ namespace MelBox2
         /// Prüft, ob aktuell an die Bereitschaft gesendet werden sollte.
         /// </summary>
         /// <returns>false in der regulären Geschäftszeit (Mo-Do 8-17 Uhr, Fr 8-15 Uhr) und kein Feiertag ist - sonst true </returns>
-        private static bool IsWatchTime()
+        internal static bool IsWatchTime()
         {
             if (IsHolyday(DateTime.Now))
                 return true;
@@ -80,7 +80,7 @@ namespace MelBox2
             }
         }
 
-        private static DateTime ShiftStartUtc(DateTime dateLocal)
+        internal static DateTime ShiftStartTimeUtc(DateTime dateLocal)
         {
             int hour = 17;
             DayOfWeek day = dateLocal.DayOfWeek;
@@ -90,14 +90,14 @@ namespace MelBox2
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
-        private static DateTime ShiftEndUtc(DateTime dateLocal)
+        internal static DateTime ShiftEndTimeUtc(DateTime dateLocal)
         {
             int hour = 8;
 
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
-        private static List<string> GetCurrentShiftPhoneNumbers()
+        internal static List<string> GetCurrentShiftPhoneNumbers()
         {
             const string query = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
 
@@ -139,14 +139,35 @@ namespace MelBox2
             return emailAddresses;
         }
 
-        private static DataTable SelectShiftsCalendar()
+        internal static DataTable SelectShiftsCalendar()
         {
-            string query = "SELECT * FROM View_Calendar;";
+            string query = "SELECT * FROM View_Calendar " +
+                "UNION " +
+                "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
+                "strftime('%W', d) AS KW, " +
+                "NULL AS Mo, NULL AS Di, NULL AS Mi, NULL AS Do, NULL AS Fr, NULL AS Sa, NULL AS So, NULL AS mehr " +
+                " FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
+                "UNION ALL " +
+                "SELECT date(d, '+7 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
+                " WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
+                "ORDER BY Start; ";
 
             return SelectDataTable(query, null);
         }
 
-        private static bool InsertShift(int personId, DateTime startUtc, DateTime endUtc)
+        public static DataTable SelectShift(int shiftId)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@ShiftId", shiftId}
+            };
+
+            const string query = "SELECT ID, PersonId, Start, End FROM Shift WHERE ID = @ShiftId; ";
+
+            return Sql.SelectDataTable(query, args);
+        }
+
+        internal static bool InsertShift(int personId, DateTime startUtc, DateTime endUtc)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
@@ -160,14 +181,14 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
-        private static bool UpdateShift(int id, int personId, DateTime startUtc, DateTime endUtc) //ungetestet
+        internal static bool UpdateShift(Shift shift) //ungetestet
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@ShiftId", id},
-                { "@PersonId", personId},
-                { "@Start", startUtc.ToString("yyyy-MM-dd HH:mm:ss")},
-                { "@End", endUtc.ToString("yyyy-MM-dd HH:mm:ss")}
+                { "@ShiftId", shift.Id},
+                { "@PersonId", shift.PersonId},
+                { "@Start", shift.StartUtc.ToString("yyyy-MM-dd HH:mm:ss")},
+                { "@End", shift.EndUtc.ToString("yyyy-MM-dd HH:mm:ss")}
             };
 
             const string query = "UPDATE Shift SET PersonId = @PersonId, Start = @Start, End = @End WHERE ID = @ShiftId; ";
@@ -187,6 +208,56 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
+        internal static Shift GetShift(Dictionary<string, string> payload)
+        {
+            Shift s = new Shift();
+
+            if (payload.ContainsKey("Id") && payload.TryGetValue("Id", out string shiftIdStr) && int.TryParse(shiftIdStr, out int shiftId))
+                s.Id = shiftId;
+
+            if (payload.ContainsKey("PersonId") && payload.TryGetValue("PersonId", out string personIdStr) && int.TryParse(personIdStr, out int personId))
+                s.PersonId = personId;
+
+            if (payload.ContainsKey("Start") && payload.TryGetValue("Start", out string startStr) && DateTime.TryParse(startStr, out DateTime start))
+                s.StartUtc= start;
+
+            if (payload.ContainsKey("End") && payload.TryGetValue("End", out string endStr) && DateTime.TryParse(endStr, out DateTime end))
+                s.EndUtc = end;
+
+            return s;
+        }
+
+        internal static Shift GetShift(DataTable dt)
+        {
+            Shift s = new Shift();
+
+            if (dt.Columns.Contains("ID") && int.TryParse(dt.Rows[0]["ID"].ToString(), out int shiftId))
+                s.Id = shiftId;
+
+            if (dt.Columns.Contains("PersonId") && int.TryParse(dt.Rows[0]["PersonId"].ToString(), out int personId))
+                s.PersonId = personId;
+
+            if (dt.Columns.Contains("Start") && DateTime.TryParse(dt.Rows[0]["Start"].ToString(), out DateTime start))
+                s.StartUtc = start;
+
+            if (dt.Columns.Contains("End") && DateTime.TryParse(dt.Rows[0]["End"].ToString(), out DateTime end))
+                s.EndUtc = end;
+
+            return s;
+        }
 
     }
+
+    internal class Shift
+    {
+        public int Id { get; set; }
+
+        public int PersonId { get; set; }
+
+        public DateTime StartUtc { get; set; }
+
+        public DateTime EndUtc { get; set; }
+       
+    }
+
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using static MelBoxGsm.Gsm;
+using MelBoxGsm;
 
 namespace MelBox2
 {
@@ -14,15 +15,15 @@ namespace MelBox2
         {            
             if (smsenIn.Count == 0) return;
 
-            InsertRecieved(smsenIn); //Empfang in Datenbank protokollieren
+            Sql.InsertRecieved(smsenIn); //Empfang in Datenbank protokollieren
 
             foreach (SmsIn smsIn in smsenIn)
             {
                 bool isSmsTest = IsSmsTest(smsIn);
                 if (isSmsTest) continue;
                 bool isLifeMessage = IsLifeMessage(smsIn);
-                bool isMessageBlocked = IsMessageBlockedNow(smsIn.Message);
-                bool isWatchTime = IsWatchTime();
+                bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
+                bool isWatchTime = Sql.IsWatchTime();
 
                 if (isWatchTime && !isLifeMessage && !isMessageBlocked)
                     SendSmsToShift(smsIn);
@@ -35,9 +36,9 @@ namespace MelBox2
         {
             if (!sms.Message.ToLower().StartsWith(SmsTestTrigger.ToLower())) return false;
 
-            Person p = SelectOrCreatePerson(sms);
+            Person p = Sql.SelectOrCreatePerson(sms);
             SendSms(sms.Phone, DateTime.Now.ToString("G") + sms.Message);
-            InsertLog(3, $"SMS-Abruf von [{p.Id}] >{p.Phone}< >{p.Name}< >{p.Company}<");
+            Sql.InsertLog(3, $"SMS-Abruf von [{p.Id}] >{p.Phone}< >{p.Name}< >{p.Company}<");
 
             return true; //Dies war 'SMSAbruf'
         }
@@ -54,7 +55,7 @@ namespace MelBox2
 
         private static void SendSmsToShift(SmsIn sms)
         {
-            foreach (string phone in GetCurrentShiftPhoneNumbers())
+            foreach (string phone in Sql.GetCurrentShiftPhoneNumbers())
             {
                 //Protokollierung in DB nach Absenden von Modem!
                 SendSms(phone, sms.Message);
@@ -73,11 +74,11 @@ namespace MelBox2
                    "Keine Weiterleitung an Bereitschaftshandy während der Geschäftszeiten."
                    );
 
-            Person p = SelectOrCreatePerson(smsIn);
+            Person p = Sql.SelectOrCreatePerson(smsIn);
 
             string subject = $"SMS-Eingang >{p.Name}< >{p.Company}<, SMS-Text >{smsIn.Message}<";
 
-            Email.Send(GetCurrentShiftEmailAddresses(), body, subject, true);
+            Email.Send(Sql.GetCurrentShiftEmailAddresses(), body, subject, true);
         }
 
     }

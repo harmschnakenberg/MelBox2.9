@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using static MelBoxGsm.Gsm;
+using MelBoxGsm;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         public static DataTable SelectLastSent(int count = 1000)
         {

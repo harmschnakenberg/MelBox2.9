@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         internal static void InsertLog(int prio, string content)
         {
@@ -32,13 +32,13 @@ namespace MelBox2
             return SelectDataTable(query, args);
         }
 
-        public static bool DeleteLogUntil(System.DateTime deleteUntil)
+        public static bool DeleteLogExeptLast(int deleteUntil)
         {
-            string query = $"DELETE FROM Log WHERE Time < @Time";
+            const string query = "DELETE FROM Log WHERE ID NOT IN ( SELECT ID FROM Log ORDER BY Time DESC LIMIT @Limit)";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Time", deleteUntil.ToString("yyyy-MM-dd HH:mm:ss") }
+                { "@Limit", deleteUntil }
             };
 
             return NonQuery(query, args);

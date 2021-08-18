@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Data;
 using static MelBoxGsm.Gsm;
+using MelBoxGsm;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
         public enum Via
         {
-            Undefined,
-            Sms,
-            Email,
-            SmsAndEmail,
-            PermanentEmail
+            Undefined = 0,
+            Sms = 1,
+            Email = 2,
+            SmsAndEmail = 3,
+            PermanentEmail = 4
         }
 
         public static int Level_Admin { get; set; } = 9000; //Benutzerverwaltung u. -Einteilung
@@ -28,25 +29,42 @@ namespace MelBox2
 
         private static Person GetPerson(DataTable dt)
         {
-            if (dt.Rows.Count == 0) return new Person();
+            if (dt == null || dt.Rows.Count == 0) return new Person();
 
-            Person p = new Person
-            {
-                Id = (int)dt.Rows[0]["ID"],
-                Name = dt.Rows[0]["Name"].ToString(),
-                Level = (int)dt.Rows[0]["Level"],
-                Company = dt.Rows[0]["Company"].ToString(),
-                Phone = dt.Rows[0]["Phone"].ToString(),
-                Email = dt.Rows[0]["Email"].ToString(),
-                Via = (Via)dt.Rows[0]["Via"],
-                KeyWord = dt.Rows[0]["KeyWord"].ToString(),
-                MaxInactive = (int)dt.Rows[0]["MaxInactive"]
-            };
+            Person p = new Person();
+
+            if (int.TryParse(dt.Rows[0]["ID"].ToString(), out int id))
+                p.Id = id;
+
+            if (dt.Rows[0]["Name"] != null)
+                p.Name = dt.Rows[0]["Name"].ToString();
+
+            if (int.TryParse(dt.Rows[0]["Level"].ToString(), out int level))
+                p.Level = level;
+
+            if (dt.Rows[0]["Company"] != null)
+                p.Company = dt.Rows[0]["Company"].ToString();
+
+            if (dt.Rows[0]["Phone"] != null)
+                p.Phone = dt.Rows[0]["Phone"].ToString();
+
+            if (dt.Rows[0]["Email"] != null)
+                p.Email = dt.Rows[0]["Email"].ToString();
+
+            if (dt.Rows[0]["KeyWord"] != null)
+                p.KeyWord = dt.Rows[0]["KeyWord"].ToString();
+
+            if (int.TryParse(dt.Rows[0]["MaxInactive"].ToString(), out int maxInactive))
+                p.MaxInactive = maxInactive;
+
+            if (int.TryParse(dt.Rows[0]["Via"].ToString(), out int via))
+                p.Via = (Via)via;
+
 
             return p;
         }
-
-        private static Person SelectPerson(int id)
+             
+        internal static Person SelectPerson(int id)
         {
 
             const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE ID = @ID;";
@@ -77,13 +95,13 @@ namespace MelBox2
             if (payload.TryGetValue("company", out string company))
                 p.Company = company;
 
-            if (payload.TryGetValue("viaEmail", out string viaEmail))
+            if (payload.TryGetValue("viaEmail", out string viaEmail) && viaEmail.Length > 0)
                 p.Via += 2;
 
             if (payload.TryGetValue("email", out string email))
                 p.Email = email;
 
-            if (payload.TryGetValue("viaPhone", out string viaPhone))
+            if (payload.TryGetValue("viaPhone", out string viaPhone) && viaPhone.Length > 0)
                 p.Via += 1;
 
             if (payload.TryGetValue("phone", out string phoneStr))
@@ -101,7 +119,7 @@ namespace MelBox2
             return p;
         }
 
-        private static Person SelectOrCreatePerson(SmsIn sms)
+        internal static Person SelectOrCreatePerson(SmsIn sms)
         {
             string keyWord = GetKeyWord(sms.Message);
 
@@ -150,57 +168,50 @@ namespace MelBox2
             return GetPerson(dt);
         }
 
-        private static Person Authentification(string name, string password)
+        internal static string CheckCredentials(string name, string password)
         {
-            string encryped_pw = Encrypt(password);
+            try
+            {
+                string encryped_pw = Encrypt(password);
 
-            const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Name = @Name AND Password = @Password AND Level > 0;";
+                const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Name = @Name AND Password = @Password AND Level > 0;";
 
-            Dictionary<string, object> args = new Dictionary<string, object>
+                Dictionary<string, object> args = new Dictionary<string, object>
                 {
                     { "@Name", name },
                     { "@Password", encryped_pw }
                 };
 
-            DataTable dt = SelectDataTable(query, args);
+                DataTable dt = SelectDataTable(query, args);
 
-            return GetPerson(dt);
-        }
+                Person p = GetPerson(dt);
 
-        internal static string CheckCredentials(string name, string password)
-        {
-            Person p;
+                if (p.Id > 0)
+                {
+                    while (Server.LogedInHash.Count > 10) //Max. 10 Benutzer gleichzetig eingelogged
+                    {
+                        Server.LogedInHash.Remove(Server.LogedInHash.Keys.GetEnumerator().Current);
+                    }
 
-            try
-            {
-                p = Authentification(name, password);
+                    string guid = Guid.NewGuid().ToString("N");
+
+                    Server.LogedInHash.Add(guid, p);
+
+                    return guid;
+                }
             }
             catch (Exception)
             {
                 throw;
                 // Was tun?
             }
-
-            if (p.Id > 0)
-            {
-                while (Server.LogedInHash.Count > 10) //Max. 10 Benutzer gleichzetig eingelogged
-                {
-                    Server.LogedInHash.Remove(Server.LogedInHash.Keys.GetEnumerator().Current);
-                }
-
-                string guid = Guid.NewGuid().ToString("N");
-
-                Server.LogedInHash.Add(guid, p);
-
-                return guid;
-            }
-
+            
             return string.Empty;
         }
 
         internal static bool InsertPerson(string name, string password, int level, string company, string phone, string email, Via via, int maxInactiveHours)
         {
-            const string query = "INSERT INTO Person (Name, Password, Level, CompanyId, Phone, Email, Via, MaxInactive) VALUES (@Name,@Password, @Level, @Company, @Phone, @Email, @Via, @MaxInactive); ";
+            const string query = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via, MaxInactive) VALUES (@Name, @Password, @Level, @Company, @Phone, @Email, @Via, @MaxInactive); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
                 {
@@ -210,14 +221,28 @@ namespace MelBox2
                     { "@Company", company },
                     { "@Phone", phone },
                     { "@Email", email},
-                    { "@Via", via},
+                    { "@Via", (int)via},
                     { "@MaxInactive", maxInactiveHours}
                 };
+
+            /*
+             *  query += "CREATE TABLE IF NOT EXISTS Person ( " +
+                    "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                    "Name TEXT NOT NULL, " +
+                    "Password TEXT, " +
+                    "Level INTEGER DEFAULT 0, " +
+                    "Company TEXT, " +
+                    "Phone TEXT, " +
+                    "Email TEXT, " +
+                    "Via INTEGER, " +
+                    "KeyWord TEXT, " +
+                    "MaxInactive INTEGER, " +
+            */
 
             return NonQuery(query, args);
         }
 
-        private static bool UpdatePerson(int id, string name, string password, int accesslevel, string company, string phone, string email, int via, string keyWord, int maxInactive)
+        internal static bool UpdatePerson(int id, string name, string password, int accesslevel, string company, string phone, string email, int via, string keyWord, int maxInactive)
         {
             string query = "UPDATE Person SET Name = @Name, Level = @Level, Company = @Company, Phone = @Phone, Email = @Email, Via = @Via, KeyWord = @KeyWord, MaxInactive = @MaxInactive " +
                             (password.Length > 3 ? ", Password = @Password " : string.Empty) +
@@ -228,9 +253,9 @@ namespace MelBox2
                 { "@ID", id },
                 { "@Name", name },
                 { "@Level", accesslevel },
-                { "@Company", company },
-                { "@Phone", phone },
-                { "@Email", email },
+                { "@Company", company?? string.Empty  },
+                { "@Phone", phone?? string.Empty  },
+                { "@Email", email?? string.Empty  },
                 { "@Via", via },
                 { "@KeyWord", keyWord?? string.Empty },
                 { "@MaxInactive", maxInactive }
@@ -241,7 +266,7 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
-        private static bool DeletePerson(int id)
+        internal static bool DeletePerson(int id)
         {
             const string query = "DELETE FROM Person WHERE ID = @ID; ";
 
@@ -258,9 +283,9 @@ namespace MelBox2
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        private static string HtmlOptionContacts(Person p)
+        internal static string HtmlOptionContacts(Person p)
         {
-            const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level >= @Recieverlevel ORDER BY Name;";
+            const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level >= @Level ORDER BY Name;";
             const string queryUser = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
 
             Dictionary<string, object> argsAdmin = new Dictionary<string, object>() { { "@Level", Level_Reciever } };
@@ -288,6 +313,20 @@ namespace MelBox2
 
         }
 
+        internal static DataTable SelectViewablePersons(Person p)
+        {
+            Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id } };
+            Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level } };
+
+            const string query1 = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
+            const string query2 = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level <= @Level ORDER BY Name;";
+
+            if (p.Level >= Level_Admin)
+                return SelectDataTable(query2, args2);
+            else
+                return SelectDataTable(query1, args1);
+        }
+
     }
 
     internal class Person
@@ -306,7 +345,7 @@ namespace MelBox2
 
         public string Email { get; set; }
 
-        public Program.Via Via { get; set; }
+        public Sql.Via Via { get; set; }
 
         public string KeyWord { get; set; }
 
@@ -325,6 +364,6 @@ namespace MelBox2
                     "KeyWord TEXT, " +
                     "MaxInactive INTEGER, " +
         */
-    }
+        }
 
     }

@@ -13,6 +13,21 @@ namespace MelBox2
 {
     public static partial class Html
     {
+        internal static async Task<Person> GetLogedInUserAsync(IHttpContext context, bool blockUser = true)
+        {
+            Html.ReadCookies(context).TryGetValue("MelBoxId", out string guid);
+
+            Person user = new Person();
+
+            if (guid == null || !Server.LogedInHash.TryGetValue(guid, out user))
+            {
+                if (blockUser)
+                    await Routes.Home(context);
+            }
+
+            return user;
+        }
+
         public static string Page(string path, Dictionary<string, string> insert)
         {
             if (!File.Exists(path))
@@ -52,7 +67,7 @@ namespace MelBox2
                 { "@Titel", titel },
                 { "@Quality", Gsm.SignalQuality.ToString() },
                 { "@Inhalt", body },
-                { "@User", userName }
+                { "@User", userName?? string.Empty }
             };
 
             string html = Page(Server.Html_Skeleton, pairs);
@@ -128,6 +143,296 @@ namespace MelBox2
 
             return builder.ToString();
         }
+
+        internal static string FromTable(System.Data.DataTable dt, bool isAuthorized, string root = "x")
+        {
+            string html = "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+
+            html += "<table id='table1' class='w3-table-all'>\n";
+            //add header row
+            html += "<tr>";
+
+            if (isAuthorized)
+            {
+                html += "<th>Edit</th>";
+            }
+
+            // int rows = ;
+
+            if (dt.Rows.Count > 370) // Große Tabellen nicht sortierbar machen, da zu rechenintensiv!  
+            {
+                for (int i = 0; i < dt.Columns.Count; i++)
+                    html += $"<th>" +
+                            $"{dt.Columns[i].ColumnName.Replace('_', ' ')}" +
+                            $"</th>";
+            }
+            else
+            {
+                for (int i = 0; i < dt.Columns.Count; i++)
+                    html += $"<th class='w3-hover-sand' onclick=\"w3.sortHTML('#table1', '.item', 'td:nth-child({ i + 1 })')\">" +
+                            $"{dt.Columns[i].ColumnName.Replace('_', ' ')}" +
+                            $"</th>";
+            }
+            html += "</tr>\n";
+
+            //add rows
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                html += "<tr class='item'>";
+
+                if (isAuthorized)
+                {
+                    html += "<td>" +
+                        "<a href='/" + root + "/" + dt.Rows[i][0].ToString() + "'><i class='material-icons-outlined'>build</i></a>" +
+                        "</td>";
+                }
+
+                for (int j = 0; j < dt.Columns.Count; j++)
+                {
+                    if (dt.Columns[j].ColumnName.StartsWith("Gesperrt"))
+                    {
+                        html += "<td>" + WeekDayCheckBox(int.Parse(dt.Rows[i][j].ToString())) + "</td>";
+                    }
+                    else if (dt.Columns[j].ColumnName.StartsWith("Via"))
+                    {
+                        if (int.TryParse(dt.Rows[i][j].ToString(), out int via))
+                        {
+                            bool phone = 0 != (via & 1);
+                            bool email = 0 != ((via & 2) | (via & 4));
+
+                            html += "<td>";
+                            if (phone) html += "<span class='material-icons-outlined'>smartphone</span>";
+                            if (email) html += "<span class='material-icons-outlined'>email</span>";
+                            html += "</td>";
+                        }
+                    }
+                    else if (dt.Columns[j].ColumnName.Contains("Sendestatus"))
+                    {
+
+                        html += "<td><span class='material-icons-outlined'>";
+
+                        if (int.TryParse(dt.Rows[i][j].ToString(), out int confirmation))
+                        {
+                            //if (confirmation < 32)
+                            //    html += "check";
+                            //else if(confirmation < 64)
+                            //    html += "try";
+                            //else if (confirmation < 128)
+                            //    html += "sms_failed";
+                            //else
+                            //    html += "sms";
+
+                            html += confirmation; //provisorisch
+                        }
+                        else
+                        {
+                            html += "error";
+                        }
+
+                        html += "</span></td>";
+                    }                   
+                    else
+                    {
+                        html += "<td>" + dt.Rows[i][j].ToString() + "</td>";
+                    }
+                }
+                html += "</tr>\n";
+            }
+            html += "</table>\n";
+            return html;
+        }
+
+        internal static string WeekDayCheckBox(int blockDays)
+        {
+            StringBuilder html = new StringBuilder("<span>");
+
+            Dictionary<int, string> valuePairs = new Dictionary<int, string>() {
+                { 1, "Mo" },
+                { 2, "Di" },
+                { 3, "Mi" },
+                { 4, "Do" },
+                { 5, "Fr" },
+                { 6, "Sa" },
+                { 0, "So" },
+            };
+
+            foreach (var day in valuePairs.Keys)
+            {
+                string check = IsBitSet(blockDays, day) ? "checked" : string.Empty;
+                string dayName = valuePairs[day];
+
+                html.Append($"<input name={dayName} class='w3-check' type='checkbox' {check} disabled>" + Environment.NewLine);
+                html.Append($"<label>{dayName} </label>");
+            }
+
+            return html.Append("</span>").ToString();
+        }
+
+        public static bool IsBitSet(this int value, int position)
+        {
+            // Return whether bit at position is set to 1.
+            return (value & (1 << position)) != 0;
+        }
+
+        public static int SetBit(this int value, int position)
+        {
+            // Set a bit at position to 1.
+            return value |= (1 << position);
+        }
+
+        internal static string DropdownExplanation()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<div class='w3-dropdown-hover w3-right'>");
+            sb.AppendLine(" <button class='w3-button w3-white'>Legende</button>");
+            sb.AppendLine(" <div class='w3-dropdown-content w3-bar-block w3-border' style='right:0;width:300px;'>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>smartphone</span>SMS versendet</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>email</span>E-Mail versendet</div>");
+            sb.AppendLine("  <hr>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>check</span>Versand bestätigt</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_top</span>erwarte interne Zuweisung</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_bottom</span>erwarte externe Bestätigung</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>try</span>erneuter Sendeversuch</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms_failed</span>Senden abgebrochen</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms</span>Status unbekannt</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>device_unknown</span>keine Zuweisung</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>error</span>fehlerhafte Zuweisung</div>");
+            sb.AppendLine(" </div>");
+            sb.AppendLine("</div>");
+
+            return sb.ToString();
+        }
+
+        internal static string FromShiftTable(Person user)
+        {
+            System.Data.DataTable dt = Sql.SelectShiftsCalendar();
+
+            string html = "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+
+            html += "<div class='w3-container'>";
+            html += "<table class='w3-table-all'>\n";
+           
+            //add header row
+            html += "<tr class='item'>";
+
+            if (user != null && user.Id > 0)
+            {
+                html += "<th>Edit</th>";
+            }
+
+            html += "<th>Nr</th><th>Name</th><th>Via</th><th>Beginn</th><th>Ende</th><th>KW</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th><th>mehr</th>";
+            html += "</tr>\n";
+
+            List<DateTime> holydays = Sql.Holydays(DateTime.Now);
+            holydays.AddRange(Sql.Holydays(DateTime.Now.AddYears(1))); // Feiertage auch im kommenden Jahr anzeigen
+
+            //add rows
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                _ = int.TryParse(dt.Rows[i]["ID"].ToString(), out int shiftId);
+                _ = int.TryParse(dt.Rows[i]["PersonId"].ToString(), out int shiftContactId);
+                string contactName = dt.Rows[i]["Name"].ToString();
+                _ = int.TryParse(dt.Rows[i]["Via"].ToString(), out int via);
+                _ = DateTime.TryParse(dt.Rows[i]["Start"].ToString(), out DateTime start);
+                _ = DateTime.TryParse(dt.Rows[i]["End"].ToString(), out DateTime end);
+                _ = int.TryParse(dt.Rows[i]["KW"].ToString(), out int kw);
+                _ = DateTime.TryParse(dt.Rows[i][7].ToString() ?? "", out DateTime _mo);
+                _ = DateTime.TryParse(dt.Rows[i][8].ToString() ?? "", out DateTime _di);
+                _ = DateTime.TryParse(dt.Rows[i][9].ToString(), out DateTime _mi);
+                _ = DateTime.TryParse(dt.Rows[i][10].ToString(), out DateTime _do);
+                _ = DateTime.TryParse(dt.Rows[i][11].ToString(), out DateTime _fr);
+                _ = DateTime.TryParse(dt.Rows[i][12].ToString(), out DateTime _sa);
+                _ = DateTime.TryParse(dt.Rows[i][13].ToString(), out DateTime _so);
+
+                #region Editier-Button
+
+              
+
+                if (user.Level >= Server.Level_Admin || user.Level >= Server.Level_Reciever && (user.Id == shiftContactId || shiftId == 0))
+                {
+                    string route = shiftId == 0 ? start.ToShortDateString() : shiftId.ToString();
+
+                    html += "<td>" +
+                        "<a href='/shift/" + route + "'><i class='material-icons-outlined'>build</i></a>" +
+                        "</td>";
+                }
+                else
+                {
+                    html += "<td>&nbsp;</td>";
+                }
+                #endregion
+
+                #region Bereitschafts-Id
+                html += "<td>" + shiftId + "</td>";
+                #endregion
+
+                #region Name
+                html += "<td>" + contactName + "</td>";
+                #endregion
+
+                #region Sendeweg                
+                bool phone = ((Sql.Via)via & Sql.Via.Sms) > 0; //= IsBitSet(via, 0); //int 1= SMS - Siehe Tabelle SendWay
+                bool email = ((Sql.Via)via & Sql.Via.Email) > 0 || ((Sql.Via)via & Sql.Via.PermanentEmail) > 0; //= IsBitSet(via, 1) || IsBitSet(via, 2);  // int 2 = Email, int 4 = immerEmail - Siehe Tabelle SendWay
+
+                html += "<td>";
+                if (phone) html += "<span class='material-icons-outlined'>smartphone</span>";
+                if (email) html += "<span class='material-icons-outlined'>email</span>";
+                html += "</td>";
+                #endregion
+
+                #region Beginn
+                //html += "<td><input Type='Date' name='Start' value='" + start.ToLocalTime().ToString("yyyy-MM-dd") +"'></td>";
+                html += $"<td>{(start == DateTime.MinValue ? "&nbsp;" : start.ToLocalTime().ToShortDateString())}</td>";
+                #endregion
+
+                #region Ende
+                //html += $"<td><input Type='Date' name='End' value='" + end.ToLocalTime().ToString("yyyy-MM-dd") + "'></td>";
+                html += $"<td>{(end == DateTime.MinValue ? "&nbsp;" : end.ToLocalTime().ToShortDateString())}</td>";
+                #endregion
+
+                #region Kalenderwoche
+                html += "<td>" + kw.ToString("00") + "</td>";
+                #endregion
+
+                #region Wochentage
+                html += WeekDayColor(holydays, _mo);
+                html += WeekDayColor(holydays, _di);
+                html += WeekDayColor(holydays, _mi);
+                html += WeekDayColor(holydays, _do);
+                html += WeekDayColor(holydays, _fr);
+                html += WeekDayColor(holydays, _sa, true);
+                html += WeekDayColor(holydays, _so, true);
+                #endregion
+
+                html += "<td class='w3-border-left'>" + dt.Rows[i][14] + "</td>"; // Spalte 'mehr'
+
+                html += "</tr>\n";
+            }
+
+            html += "</table>\n";
+            html += "</div>\n";
+
+            return html;
+        }
+
+        private static string WeekDayColor(List<DateTime> holydays, DateTime date, bool weekend = false)
+        {
+            string html = string.Empty;
+
+            if (date == DateTime.Now.Date) //heute
+                html += "<td class='w3-border-left w3-pale-green'>";
+            else if (holydays.Contains(date)) //Feiertag?
+                html += "<td class='w3-border-left w3-pale-red'>";
+            else if (weekend) //Wochenende ?              
+                html += "<td class='w3-border-left w3-sand'>";
+            else
+                html += "<td class='w3-border-left'>";
+
+            html += (date == DateTime.MinValue ? "&nbsp;" : date.ToShortDateString()) + "</td>";
+
+            return html;
+        }
+
 
     }
 }

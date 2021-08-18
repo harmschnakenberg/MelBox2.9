@@ -24,7 +24,7 @@ namespace MelBox2
         public static string Html_FormLogin { get; } = Path.Combine(appPath, "Templates", "FormLogin.html");
         public static string Html_FormMessage { get; } = Path.Combine(appPath, "Templates", "FormMessage.html");
         public static string Html_FormAccount { get; } = Path.Combine(appPath, "Templates", "FormAccount.html");
-        public static string Html_FormCompany { get; } = Path.Combine(appPath, "Templates", "FormCompany.html");
+        //public static string Html_FormCompany { get; } = Path.Combine(appPath, "Templates", "FormCompany.html");
         public static string Html_FormRegister { get; } = Path.Combine(appPath, "Templates", "FormRegister.html");
         public static string Html_FormShift { get; } = Path.Combine(appPath, "Templates", "FormShift.html");
         public static string Html_FormGsm { get; } = Path.Combine(appPath, "Templates", "FormGsm.html");
@@ -45,6 +45,7 @@ namespace MelBox2
                 restServer.AfterStarting += (s) =>
                 {
                     Process.Start("explorer", s.Prefixes.First());
+                    Console.WriteLine("Web-Server gestartet.");
                 };
 
                 restServer.AfterStopping += (s) =>

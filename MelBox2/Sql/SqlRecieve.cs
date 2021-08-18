@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using MelBoxGsm;
 using static MelBoxGsm.Gsm;
 
 namespace MelBox2
 {
-    partial class Program
+    partial class Sql
     {
 
         internal static DataTable SelectLastRecieved(int count = 1000)
@@ -19,16 +20,30 @@ namespace MelBox2
             return SelectDataTable(query, args);
         }
 
-        public static DataTable SelectRecieved(int recId)
+        internal static DataTable SelectLastRecieved(System.DateTime date)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Date", date}
+            };
+
+            const string query = "SELECT Nr, datetime(Empfangen, 'localtime') AS Empfangen, Von, Inhalt FROM View_Recieved WHERE date(Empfangen) = date(@Date) ORDER BY Empfangen DESC;";
+
+            return SelectDataTable(query, args);
+        }
+
+        public static Message SelectRecieved(int recId)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@recId", recId}
             };
 
-            const string query = "SELECT r.ContentId AS Nr, m.Content AS Inhalt, m.BlockDays, m.BlockStart, m.BlockEnd FROM Recieved r JOIN Message AS m ON m.ID = r.ContentId  WHERE r.ID = @recId";
+            const string query = "SELECT r.ContentId AS ID, m.Content, m.BlockDays, m.BlockStart, m.BlockEnd FROM Recieved r JOIN Message AS m ON m.ID = r.ContentId  WHERE r.ID = @recId";
 
-            return SelectDataTable(query, args);
+            DataTable dt = SelectDataTable(query, args);
+            
+            return GetMessage(dt);
         }
 
 
@@ -55,4 +70,6 @@ namespace MelBox2
      
 
     }
+
+   
 }
