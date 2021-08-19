@@ -146,8 +146,10 @@ namespace MelBox2
                     Log.Info($"Sende Email an >{email}<", 191312);
 #endif
                 }
-                catch 
-                { Log.Warning($"Die Emailadresse >{email}< ist ungültig.", 11313); }
+                catch (Exception ex)
+                { 
+                    Log.Warning($"Die Emailadresse >{email}< ist ungültig: " + ex.Message , 11313); 
+                }
             }
 
             return emailAddresses;

@@ -448,7 +448,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'>");
-            sb.Append("    <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-cyan' >Benutzerkategorien</button>");
+            sb.Append("    <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-light-gray' >Benutzerkategorien</button>");
             sb.Append("    <div id = 'id02' class='w3-modal'>");
             sb.Append("        <div class='w3-modal-content'>");
             sb.Append("            <div class='w3-container'>");
