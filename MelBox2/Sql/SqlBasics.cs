@@ -41,7 +41,7 @@ namespace MelBox2
             }
 
             if (numTries == 0)
-              Log.Error("Die Datenbankdatei ist durch ein anderes Programm gesperrt.", 21354);
+              Log.Error($"Die Datenbankdatei >{DbPath}< ist durch ein anderes Programm gesperrt.", 21354);
 
             return numTries > 0;
         }
@@ -161,7 +161,7 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Error("SqlSelectDataTable(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 121436);
+                Log.Error("SqlSelectDataTable(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 21436);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 

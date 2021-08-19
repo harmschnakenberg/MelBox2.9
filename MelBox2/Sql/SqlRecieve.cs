@@ -47,24 +47,21 @@ namespace MelBox2
         }
 
 
-        internal static void InsertRecieved(List<SmsIn> smsen) //ungetestet
+        internal static bool InsertRecieved(SmsIn sms) //ungetestet
         {
-            foreach (SmsIn sms in smsen)
-            {
-                Person sender = SelectOrCreatePerson(sms);
-                Message msg = SelectOrCreateMessage(sms.Message);
+            Person sender = SelectOrCreatePerson(sms);
+            Message msg = SelectOrCreateMessage(sms.Message);
 
-                Dictionary<string, object> args = new Dictionary<string, object>
+            Dictionary<string, object> args = new Dictionary<string, object>
                 {
                     { "@Time", sms.TimeUtc.ToString("yyyy-MM-dd HH:mm:ss")},
                     { "@SenderId", sender.Id},
                     { "@ContentId", msg.Id }
                 };
 
-                const string query = "INSERT INTO Recieved (Time, SenderId, ContentId) VALUES (@Time, @SenderId, @ContentId);";
+            const string query = "INSERT INTO Recieved (Time, SenderId, ContentId) VALUES (@Time, @SenderId, @ContentId);";
 
-                _ = NonQuery(query, args);
-            }
+           return NonQuery(query, args);
         }
 
      

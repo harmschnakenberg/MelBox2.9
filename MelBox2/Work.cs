@@ -14,13 +14,15 @@ namespace MelBox2
         private static void ParseNewSms(List<SmsIn> smsenIn)
         {            
             if (smsenIn.Count == 0) return;
+            Console.WriteLine($"DEBUG: Es wurden {smsenIn.Count} SMSen empfangen.");
 
-            Sql.InsertRecieved(smsenIn); //Empfang in Datenbank protokollieren
-            
-            bool isWatchTime = Sql.IsWatchTime();
+            bool isWatchTime = true; // ZUM TESTEN!!! Sql.IsWatchTime();
 
             foreach (SmsIn smsIn in smsenIn)
             {
+                if (Sql.InsertRecieved(smsIn)) //Empfang in Datenbank protokollieren                
+                    Gsm.SmsDelete(smsIn.Index);
+                
                 bool isSmsTest = IsSmsTest(smsIn);
                 if (isSmsTest) continue;
                 bool isLifeMessage = IsLifeMessage(smsIn);
@@ -65,9 +67,9 @@ namespace MelBox2
 
         private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage , bool isMessageBlocked)
         {
-            string body = $"Absender >{smsIn.Phone}<\r\n" +
-                   $"Text >{smsIn.Message}<\r\n" +
-                   $"Sendezeit >{DateTime.Now:G}<\r\n\r\n" +
+            string body = $"Absender \t>{smsIn.Phone}<\r\n" +
+                   $"Text \t\t>{smsIn.Message}<\r\n" +
+                   $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
                    (
                    isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
                    isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da SMS gesperrt." :

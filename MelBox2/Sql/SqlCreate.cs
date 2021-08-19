@@ -55,7 +55,7 @@ namespace MelBox2
                 query += "CREATE TABLE IF NOT EXISTS Message ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
-                    "Content TEXT NOT NULL, " +
+                    "Content TEXT NOT NULL UNIQUE, " +
                     "BlockDays INTEGER, " +
                     "BlockStart INTEGER, " +
                     "BlockEnd INTEGER " +
@@ -129,21 +129,21 @@ namespace MelBox2
 
                 query += "CREATE VIEW View_Calendar AS " +
                          "SELECT s.ID, p.ID AS PersonId, p.name, p.Via, s.Start, s.End, strftime('%W', s.Start) AS KW, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') END AS Mo, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') END AS Di, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') END AS Mi, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') END AS Do, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-0 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') END AS Fr, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days') END AS Sa," +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days')||'x' END AS Mo, " +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days')||'x'  END AS Di, " +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days')||'x'  END AS Mi, " +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days')||'x'  END AS Do, " +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-0 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days')||'x'  END AS Fr, " +
+                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days')||'x'  END AS Sa, " +
                          "CASE WHEN strftime('%w', s.Start) = '0' THEN " +
-                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-6 days') END " +
+                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-6 days')||'x'  END " +
                          "ELSE " +
-                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') END " +
+                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days')||'x'  END " +
                          "END  AS So, " +
                          "CASE WHEN s.End > DATE(s.Start, 'weekday 6', '+3 days') THEN '...' END AS mehr " +
                          "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID " +
                          "WHERE s.End > date('now', '-1 day') " +
-                         "ORDER BY Start;";
+                         "ORDER BY Start; ";
 
                 NonQuery(query, null);
             }

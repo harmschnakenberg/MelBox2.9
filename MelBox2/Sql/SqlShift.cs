@@ -99,13 +99,17 @@ namespace MelBox2
 
         internal static List<string> GetCurrentShiftPhoneNumbers()
         {
-            const string query = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
+            //Bereitschafshandy, falls keine Bereitschaft für jetzt definiert ist
+            const string query1 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
 
-            DataTable dt = SelectDataTable(query, null);
+            DataTable dt = SelectDataTable(query1, null);
 
-            if (dt.Rows.Count == 0) //Bereitschaftshandy einfügen
+            if (dt.Rows.Count == 0) 
             {
-                dt = SelectDataTable("SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'; ", null);
+                //Definierte Bereitschaft (SMS) aus Datenbank
+                const string query2 = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
+
+                dt = SelectDataTable(query2, null);
             }
 
             List<string> phoneNumbers = new List<string>();
@@ -129,11 +133,21 @@ namespace MelBox2
 
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                emailAddresses.Add(
-                    new MailAddress(
-                        dt.Rows[i]["Email"].ToString(), dt.Rows[i]["Name"].ToString()
-                        )
-                    );
+                string email = dt.Rows[i]["Email"].ToString();
+
+                try
+                {                    
+                    emailAddresses.Add(
+                        new MailAddress(
+                            email, dt.Rows[i]["Name"].ToString()
+                            )
+                        );
+#if DEBUG
+                    Log.Info($"Sende Email an >{email}<", 191312);
+#endif
+                }
+                catch 
+                { Log.Warning($"Die Emailadresse >{email}< ist ungültig.", 11313); }
             }
 
             return emailAddresses;
@@ -141,15 +155,14 @@ namespace MelBox2
 
         internal static DataTable SelectShiftsCalendar()
         {
-            string query = "SELECT * FROM View_Calendar " +
+            const string query = "SELECT * FROM View_Calendar " +
                 "UNION " +
                 "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
-                "strftime('%W', d) AS KW, " +
-                "NULL AS Mo, NULL AS Di, NULL AS Mi, NULL AS Do, NULL AS Fr, NULL AS Sa, NULL AS So, NULL AS mehr " +
-                " FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
-                "UNION ALL " +
+                "strftime('%W', d) AS KW, date(d, 'weekday 1') AS Mo, date(d, 'weekday 2') AS Di, date(d, 'weekday 3') AS Mi, " +
+                "date(d, 'weekday 4') AS Do, date(d, 'weekday 5') AS Fr, date(d, 'weekday 6') AS Sa, date(d, 'weekday 0') AS So, " +
+                "NULL AS mehr FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) UNION ALL " +
                 "SELECT date(d, '+7 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
-                " WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
+                "WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
                 "ORDER BY Start; ";
 
             return SelectDataTable(query, null);
@@ -167,13 +180,45 @@ namespace MelBox2
             return Sql.SelectDataTable(query, args);
         }
 
-        internal static bool InsertShift(int personId, DateTime startUtc, DateTime endUtc)
+        internal static List<Shift> SplitShift(Shift shift)
+        {
+            //BAUSTELLE: Shift aufteilen, wenn sie über eine Kalenderwoche geht ?!
+
+            List<Shift> shifts = new List<Shift>();
+            DateTime localStart = shift.StartUtc;
+            DateTime localEnd = shift.StartUtc;
+
+            while (localEnd.Date != shift.EndUtc.Date)
+            {
+                do
+                {
+                    localEnd = localEnd.AddDays(1);
+                }
+                while (localEnd.Date != shift.EndUtc.Date && localEnd.DayOfWeek != DayOfWeek.Monday);
+
+                localEnd = Sql.ShiftEndTimeUtc(localEnd);
+
+                shifts.Add( new Shift
+                {
+                    Id = shift.Id,
+                    PersonId = shift.PersonId,
+                    StartUtc = localStart,
+                    EndUtc = localEnd
+                });
+                               
+                localStart = Sql.ShiftStartTimeUtc(localEnd);
+            }
+            
+            return shifts;
+        }
+
+        internal static bool InsertShift(Shift shift)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@PersonId", personId},
-                { "@Start", startUtc.ToString("yyyy-MM-dd HH:mm:ss")},
-                { "@End", endUtc.ToString("yyyy-MM-dd HH:mm:ss")}
+                { "@PersonId", shift.PersonId},
+                { "@Start", shift.StartUtc.ToString("yyyy-MM-dd HH:mm:ss")},
+                { "@End", shift.EndUtc.ToString("yyyy-MM-dd HH:mm:ss")}
             };
 
             const string query = "INSERT INTO Shift (PersonId, Start, End) VALUES (@PersonId, @Start, @End); ";
@@ -181,8 +226,11 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
-        internal static bool UpdateShift(Shift shift) //ungetestet
+            internal static bool UpdateShift(Shift shift)
         {
+
+            //BAUSTELLE: Shift aufteilen, wenn sie über eine Kalenderwoche geht ?!
+
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@ShiftId", shift.Id},

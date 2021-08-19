@@ -81,10 +81,10 @@ namespace MelBox2
 
                 #region Message
                 if (subject.Length > 0)
-                    mail.Subject = subject;
+                    mail.Subject = subject.Normalize().Replace('\r', ' ').Replace('\n', ' ');
                 else
                 {
-                    mail.Subject = message.Replace(System.Environment.NewLine, "");
+                    mail.Subject = message.Normalize().Replace(System.Environment.NewLine, "");
                 }
 
                 mail.Body = message;

@@ -14,7 +14,7 @@ namespace MelBox2
             Server.Start();
             Sql.CheckDbFile();
 
-            //Gsm.NewErrorEvent += Gsm_NewErrorEvent;
+            Gsm.NewErrorEvent += Gsm_NewErrorEvent;
             //Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
             Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
             Gsm.SmsSentEvent += Gsm_SmsSentEvent;
@@ -33,10 +33,10 @@ namespace MelBox2
             //    //}
             //} while (Console.ReadKey().Key != ConsoleKey.Escape);
 
-            ConsoleKeyInfo key;
-            do {
-                key = Console.ReadKey();
-            } while (key.Key != ConsoleKey.Escape);
+            //ConsoleKeyInfo key;
+            //do {
+            //    key = Console.ReadKey();
+            //} while (key.Key != ConsoleKey.Escape);
 
             bool run = true;
             while(run)
@@ -51,6 +51,9 @@ namespace MelBox2
                     case "sms sim":
                         Sms_Sim();
                         break;
+                    case "sms read all":
+                        Gsm.SmsRead("ALL");
+                        break;
                     case "debug":
                         Console.WriteLine($"Aktueller Debug: {ReliableSerialPort.Debug}. Neuer Debug?");
                         string x = Console.ReadLine();
@@ -62,6 +65,11 @@ namespace MelBox2
 
             Server.Stop();
             Console.WriteLine("Progammende.");
+        }
+
+        private static void Gsm_NewErrorEvent(object sender, string e)
+        {
+            Log.Warning("GSM-Fehlermeldung - " + e, 1320);
         }
 
         private static void Gsm_SmsRecievedEvent(object sender, List<SmsIn> e)

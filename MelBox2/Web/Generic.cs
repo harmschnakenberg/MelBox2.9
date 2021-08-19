@@ -313,6 +313,8 @@ namespace MelBox2
 
         internal static string FromShiftTable(Person user)
         {
+            if (user == null) user = new Person() { Id = 0, Level = 0 };
+
             System.Data.DataTable dt = Sql.SelectShiftsCalendar();
 
             string html = "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
@@ -323,7 +325,7 @@ namespace MelBox2
             //add header row
             html += "<tr class='item'>";
 
-            if (user != null && user.Id > 0)
+            if (user.Id > 0)
             {
                 html += "<th>Edit</th>";
             }
@@ -344,17 +346,8 @@ namespace MelBox2
                 _ = DateTime.TryParse(dt.Rows[i]["Start"].ToString(), out DateTime start);
                 _ = DateTime.TryParse(dt.Rows[i]["End"].ToString(), out DateTime end);
                 _ = int.TryParse(dt.Rows[i]["KW"].ToString(), out int kw);
-                _ = DateTime.TryParse(dt.Rows[i][7].ToString() ?? "", out DateTime _mo);
-                _ = DateTime.TryParse(dt.Rows[i][8].ToString() ?? "", out DateTime _di);
-                _ = DateTime.TryParse(dt.Rows[i][9].ToString(), out DateTime _mi);
-                _ = DateTime.TryParse(dt.Rows[i][10].ToString(), out DateTime _do);
-                _ = DateTime.TryParse(dt.Rows[i][11].ToString(), out DateTime _fr);
-                _ = DateTime.TryParse(dt.Rows[i][12].ToString(), out DateTime _sa);
-                _ = DateTime.TryParse(dt.Rows[i][13].ToString(), out DateTime _so);
 
                 #region Editier-Button
-
-              
 
                 if (user.Level >= Server.Level_Admin || user.Level >= Server.Level_Reciever && (user.Id == shiftContactId || shiftId == 0))
                 {
@@ -403,13 +396,14 @@ namespace MelBox2
                 #endregion
 
                 #region Wochentage
-                html += WeekDayColor(holydays, _mo);
-                html += WeekDayColor(holydays, _di);
-                html += WeekDayColor(holydays, _mi);
-                html += WeekDayColor(holydays, _do);
-                html += WeekDayColor(holydays, _fr);
-                html += WeekDayColor(holydays, _sa, true);
-                html += WeekDayColor(holydays, _so, true);
+                for (int j = 7; j < 14; j++)
+                {
+                    var dateStr = dt.Rows[i][j].ToString();
+                    bool isMarked = dateStr.EndsWith("x");
+                    _ = DateTime.TryParse(dateStr.TrimEnd('x') ?? "", out DateTime date);
+
+                    html += WeekDayColor(holydays, date, isMarked);
+                }               
                 #endregion
 
                 html += "<td class='w3-border-left'>" + dt.Rows[i][14] + "</td>"; // Spalte 'mehr'
@@ -423,7 +417,7 @@ namespace MelBox2
             return html;
         }
 
-        private static string WeekDayColor(List<DateTime> holydays, DateTime date, bool weekend = false)
+        private static string WeekDayColor(List<DateTime> holydays, DateTime date, bool isMarked)
         {
             string html = string.Empty;
 
@@ -431,16 +425,68 @@ namespace MelBox2
                 html += "<td class='w3-border-left w3-pale-green'>";
             else if (holydays.Contains(date)) //Feiertag?
                 html += "<td class='w3-border-left w3-pale-red'>";
-            else if (weekend) //Wochenende ?              
+            else if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) //Wochenende ?              
                 html += "<td class='w3-border-left w3-sand'>";
             else
                 html += "<td class='w3-border-left'>";
 
-            html += (date == DateTime.MinValue ? "&nbsp;" : date.ToShortDateString()) + "</td>";
+            if (date == DateTime.MinValue)
+                html += "&nbsp;";
+            else if (isMarked)
+                html += $"<span class='w3-tag w3-pale-green'>{date:dd}.</span>";
+            // html += $"<text>{date.ToString("dd")}.</text>";
+            else
+                //html += $"<i class='w3-opacity'>{date.ToString("dd")}.</i>";
+                html += $"<span class='w3-tag w3-light-gray w3-opacity'>{date:dd}.</span>";
+
+            html += "</td>";
 
             return html;
         }
 
+        internal static string HtmlShowUserCategories()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<div class='w3-container'>");
+            sb.Append("    <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-cyan' >Benutzerkategorien</button>");
+            sb.Append("    <div id = 'id02' class='w3-modal'>");
+            sb.Append("        <div class='w3-modal-content'>");
+            sb.Append("            <div class='w3-container'>");
+            sb.Append("             <span onclick = \"document.getElementById('id02').style.display='none'\" class='w3-button w3-display-topright'>&times;</span>");
+            sb.Append("             <table class='w3-table w3-bordered'>");
+            sb.Append("             <tr>");
+            sb.Append("               <th>Level</th>");
+            sb.Append("               <th>Rolle</th>");
+            sb.Append("               <th>Funktion</th>");
+            sb.Append("             </tr>");
+            sb.Append("             <tr>");
+            sb.Append($"              <td>&gt;=&nbsp;{Sql.Level_Admin}</td>");
+            sb.Append("               <td>Admin</td>");
+            sb.Append("               <td>Benutzerverwaltung, Nachrichten Sperren, Bereitschaft einteilen</td>");
+            sb.Append("             </tr>");
+            sb.Append("             <tr>");
+            sb.Append($"              <td>&gt;=&nbsp;{Sql.Level_Reciever}</td>");
+            sb.Append("               <td>Benutzer</td>");
+            sb.Append("               <td>Eigene Benutzerverwaltung, eigene Bereitschaft bearbeiten</td>");
+            sb.Append("             </tr>");
+            sb.Append("             <tr>");
+            sb.Append($"              <td>&lt;&nbsp;{Sql.Level_Reciever}</td>");
+            sb.Append("               <td>Beobachter</td>");
+            sb.Append("               <td>nur Anzeige</td>");
+            sb.Append("             </tr>");
+            sb.Append("             <tr>");
+            sb.Append($"              <td>0</td>");
+            sb.Append("               <td>Aspirant</td>");
+            sb.Append("               <td>ohne Zugangsberechtigung, muss durch Admin freigeschaltet werden</td>");
+            sb.Append("             </tr>");
+            sb.Append("             </table>");
+            sb.Append("            </div>");
+            sb.Append("        </div>");
+            sb.Append("    </div>");
+            sb.Append("</div>");
+
+            return sb.ToString();
+        }
 
     }
 }

@@ -62,12 +62,12 @@ namespace MelBox2
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Time", report.DischargeTimeUtc},
+                { "@Time", report.DischargeTimeUtc.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@Confirmation", report.DeliveryStatus},
                 { "@Reference", report.Reference}
             };
 
-            const string query = "UPDATE Sent(Time, Confirmation) VALUES (@Time, @Confirmation) WHERE Reference IN (SELECT Reference FROM Sent WHERE Reference = @Reference ORDER BY Id DESC LIMIT 1);";
+            const string query = "UPDATE Sent SET Time = @Time, Confirmation = @Confirmation WHERE Reference IN ( SELECT Reference FROM Sent WHERE Reference = @Reference ORDER BY Id DESC LIMIT 1);";
 
            _ = NonQuery(query, args);
         }
@@ -78,12 +78,12 @@ namespace MelBox2
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Time", DateTime.UtcNow},
+                { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@Confirmation", deliveryStatus},
                 { "@Reference", emailId}
             };
 
-            const string query = "UPDATE Sent(Time, Confirmation) VALUES (@Time, @Confirmation) WHERE Reference IN (SELECT Reference FROM Sent WHERE Reference = @Reference ORDER BY Id DESC LIMIT 1);";
+            const string query = "UPDATE Sent SET Time = @Time, Confirmation = @Confirmation WHERE Reference IN (SELECT Reference FROM Sent WHERE Reference = @Reference ORDER BY Id DESC LIMIT 1);";
 
             _ = NonQuery(query, args);
         }

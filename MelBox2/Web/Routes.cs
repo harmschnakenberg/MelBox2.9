@@ -231,9 +231,11 @@ namespace MelBox2
             };
 
             string form = Html.Page(Server.Html_FormAccount, pairs);
-            string tabel = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
+            string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
 
-            await Html.PageAsync(context, "Benutzerkonto", tabel + form, user.Name);            
+            if (isAdmin) form = Html.HtmlShowUserCategories() + form ;
+
+            await Html.PageAsync(context, "Benutzerkonto", table + form, user.Name);            
         }
         
         [RestRoute("Post", "/account/new")]
@@ -515,12 +517,20 @@ namespace MelBox2
             Dictionary<string, string> payload = Html.Payload(context);
             Shift shift = Sql.GetShift(payload);
             if (shift.PersonId == 0) shift.PersonId = user.Id;
-            
-            bool success = Sql.InsertShift(shift.PersonId, Sql.ShiftStartTimeUtc(shift.StartUtc), Sql.ShiftEndTimeUtc(shift.EndUtc));
+            shift.StartUtc = Sql.ShiftStartTimeUtc(shift.StartUtc);
+            shift.EndUtc = Sql.ShiftEndTimeUtc(shift.EndUtc);
+
+            bool success = true;
+            List <Shift> shifts = Sql.SplitShift(shift);
+            foreach (Shift splitShift in shifts)
+            {
+                if (!Sql.InsertShift(splitShift)) success = false;
+            }
+
             string alert;
 
             if (success)
-                alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToShortDateString()} bis {shift.EndUtc.ToShortDateString()} wurde erfolgreich erstellt.");
+                alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} wurde erfolgreich erstellt.");
             else
                 alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Die Bereitschaft konnte nicht in der Datenbank gespeichert werden.");
 
