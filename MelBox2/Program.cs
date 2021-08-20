@@ -14,7 +14,7 @@ namespace MelBox2
             Console.WriteLine("'Exit' eingeben zum beenden.");
             Server.Start();
             Sql.CheckDbFile();
-
+            
             Gsm.NewErrorEvent += Gsm_NewErrorEvent;
             //Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
             Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
