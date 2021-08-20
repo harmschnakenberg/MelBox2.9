@@ -126,7 +126,8 @@ namespace MelBox2
         {
             string keyWord = GetKeyWord(sms.Message);
 
-            const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Phone = @Phone OR KeyWord = @KeyWord;";
+            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Phone = @Phone OR KeyWord = @KeyWord; ";
+            const string query2 = "INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
@@ -134,10 +135,12 @@ namespace MelBox2
                 { "@KeyWord", keyWord }
             };
 
-            DataTable dt = SelectDataTable(query, args);
+            DataTable dt = SelectDataTable(query1, args);
 
-            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ", args))
+            if (dt.Rows.Count == 0 && NonQuery(query2, args))
+            {                
                 return SelectOrCreatePerson(sms);
+            }
 
             return GetPerson(dt);
         }

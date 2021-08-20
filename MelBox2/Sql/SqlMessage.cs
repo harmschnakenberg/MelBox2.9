@@ -165,20 +165,6 @@ namespace MelBox2
             return msg;
         }
 
-        internal static DataTable SelectOverdueSenders()
-        {
-            const string query = "SELECT * FROM View_Overdue ORDER BY Fällig_seit DESC; ";
-
-            return SelectDataTable(query, null);
-        }
-
-        internal static DataTable SelectWatchedSenders()
-        {
-            const string query = "SELECT * FROM View_WatchedSenders; ";
-
-            return SelectDataTable(query, null);
-        }
-
         public static DataTable Blocked_View(string content = "")
         {
             string query = "SELECT * FROM View_Blocked ";

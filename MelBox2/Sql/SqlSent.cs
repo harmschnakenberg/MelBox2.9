@@ -8,6 +8,20 @@ namespace MelBox2
 {
     partial class Sql
     {
+        public enum MsgConfirmation
+        {
+            Success = 31,
+            ReportPending = 63,
+            SmsAborted = 127,
+            Unknown = 256,
+            NoReference = 257,
+            SendRetry = 260,
+            EmailSendAborted = 261
+
+        }
+        //Console.WriteLine($"Empfangsbestätigung erhalten für ID[{reference}]: " + (delviveryStatus > 63 ? "Senden fehlgeschlagen" : delviveryStatus > 31 ? "senden im Gange" : "erfolgreich versendet"));
+
+
         public static DataTable SelectLastSent(int count = 1000)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -30,10 +44,11 @@ namespace MelBox2
                 { "@Time", sms.SendTimeUtc},
                 { "@ToId", sender.Id},
                 { "@ContentId", msg.Id},
-                { "@Reference", sms.Reference}
+                { "@Reference", sms.Reference},
+                { "@Confirmation", sms.Reference == 0 ? MsgConfirmation.NoReference : MsgConfirmation.ReportPending}
             };
 
-            const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference) VALUES(@Time, @ToId, 1, @ContentId, @Reference); ";
+            const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference, Confirmation) VALUES(@Time, @ToId, 1, @ContentId, @Reference, @Confirmation); ";
 
             _ = NonQuery(query, args);
         }
@@ -48,10 +63,11 @@ namespace MelBox2
                 { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@ToId", sender.Id},
                 { "@ContentId", msg.Id},
-                { "@Reference", reference}
+                { "@Reference", reference},
+                { "@Confirmation", MsgConfirmation.ReportPending}
             };
 
-            const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference) VALUES(@Time, @ToId, 2, @ContentId, @Reference); ";
+            const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference, Confirmation) VALUES(@Time, @ToId, 2, @ContentId, @Reference, @Confirmation); ";
 
             _ = NonQuery(query, args);
         }
@@ -72,14 +88,14 @@ namespace MelBox2
            _ = NonQuery(query, args);
         }
 
-        internal static void UpdateSent(int emailId, int deliveryStatus) //ungetestet
+        internal static void UpdateSent(int emailId, MsgConfirmation confirmation) //ungetestet
         {
             //Nur den letzten Eintrag mit passender Referenz ändern. Wenn nicht genau genug, SmSOut-Objekt von Tracking hier mit auswerten.
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
-                { "@Confirmation", deliveryStatus},
+                { "@Confirmation", confirmation},
                 { "@Reference", emailId}
             };
 

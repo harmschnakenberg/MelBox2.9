@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using static MelBoxGsm.Gsm;
 using MelBoxGsm;
+using System.Timers;
 
 namespace MelBox2
 {
@@ -10,13 +11,21 @@ namespace MelBox2
         public static string SmsTestTrigger { get; set; } = "SMSAbruf";
        
         public static string[] LifeMessageTrigger { get; set; } = { "MelSysOK", "SgnAlarmOK" };
-
+               
         private static void ParseNewSms(List<SmsIn> smsenIn)
         {            
             if (smsenIn.Count == 0) return;
             Console.WriteLine($"DEBUG: Es wurden {smsenIn.Count} SMSen empfangen.");
 
-            bool isWatchTime = true; // ZUM TESTEN!!! Sql.IsWatchTime();
+            bool isWatchTime = Sql.IsWatchTime();
+
+#if DEBUG
+            if (!isWatchTime)
+            {
+                Console.WriteLine($"DEBUG: Bei Debug-Kompilat Weiterleitung auch während der Geschäftszeit.");
+                isWatchTime = true;
+            }
+#endif
 
             foreach (SmsIn smsIn in smsenIn)
             {
@@ -40,7 +49,7 @@ namespace MelBox2
             if (!sms.Message.ToLower().StartsWith(SmsTestTrigger.ToLower())) return false;
 
             Person p = Sql.SelectOrCreatePerson(sms);
-            SendSms(sms.Phone, DateTime.Now.ToString("G") + sms.Message);
+            SmsSend(sms.Phone, DateTime.Now.ToString("G") + sms.Message);
             Sql.InsertLog(3, $"SMS-Abruf von [{p.Id}] >{p.Phone}< >{p.Name}< >{p.Company}<");
 
             return true; //Dies war 'SMSAbruf'
@@ -61,7 +70,7 @@ namespace MelBox2
             foreach (string phone in Sql.GetCurrentShiftPhoneNumbers())
             {
                 //Protokollierung in DB nach Absenden von Modem!
-                SendSms(phone, sms.Message);
+                SmsSend(phone, sms.Message);
             }
         }
 
@@ -89,6 +98,8 @@ namespace MelBox2
 
             Email.Send(mc, body, subject, true);
         }
+
+
 
     }
 }

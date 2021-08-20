@@ -583,7 +583,7 @@ namespace MelBox2
             int del = 400;
             string html = !isAdmin ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-block w3-red w3-padding'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
-            await Html.PageAsync(context, "Log", table + html, user.Name);
+            await Html.PageAsync(context, "Log", table + html,  user == null ? "" : user.Name );
         }
 
 

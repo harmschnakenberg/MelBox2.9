@@ -221,16 +221,25 @@ namespace MelBox2
 
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int confirmation))
                         {
-                            //if (confirmation < 32)
-                            //    html += "check";
-                            //else if(confirmation < 64)
-                            //    html += "try";
-                            //else if (confirmation < 128)
-                            //    html += "sms_failed";
-                            //else
-                            //    html += "sms";
+                            if (confirmation <= (int)Sql.MsgConfirmation.Success) //von Modem
+                                html += "check";
+                            else if (confirmation <= (int)Sql.MsgConfirmation.ReportPending)
+                                html += "hourglass_bottom";
+                            else if (confirmation <= (int)Sql.MsgConfirmation.SmsAborted) //von Modem
+                                html += "sms_failed";
+                            else if (confirmation < 256) //von Modem ?Bereich undefiniert?
+                                html += "sms";
+                            else if (confirmation == (int)Sql.MsgConfirmation.Unknown) //Default Tabelleneintrag
+                                html += "device_unknown";
+                            else if (confirmation == (int)Sql.MsgConfirmation.SendRetry) 
+                                html += "try";
+                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendAborted) 
+                                html += "cancel_schedule_send";
+                            else if (confirmation == (int)Sql.MsgConfirmation.NoReference)
+                                html += "fingerprint";
 
-                            html += confirmation; //provisorisch
+                            else
+                                html += "error_outline";
                         }
                         else
                         {
@@ -293,18 +302,21 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<div class='w3-dropdown-hover w3-right'>");
             sb.AppendLine(" <button class='w3-button w3-white'>Legende</button>");
-            sb.AppendLine(" <div class='w3-dropdown-content w3-bar-block w3-border' style='right:0;width:300px;'>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>smartphone</span>SMS versendet</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>email</span>E-Mail versendet</div>");
+            sb.AppendLine(" <div class='w3-dropdown-content w3-bar-block w3-border' style='right:0;width:400px;'>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>smartphone</span>SMS</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>email</span>E-Mail</div>");
             sb.AppendLine("  <hr>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>check</span>Versand bestätigt</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_top</span>erwarte interne Zuweisung</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_bottom</span>erwarte externe Bestätigung</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>try</span>erneuter Sendeversuch</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms_failed</span>Senden abgebrochen</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>check</span>&lt;{(int)Sql.MsgConfirmation.Success} Versand bestätigt</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_bottom</span>&lt;{(int)Sql.MsgConfirmation.ReportPending} erwarte externe Bestätigung</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>try</span>{(int)Sql.MsgConfirmation.SendRetry} erneuter Sendeversuch</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms_failed</span>&lt;{(int)Sql.MsgConfirmation.SmsAborted} SMS Senden abgebrochen</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>cancel_schedule_send</span>&lt;{(int)Sql.MsgConfirmation.EmailSendAborted} Email Senden abgebrochen</div>");
             sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms</span>Status unbekannt</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>device_unknown</span>keine Zuweisung</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>error</span>fehlerhafte Zuweisung</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>device_unknown</span>{(int)Sql.MsgConfirmation.Unknown} Status unbekannt</div>");
+            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>fingerprint</span>{(int)Sql.MsgConfirmation.NoReference} keine Zuweisung</div>");
+            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>error_outline</span>fehlerhafte Zuweisung</div>");
+            /*sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_top</span>erwarte interne Zuweisung</div>"); //nicht verwendet */
+            /*sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>send</span>Email versand</div>");*/
             sb.AppendLine(" </div>");
             sb.AppendLine("</div>");
 

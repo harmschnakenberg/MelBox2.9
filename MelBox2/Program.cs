@@ -10,6 +10,7 @@ namespace MelBox2
         static void Main()
         {
             Console.WriteLine("Progammstart.");
+            Log.Info(System.Reflection.Assembly.GetEntryAssembly().GetName().Name + " gestartet.", 100);
             Console.WriteLine("'Exit' eingeben zum beenden.");
             Server.Start();
             Sql.CheckDbFile();
@@ -24,47 +25,42 @@ namespace MelBox2
             Gsm.AdminPhone = "+4916095285304";            
             Gsm.SetupModem("+4916095285304");
 
-            //Console.WriteLine("Drücke ESC zum beenden.");
-            //do
-            //{
-            //    //while (!Console.KeyAvailable)
-            //    //{
-            //    //    // Do something
-            //    //}
-            //} while (Console.ReadKey().Key != ConsoleKey.Escape);
-
-            //ConsoleKeyInfo key;
-            //do {
-            //    key = Console.ReadKey();
-            //} while (key.Key != ConsoleKey.Escape);
+            SetHourTimer();
 
             bool run = true;
             while(run)
             {
-                string input = Console.ReadLine();
-
-                switch (input.ToLower())
+                //if (Console.KeyAvailable)
                 {
-                    case "exit":
-                        run = false;
-                        break;
-                    case "sms sim":
-                        Sms_Sim();
-                        break;
-                    case "sms read all":
-                        Gsm.SmsRead("ALL");
-                        break;
-                    case "debug":
-                        Console.WriteLine($"Aktueller Debug: {ReliableSerialPort.Debug}. Neuer Debug?");
-                        string x = Console.ReadLine();
-                        if (byte.TryParse(x, out byte d))
-                            ReliableSerialPort.Debug = d;
-                        break;
+                    string input = Console.ReadLine();
+
+                    switch (input.ToLower())
+                    {
+                        case "exit":
+                            run = false;
+                            break;
+                        case "sms sim":
+                            Sms_Sim();
+                            break;
+                        case "sms read all":
+                            List<SmsIn> list = Gsm.SmsRead("ALL");
+                            foreach(SmsIn sms in list)                            
+                                Console.WriteLine($"Lese [{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");                            
+                            break;
+                        case "debug":
+                            Console.WriteLine($"Aktueller Debug: {ReliableSerialPort.Debug}. Neuer Debug?");
+                            string x = Console.ReadLine();
+                            if (byte.TryParse(x, out byte d))
+                                ReliableSerialPort.Debug = d;
+                            break;
+                    }
                 }
             }
 
             Server.Stop();
-            Console.WriteLine("Progammende.");
+            Log.Info(System.Reflection.Assembly.GetEntryAssembly().GetName().Name + " beendet.", 100);
+            Console.WriteLine("Progammende. Beliebige Taste zum beenden..");
+            Console.ReadKey();
         }
 
         private static void Gsm_NewErrorEvent(object sender, string e)

@@ -202,6 +202,7 @@
     <Compile Include="Web\Server.cs" />
     <Compile Include="Web\Startup.cs" />
     <Compile Include="Work.cs" />
+    <Compile Include="WorkSchedule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

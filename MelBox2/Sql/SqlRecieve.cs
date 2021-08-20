@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using MelBoxGsm;
 using static MelBoxGsm.Gsm;
@@ -7,7 +8,7 @@ namespace MelBox2
 {
     partial class Sql
     {
-
+        
         internal static DataTable SelectLastRecieved(int count = 1000)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -20,6 +21,7 @@ namespace MelBox2
             return SelectDataTable(query, args);
         }
 
+
         internal static DataTable SelectLastRecieved(System.DateTime date)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -31,6 +33,7 @@ namespace MelBox2
 
             return SelectDataTable(query, args);
         }
+
 
         public static Message SelectRecieved(int recId)
         {
@@ -64,9 +67,24 @@ namespace MelBox2
            return NonQuery(query, args);
         }
 
-     
 
+        internal static DataTable SelectOverdueSenders()
+        {
+            const string query = "SELECT * FROM View_Overdue ORDER BY Fällig_seit DESC; ";
+
+            return SelectDataTable(query, null);
+        }
+
+
+        internal static DataTable SelectWatchedSenders()
+        {
+            const string query = "SELECT * FROM View_WatchedSenders; ";
+
+            return SelectDataTable(query, null);
+        }
+
+       
     }
 
-   
+
 }

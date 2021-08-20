@@ -123,7 +123,7 @@ namespace MelBox2
                          "MaxInactive || ' Std.' AS Max_Inaktiv, strftime('%Y-%m-%d %H:%M:%S', Recieved.Time, 'localtime') AS Letzte_Nachricht, Content AS Inhalt, " +
                          "CAST( (strftime('%s', 'now') - strftime('%s', Recieved.Time, '+' || MaxInactive || ' hours')) / 3600 AS INTEGER) || ' Std.' AS Fällig_seit " +
                          "FROM Recieved JOIN Person ON Person.Id = Recieved.SenderId JOIN Message ON Message.Id = ContentId " +
-                         "WHERE MaxInactive > 0 AND DATETIME(Recieved.Time, '+' || MaxInactive || ' hours') < Datetime('now') ORDER BY Recieved.Time DESC;  ";
+                         "WHERE MaxInactive > 0 AND DATETIME(Recieved.Time, '+' || MaxInactive || ' hours') < Datetime('now') GROUP BY Recieved.SenderId ORDER BY Recieved.Time DESC;  ";
 
                 query += "CREATE VIEW View_WatchedSenders AS SELECT Id, Name, Company AS Firma, MaxInactive || ' Std.' AS Max_Inaktiv FROM Person WHERE MaxInactive > 0 ORDER BY Firma; ";
 

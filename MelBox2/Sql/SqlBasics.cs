@@ -81,9 +81,9 @@ namespace MelBox2
 
         internal static DataTable SelectDataTable(string query, Dictionary<string, object> args)
         {
-            if (!CheckDbFile()) return null;
-
             DataTable myTable = new DataTable();
+
+            if (!CheckDbFile()) return myTable;
 
             try
             {                
@@ -168,5 +168,46 @@ namespace MelBox2
             return myTable;
         }
 
+        internal static void DbBackup()
+        {
+            try
+            {
+                string backupPath = Path.Combine(Path.GetDirectoryName(DbPath), string.Format("MelBox2_{0}_KW{1:00}.db", DateTime.UtcNow.Year, GetIso8601WeekOfYear(DateTime.UtcNow)));
+                if (File.Exists(backupPath)) return;
+
+                using (var connection = new SqliteConnection("Data Source=" + DbPath))
+                {
+                    connection.Open();
+
+                    // Create a full backup of the database
+                    var backup = new SqliteConnection("Data Source=" + backupPath);
+                    connection.BackupDatabase(backup);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Sql - Fehler DbBackup()\r\n" + ex.Message, 1427);
+#if DEBUG
+                throw new Exception("Sql-Fehler DbBackup()\r\n" + ex.Message);
+#endif
+            }
+        }
+
+        private static int GetIso8601WeekOfYear(DateTime time)
+        {
+            // This presumes that weeks start with Monday.
+            // Week 1 is the 1st week of the year with a Thursday in it.
+            // Seriously cheat.  If its Monday, Tuesday or Wednesday, then it'll 
+            // be the same week# as whatever Thursday, Friday or Saturday are,
+            // and we always get those right
+            DayOfWeek day = System.Globalization.CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(time);
+            if (day >= DayOfWeek.Monday && day <= DayOfWeek.Wednesday)
+            {
+                time = time.AddDays(3);
+            }
+
+            // Return the week of our adjusted day
+            return System.Globalization.CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(time, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
     }
 }

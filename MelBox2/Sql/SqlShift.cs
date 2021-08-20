@@ -146,10 +146,12 @@ namespace MelBox2
                     Log.Info($"Sende Email an >{email}<", 191312);
 #endif
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
                 { 
                     Log.Warning($"Die Emailadresse >{email}< ist ungültig: " + ex.Message , 11313); 
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
 
             return emailAddresses;

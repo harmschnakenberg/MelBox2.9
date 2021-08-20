@@ -23,11 +23,11 @@ namespace MelBox2
         /// <param name="message">Inhalt der Email</param>
         /// <param name="subject">Betreff. Leer: Wird aus message generiert.</param>
         /// <param name="sendCC">Sende an Ständige Empänger in CC</param>
-        public static void Send(MailAddress to, string message, string subject = "")
+        public static void Send(MailAddress to, string message, string subject = "", bool cc = false)
         {
             var toList = new MailAddressCollection { to };
 
-            Send(toList, message, subject);
+            Send(toList, message, subject, cc);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace MelBox2
                         status == SmtpStatusCode.MailboxUnavailable)
                     {
                         Sql.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
-                        Sql.UpdateSent(emailId, 32); //Erneut senden
+                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.SendRetry); //Erneut senden
 
                         System.Threading.Thread.Sleep(5000);
                         using (var smtpClient = new SmtpClient())
@@ -130,7 +130,7 @@ namespace MelBox2
                     else
                     {
                         Sql.InsertLog(1, $"Fehler beim Senden der Email an >{ex.InnerExceptions[i].FailedRecipient}<: {ex.InnerExceptions[i].Message}");
-                        Sql.UpdateSent(emailId, 64); //Abgebrochen                       
+                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.EmailSendAborted); //Abgebrochen                       
                     }
 
                 }
@@ -152,7 +152,7 @@ namespace MelBox2
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-            Sql.UpdateSent(emailId, 1); //Erfolgreich gesendet
+            Sql.UpdateSent(emailId, Sql.MsgConfirmation.Success); //Erfolgreich gesendet
             mail.Dispose();
         }
 
