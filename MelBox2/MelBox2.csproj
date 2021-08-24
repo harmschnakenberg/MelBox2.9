@@ -181,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Email.cs" />
+    <Compile Include="Ini.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -189,6 +190,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Sql\SqlIni.cs" />
     <Compile Include="Sql\SqlBasics.cs" />
     <Compile Include="Sql\SqlCreate.cs" />
     <Compile Include="Sql\SqlLog.cs" />

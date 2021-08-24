@@ -2,3 +2,8 @@
 
 - Alles in die Program Klasse?
 - Objectklasen für Datenbank?
+
+Powershell:
+
+URL-Reservierung:
+netsh http add urlacl url=http://+:1234/ user=schnakenberg

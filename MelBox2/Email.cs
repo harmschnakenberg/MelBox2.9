@@ -53,13 +53,14 @@ namespace MelBox2
                 mail.Sender = From;
                 #endregion
 
-                #region To               
+                #region To          
+
                 foreach (var to in toList ?? new MailAddressCollection() { Admin })
                 {
 #if DEBUG           //nur zu mir
                     if (to.Address.ToLower() != Admin.Address.ToLower())
                         Console.WriteLine("Send(): Emailadresse gesperrt: " + to.Address);
-                    else
+                    else                        
 #endif
                         mail.To.Add(to);
                 }
@@ -77,17 +78,22 @@ namespace MelBox2
                     }
                 }
 
+                if (!mail.To.Contains(Admin) && !mail.CC.Contains(Admin)) //Email geht in jedem Fall an Admin
+                    mail.Bcc.Add(Admin);
+
                 #endregion
 
-                #region Message
-                if (subject.Length > 0)
-                    mail.Subject = subject.Normalize().Replace('\r', ' ').Replace('\n', ' ');
-                else
-                {
-                    mail.Subject = message.Normalize().Replace(System.Environment.NewLine, "");
-                }
+                #region Message                
+                if (subject.Length == 0)                    
+                    subject = message.Normalize();
 
-                mail.Body = message;
+                subject = subject.Normalize().Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ');
+
+                if (subject.Length > 255) subject = subject.Substring(0, 255); //255 Zeichen max. Betreff bei Outlook 
+
+                mail.Subject = subject;
+
+                mail.Body = message.Normalize();
                 #endregion
 
                 #region Smtp

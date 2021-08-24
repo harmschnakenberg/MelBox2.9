@@ -23,10 +23,11 @@ namespace MelBox2
             int sec = 59 - DateTime.Now.Second;
 
             TimeSpan span = new TimeSpan(0, min, sec);
-
+#if DEBUG
+            Log.Info($"Nächste Senderüberprüfung in {min} min.", 65053);
+#endif
             Timer execute = new Timer(span.TotalMilliseconds);
             
-
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);
             execute.Elapsed += new ElapsedEventHandler(DailyNotification);
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
@@ -89,8 +90,9 @@ namespace MelBox2
 
                 string msg = $"Vom Programm zurzeit belegter Arbeitsspeicher: {memory} MB, CPU bei {cpu}%";                
                 Console.WriteLine(msg);
-
+#if !DEBUG
                 if (memory > 100 || cpu > 50)
+#endif
                     Log.Info(msg, 88);
             }
         }

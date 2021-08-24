@@ -103,7 +103,7 @@ namespace MelBox2
                     }
 
                     try
-                    {
+                    {                        
                         using (var reader = command.ExecuteReader())
                         {
                             //Mit Schema einlesen
@@ -168,6 +168,39 @@ namespace MelBox2
             return myTable;
         }
 
+        internal static object SelectValue (string query, Dictionary<string, object> args)
+        {            
+            try
+            {
+                using (var connection = new SqliteConnection("Data Source=" + DbPath))
+                {
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = query;
+
+                    if (args != null && args.Count > 0)
+                    {
+                        foreach (string key in args.Keys)
+                        {
+                            command.Parameters.AddWithValue(key, args[key]);
+                        }
+                    }
+
+                    return command.ExecuteScalar();
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+            {
+                Log.Error("SqlSelectValue(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 21437);
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            return null;
+        }
+
+
         internal static void DbBackup()
         {
             try
@@ -183,6 +216,8 @@ namespace MelBox2
                     var backup = new SqliteConnection("Data Source=" + backupPath);
                     connection.BackupDatabase(backup);
                 }
+
+                Log.Info("Backup der Datenbank erstellt unter " + backupPath, 41433);
             }
             catch (Exception ex)
             {

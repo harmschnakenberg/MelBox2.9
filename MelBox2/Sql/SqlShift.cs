@@ -143,7 +143,7 @@ namespace MelBox2
                             )
                         );
 #if DEBUG
-                    Log.Info($"Sende Email an >{email}<", 191312);
+                    Log.Info($"DEBUG: Bereitschaft: Sende Email an >{email}<", 61312);
 #endif
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -159,15 +159,7 @@ namespace MelBox2
 
         internal static DataTable SelectShiftsCalendar()
         {
-            const string query = "SELECT * FROM View_Calendar " +
-                "UNION " +
-                "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
-                "strftime('%W', d) AS KW, date(d, 'weekday 1') AS Mo, date(d, 'weekday 2') AS Di, date(d, 'weekday 3') AS Mi, " +
-                "date(d, 'weekday 4') AS Do, date(d, 'weekday 5') AS Fr, date(d, 'weekday 6') AS Sa, date(d, 'weekday 0') AS So, " +
-                "NULL AS mehr FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) UNION ALL " +
-                "SELECT date(d, '+7 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
-                "WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
-                "ORDER BY Start; ";
+            const string query = "SELECT * FROM View_Calendar_Full;";
 
             return SelectDataTable(query, null);
         }
@@ -230,7 +222,7 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
-            internal static bool UpdateShift(Shift shift)
+        internal static bool UpdateShift(Shift shift)
         {
 
             //BAUSTELLE: Shift aufteilen, wenn sie über eine Kalenderwoche geht ?!
@@ -247,7 +239,6 @@ namespace MelBox2
 
             return NonQuery(query, args);
         }
-
 
         public static bool DeleteShift(int shiftId)
         {

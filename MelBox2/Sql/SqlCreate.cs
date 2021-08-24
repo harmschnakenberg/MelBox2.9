@@ -92,7 +92,13 @@ namespace MelBox2
                     "End TEXT NOT NULL UNIQUE, " +
                     "CONSTRAINT fk_PersonId FOREIGN KEY (PersonId) REFERENCES Person (ID) ON DELETE SET DEFAULT " +
                     "); ";
-                  
+
+                query += "CREATE TABLE IF NOT EXISTS Ini ( " +
+                    "ID INTEGER NOT NULL PRIMARY KEY, " +                    
+                    "Property TEXT NOT NULL UNIQUE, " +
+                    "Value TEXT NOT NULL " +                    
+                    "); ";
+
                 query += "CREATE VIEW ViewYearFromToday AS " +
                     "SELECT CASE(CAST(strftime('%w', d) AS INT) +6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
                     "UNION ALL " +
@@ -111,19 +117,13 @@ namespace MelBox2
 
                 query += "CREATE VIEW View_Blocked AS SELECT Message.Id AS Id, Content As Nachricht, BlockDays As Gesperrt, BlockStart || ' Uhr' As Beginn, BlockEnd || ' Uhr' As Ende FROM Message WHERE BlockDays > 0; ";
 
-                query += "CREATE VIEW View_Shift AS " +
-                         "SELECT Shift.Id AS Nr, Person.Id AS PersonId, Person.Name AS Name, Via, CASE(CAST(strftime('%w', Start) AS INT) + 6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, date(Start) AS Datum " +
-                         "FROM Shift JOIN Person ON PersonId = Person.Id WHERE Start >= date('now', '-1 day') " +
-                         "UNION " +
-                         "SELECT NULL AS Nr, NULL AS PersonId, NULL AS Name, 0 AS Via, CASE(CAST(strftime('%w', d) AS INT) + 6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d AS Datum " +
-                         "FROM ViewYearFromToday WHERE d >= date('now', '-1 day') " +
-                         "ORDER BY Datum; ";
-
-                //query += "CREATE VIEW View_Overdue AS SELECT Recieved.SenderId AS Id, Person.Name, Person.Company AS Firma, " +
-                //         "MaxInactive || ' Std.' AS Max_Inaktiv, strftime('%Y-%m-%d %H:%M:%S', Recieved.Time, 'localtime') AS Letzte_Nachricht, Content AS Inhalt, " +
-                //         "CAST( (strftime('%s', 'now') - strftime('%s', Recieved.Time, '+' || MaxInactive || ' hours')) / 3600 AS INTEGER) || ' Std.' AS Fällig_seit " +
-                //         "FROM Recieved JOIN Person ON Person.Id = Recieved.SenderId JOIN Message ON Message.Id = ContentId " +
-                //         "WHERE MaxInactive > 0 AND DATETIME(Recieved.Time, '+' || MaxInactive || ' hours') < Datetime('now') GROUP BY Recieved.SenderId ORDER BY Recieved.Time DESC;  ";
+                //query += "CREATE VIEW View_Shift AS " +
+                //         "SELECT Shift.Id AS Nr, Person.Id AS PersonId, Person.Name AS Name, Via, CASE(CAST(strftime('%w', Start) AS INT) + 6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, date(Start) AS Datum " +
+                //         "FROM Shift JOIN Person ON PersonId = Person.Id WHERE Start >= date('now', '-1 day') " +
+                //         "UNION " +
+                //         "SELECT NULL AS Nr, NULL AS PersonId, NULL AS Name, 0 AS Via, CASE(CAST(strftime('%w', d) AS INT) + 6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d AS Datum " +
+                //         "FROM ViewYearFromToday WHERE d >= date('now', '-1 day') " +
+                //         "ORDER BY Datum; ";
 
                 query += "CREATE VIEW View_Overdue AS  " +
                          "SELECT Recieved.ID AS Id, Person.Name, Person.Company AS Firma, Person.MaxInactive || ' Std.' AS Max_Inaktiv, " +
@@ -156,6 +156,17 @@ namespace MelBox2
                          "WHERE s.End > date('now', '-1 day') " +
                          "ORDER BY Start; ";
 
+                query += "CREATE VIEW View_Calendar_Full AS " + 
+                        "SELECT * FROM View_Calendar " +
+                        "UNION " +
+                        "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
+                        "strftime('%W', d) AS KW, date(d, 'weekday 1') AS Mo, date(d, 'weekday 2') AS Di, date(d, 'weekday 3') AS Mi, " +
+                        "date(d, 'weekday 4') AS Do, date(d, 'weekday 5') AS Fr, date(d, 'weekday 6') AS Sa, date(d, 'weekday 0') AS So, " +
+                        "NULL AS mehr FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) UNION ALL " +
+                        "SELECT date(d, '+4 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
+                        "WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
+                        "ORDER BY Start; ";
+
                 NonQuery(query, null);
             }
             catch (Exception)
@@ -182,9 +193,10 @@ namespace MelBox2
 
                 query += "INSERT INTO Sent (ToId, Via, ContentId) VALUES (1, 0, 1); ";
 
-                query += "INSERT INTO Shift (PersonId, Start, End) VALUES (1, DATETIME('now','-1 day'), DATETIME('now', '+2 hours')); ";
+                query += "INSERT INTO Shift (PersonId, Start, End) VALUES (1, DATETIME('now','-3 days', 'weekday 1'), DATETIME('now', '+2 hours')); ";
 
                 NonQuery(query, null);
+
             }
             catch (Exception)
             {

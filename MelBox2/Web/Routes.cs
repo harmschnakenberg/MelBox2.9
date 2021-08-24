@@ -24,9 +24,11 @@ namespace MelBox2
                 { "@OwnNumber", Gsm.OwnNumber},
                 { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
                 { "@ProviderName" , Gsm.ProviderName},
-                { "@RelayNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-deaktiviert-" },
+                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-deaktiviert-" },
                 { "@PinStatus" , Gsm.SimPinStatus},
-                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" }
+                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
+                { "@AdminPhone", Gsm.AdminPhone},
+                { "@AdminEmail", Email.Admin.Address }
             };
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
