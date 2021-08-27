@@ -1,4 +1,4 @@
-﻿MelBox2 .NET Framework 4.8
+﻿# MelBox2 für .NET Framework 4.8
 
 MelBox2 ersetzt MelBox, das auf einem externen ActiveX beruht.
 Das Programm Empfängt SMS über ein GSM-Modem an COM-Port.
