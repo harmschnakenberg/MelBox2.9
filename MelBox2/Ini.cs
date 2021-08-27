@@ -9,14 +9,15 @@ namespace MelBox2
         {
             Console.WriteLine("Initialisiere Konfiguration aus Datenbank.");
 
-            //try
-            //{
+            try
+            {
+                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug) GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
                 Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);
                 Sql.Level_Admin = GetIniValue(nameof(Sql.Level_Admin), Sql.Level_Admin);
                 Sql.Level_Reciever = GetIniValue(nameof(Sql.Level_Reciever), Sql.Level_Reciever);
                 Email.SmtpPort = GetIniValue(nameof(Email.SmtpPort), Email.SmtpPort);
                 Gsm.MaxSendTrysPerSms = GetIniValue(nameof(Gsm.MaxSendTrysPerSms), Gsm.MaxSendTrysPerSms);
-                Gsm.RingTimeToCallForwarding = GetIniValue(nameof(Gsm.RingTimeToCallForwarding), Gsm.RingTimeToCallForwarding);
+                Gsm.RingSecondsToCallForwarding = GetIniValue(nameof(Gsm.RingSecondsToCallForwarding), Gsm.RingSecondsToCallForwarding);
                 Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
 
                 Email.Admin = GetIniValue(nameof(Email.Admin), Email.Admin);
@@ -27,23 +28,24 @@ namespace MelBox2
 
                 Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
 
-                Email.SmtpHost = GetIniValue(nameof(Email.SmtpHost), Email.SmtpHost); ;
-                Email.SmtpUser = GetIniValue(nameof(Email.SmtpUser), Email.SmtpUser); ;
-                Email.SmtpPassword = GetIniValue(nameof(Email.SmtpPassword), Email.SmtpPassword); ;
+                Email.SmtpHost = GetIniValue(nameof(Email.SmtpHost), Email.SmtpHost);
+                Email.SmtpUser = GetIniValue(nameof(Email.SmtpUser), Email.SmtpUser);
+                Email.SmtpPassword = GetIniValue(nameof(Email.SmtpPassword), Email.SmtpPassword);
 
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone); ;
-                Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber); ;
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone); ;
-                Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName); ;
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
+                Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone); 
+                Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName); 
+                Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
 
                 Program.LifeMessageTrigger = GetIniValue(nameof(Program.LifeMessageTrigger), string.Join(",", Program.LifeMessageTrigger)).Split(',');
-//            }
-//#pragma warning disable CA1031 // Do not catch general exception types
-//            catch
-//            {
-//                Log.Warning("Mindestens ein Initialwerte konnte nicht aus der Datenbank gelesen werden. Es werden Standardwerte genommen.", 31635);
-//            }
-//#pragma warning restore CA1031 // Do not catch general exception types
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch
+            {
+                Log.Warning("Mindestens ein Initialwerte konnte nicht aus der Datenbank gelesen werden. Es werden Standardwerte genommen.", 31635);
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
 

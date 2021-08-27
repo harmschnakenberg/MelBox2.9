@@ -1,7 +1,7 @@
 ﻿<div id="id01">
     <script>
         function minEndDate(x) {
-            var d = new Date(document.getElementById('Start').value);
+            var d = new Date(document.getElementById('StartDate').value);
             d.setDate(d.getDate() + 1);
             x.min = d.toISOString().substr(0, 10);
         }
@@ -11,7 +11,7 @@
 
         <div class="w3-center">
             <br>
-            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Fenster schlie&szlig;en">&times;</span>
             <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>event_note</i>
         </div>
 

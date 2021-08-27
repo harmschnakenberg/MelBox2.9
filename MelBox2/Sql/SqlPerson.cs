@@ -1,8 +1,7 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using static MelBoxGsm.Gsm;
-using MelBoxGsm;
 
 namespace MelBox2
 {
@@ -126,7 +125,7 @@ namespace MelBox2
         {
             string keyWord = GetKeyWord(sms.Message);
 
-            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Phone = @Phone OR KeyWord = @KeyWord; ";
+            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE KeyWord = @KeyWord OR (Phone = @Phone AND Phone LIKE '+%'); ";
             const string query2 = "INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>

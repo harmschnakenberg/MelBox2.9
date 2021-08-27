@@ -9,6 +9,10 @@ namespace MelBox2
 {
     partial class Sql
     {
+        /// <summary>
+        /// Prüft, ob die Datenbank vorhanden und verfügbar ist. Erstellt Datenbank ggf.neu.
+        /// </summary>
+        /// <returns>true = Datenbank ist vorhanden und verfügbar.</returns>
         internal static bool CheckDbFile()
         {
             if (!File.Exists(DbPath))
@@ -46,6 +50,12 @@ namespace MelBox2
             return numTries > 0;
         }
 
+        /// <summary>
+        /// Führt einen SQL-Befehl gegen die Datenbank aus.
+        /// </summary>
+        /// <param name="query">SQL-Abfrage</param>
+        /// <param name="args">Parameter für SQL-Abfrage</param>
+        /// <returns>true = mindestens eine Zeile in der Datenbank wurde eingefügt, geändert oder gelöscht.</returns>
         internal static bool NonQuery(string query, Dictionary<string, object> args)
         {
             if (!CheckDbFile()) return false;
@@ -79,6 +89,12 @@ namespace MelBox2
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
+        /// <summary>
+        /// Fragt Tabellen-Daten mit einem SQL-Befehl gegen die Datenbank ab.
+        /// </summary>
+        /// <param name="query">SQL-Abfrage</param>
+        /// <param name="args">Parameter für SQL-Abfrage</param>
+        /// <returns>Tabelle mit dem Ergebnis der Abfrage.</returns>
         internal static DataTable SelectDataTable(string query, Dictionary<string, object> args)
         {
             DataTable myTable = new DataTable();
@@ -168,6 +184,12 @@ namespace MelBox2
             return myTable;
         }
 
+        /// <summary>
+        /// Fragt einen Einzelwert mit einem SQL-Befehl gegen die Datenbank ab.
+        /// </summary>
+        /// <param name="query">SQL-Abfrage</param>
+        /// <param name="args">Parameter für SQL-Abfrage</param>
+        /// <returns>Ergebniswert der Abfrage.</returns>
         internal static object SelectValue (string query, Dictionary<string, object> args)
         {            
             try
@@ -200,7 +222,9 @@ namespace MelBox2
             return null;
         }
 
-
+        /// <summary>
+        /// Erzeugt wöchentlich ein Backup der kompletten Datenbank. Backup wird im Datenbank-Ordner abgelegt. 
+        /// </summary>
         internal static void DbBackup()
         {
             try
@@ -228,6 +252,11 @@ namespace MelBox2
             }
         }
 
+        /// <summary>
+        /// Gibt die Kalenderwoche des übergebenen Datums aus. 
+        /// </summary>
+        /// <param name="time">Datum für das die Kalenderwoche bestimmt werrdne soll</param>
+        /// <returns></returns>
         private static int GetIso8601WeekOfYear(DateTime time)
         {
             // This presumes that weeks start with Monday.

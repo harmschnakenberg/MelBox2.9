@@ -1,11 +1,8 @@
 ﻿using Grapevine;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MelBoxGsm;
-using System.Data;
 
 namespace MelBox2
 {
@@ -24,7 +21,8 @@ namespace MelBox2
                 { "@OwnNumber", Gsm.OwnNumber},
                 { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
                 { "@ProviderName" , Gsm.ProviderName},
-                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-deaktiviert-" },
+                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
+                { "@ForewardingActive", $"<i class='material-icons-outlined'>{(Gsm.CallForwardingActive ? "phone_forwarded" : "phone_disabled")}</i>" },
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
                 { "@AdminPhone", Gsm.AdminPhone},
@@ -57,7 +55,7 @@ namespace MelBox2
 
             string table = Html.FromTable(rec, isAdmin, "blocked");
 
-            await Html.PageAsync(context, "Eingang", table, user.Name ?? "");
+            await Html.PageAsync(context, "Eingang", table, user);
         }
 
         [RestRoute("Get", "/out")]
@@ -65,7 +63,7 @@ namespace MelBox2
         {
             System.Data.DataTable sent = Sql.SelectLastSent(100);
 
-            string table = Html.DropdownExplanation();
+            string table = Html.Modal("Sendestatus", Html.TableSendStatusCategories());
             table += Html.FromTable(sent, false);
 
             await Html.PageAsync(context, "Ausgang", table);
@@ -131,7 +129,7 @@ namespace MelBox2
 
             string form = Html.Page(Server.Html_FormMessage, pairs);
 
-            await Html.PageAsync(context, "Eingang", form, user.Name);
+            await Html.PageAsync(context, "Eingang", form, user);
         
         }
 
@@ -148,7 +146,7 @@ namespace MelBox2
             System.Data.DataTable blocked = Sql.Blocked_View();
             string table = Html.FromTable(blocked, isAdmin, "blocked");
 
-            await Html.PageAsync(context, "Gesperrte Nachrichten", table, user.Name);
+            await Html.PageAsync(context, "Gesperrte Nachrichten", table, user);
         }
 
 
@@ -174,7 +172,7 @@ namespace MelBox2
             System.Data.DataTable sent = Sql.Blocked_View();
             string table = Html.FromTable(sent, isAdmin, "blocked");
 
-            await Html.PageAsync(context, "Nachricht aktualisiert", alert + table, user.Name);
+            await Html.PageAsync(context, "Nachricht aktualisiert", alert + table, user);
         }
         #endregion
 
@@ -235,9 +233,9 @@ namespace MelBox2
             string form = Html.Page(Server.Html_FormAccount, pairs);
             string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
 
-            if (isAdmin) form = Html.HtmlShowUserCategories() + form ;
+            if (isAdmin) form = Html.Modal("Benutzerkategorien", Html.TableUserCategories()) + form ;
 
-            await Html.PageAsync(context, "Benutzerkonto", table + form, user.Name);            
+            await Html.PageAsync(context, "Benutzerkonto", table + form, user);            
         }
         
         [RestRoute("Post", "/account/new")]
@@ -267,7 +265,7 @@ namespace MelBox2
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt " + nP.Name + " konnte nicht in der Datenbank gespeichert werden.");
 
-            await Html.PageAsync(context, "Benutzerkonto erstellen", alert, user.Name);
+            await Html.PageAsync(context, "Benutzerkonto erstellen", alert, user);
         }
                
         [RestRoute("Post", "/account/update")]
@@ -301,7 +299,7 @@ namespace MelBox2
 
             string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
 
-            await Html.PageAsync(context, "Benutzerkonto ändern", alert + table, user.Name);
+            await Html.PageAsync(context, "Benutzerkonto ändern", alert + table, user);
         }
 
         [RestRoute("Post", "/account/delete/{id:num}")]
@@ -343,7 +341,7 @@ namespace MelBox2
                 }
             }
 
-            await Html.PageAsync(context, "Benutzer löschen", html, user.Name);
+            await Html.PageAsync(context, "Benutzer löschen", html, user);
         }
 
         [RestRoute("Post", "/register")]
@@ -405,9 +403,10 @@ namespace MelBox2
             string password = payload["password"];
             string guid = Sql.CheckCredentials(name, password);
 
-            int prio = 1;
+            Person user = new Person() { Name = name };            
             string titel = "Login fehlgeschlagen";
             string text = "Benutzername und Passwort prüfen.<br/>Neue Benutzer müssen freigeschaltet sein.<br/>" + @"<a href='/' class='w3-bar-item w3-button w3-teal w3-margin'>Nochmal</a>";
+            int prio = 1;
 
             if (guid.Length > 0)
             {
@@ -418,7 +417,7 @@ namespace MelBox2
                 System.Net.Cookie cookie = new System.Net.Cookie("MelBoxId", guid, "/");
                 context.Response.Cookies.Add(cookie);
 
-                if (Server.LogedInHash.TryGetValue(guid, out Person user))
+                if (Server.LogedInHash.TryGetValue(guid, out user))
                 {
                     if (user.Level >= Server.Level_Admin)
                         level = "Admin";
@@ -432,7 +431,7 @@ namespace MelBox2
 
             string alert = Html.Alert(prio, titel, text);
 
-            await Html.PageAsync(context, titel, alert, name);
+            await Html.PageAsync(context, titel, alert, user);
         }
         #endregion
 
@@ -444,7 +443,7 @@ namespace MelBox2
             Person user = await Html.GetLogedInUserAsync(context, false);           
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienste", table, user.Name);
+            await Html.PageAsync(context, "Bereitschaftsdienste", table, user);
         }
 
         [RestRoute("Get", "/shift/{shiftId:num}")]
@@ -474,7 +473,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user.Name);
+            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user);
         }
 
         [RestRoute("Get", "/shift/{shiftDate}")]
@@ -507,7 +506,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user.Name);
+            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user);
         }
 
         [RestRoute("Post", "/shift/new")]
@@ -538,7 +537,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftszeit erstellen", alert + table, user.Name);
+            await Html.PageAsync(context, "Bereitschaftszeit erstellen", alert + table, user);
         }
 
         [RestRoute("Post", "/shift/update")]
@@ -554,10 +553,20 @@ namespace MelBox2
             shift.StartUtc = Sql.ShiftStartTimeUtc(shift.StartUtc);
             shift.EndUtc = Sql.ShiftEndTimeUtc(shift.EndUtc);
 
+            bool success = true;
+            List<Shift> shifts = Sql.SplitShift(shift);
+            for (int i = 0; i < shifts.Count; i++)
+            {
+                if (i == 0)                
+                    if (!Sql.UpdateShift(shifts[i])) success = false;
+                else
+                    if (!Sql.InsertShift(shifts[i])) success = false;
+            }
+
             double shiftHours = shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
             string alert;
-            if (shiftHours > 0 && user.Level >= Server.Level_Reciever && Sql.UpdateShift(shift))
+            if (shiftHours > 0 && user.Level >= Server.Level_Reciever && success)
                 alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} ({shiftHours} Std.) wurde erfolgreich geändert.");
             else if (user.Level >= Server.Level_Admin && Sql.DeleteShift(shift.Id))
                 alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} wurde gelöscht.");
@@ -566,7 +575,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftszeit geändert", alert + table, user.Name);
+            await Html.PageAsync(context, "Bereitschaftszeit geändert", alert + table, user);
         }
         #endregion
 
@@ -585,7 +594,7 @@ namespace MelBox2
             int del = 400;
             string html = !isAdmin ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-block w3-red w3-padding'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
-            await Html.PageAsync(context, "Log", table + html,  user == null ? "" : user.Name );
+            await Html.PageAsync(context, "Log", table + html, user);
         }
 
 
@@ -612,7 +621,7 @@ namespace MelBox2
                     }
                     else
                     {
-                        html = Html.Alert(3, "Keine Log-Einträge gelöscht.", "Keine passenden Einträge zum löschen gefunden.");
+                        html = Html.Alert(2, "Keine Log-Einträge gelöscht.", "Keine passenden Einträge zum löschen gefunden.");
                     }
                 }
             }
@@ -620,7 +629,7 @@ namespace MelBox2
             System.Data.DataTable log = Sql.SelectLastLogs(500);
             string table = Html.FromTable(log, false, "");
 
-            await Html.PageAsync(context, "Log", html + table, user.Name);
+            await Html.PageAsync(context, "Log", html + table, user);
         }
         #endregion
 

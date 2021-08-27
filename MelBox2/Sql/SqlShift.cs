@@ -62,7 +62,7 @@ namespace MelBox2
         /// <summary>
         /// Prüft, ob aktuell an die Bereitschaft gesendet werden sollte.
         /// </summary>
-        /// <returns>false in der regulären Geschäftszeit (Mo-Do 8-17 Uhr, Fr 8-15 Uhr) und kein Feiertag ist - sonst true </returns>
+        /// <returns>false wenn jetzt reguläre Geschäftszeit (Mo-Do 8-17 Uhr, Fr 8-15 Uhr) und kein Feiertag ist - sonst true </returns>
         internal static bool IsWatchTime()
         {
             if (IsHolyday(DateTime.Now))
@@ -176,13 +176,18 @@ namespace MelBox2
             return Sql.SelectDataTable(query, args);
         }
 
+        /// <summary>
+        /// Teilt eine Bereitschaft auf, wenn sie über mehrere Kalenderwochen geht.
+        /// </summary>
+        /// <param name="shift"></param>
+        /// <returns>Bereitschaften, jeweils in einer Kalenderwoche</returns>
         internal static List<Shift> SplitShift(Shift shift)
-        {
-            //BAUSTELLE: Shift aufteilen, wenn sie über eine Kalenderwoche geht ?!
-
+        {            
             List<Shift> shifts = new List<Shift>();
             DateTime localStart = shift.StartUtc;
             DateTime localEnd = shift.StartUtc;
+
+            if (localStart.CompareTo(localEnd) > 0) localEnd = localStart; //Wenn Ende vor Start liegt
 
             while (localEnd.Date != shift.EndUtc.Date)
             {
@@ -208,6 +213,11 @@ namespace MelBox2
             return shifts;
         }
 
+        /// <summary>
+        /// Erstellt eine neue Bereitschaft in der Datenbank
+        /// </summary>
+        /// <param name="shift"></param>
+        /// <returns></returns>
         internal static bool InsertShift(Shift shift)
         {
             Dictionary<string, object> args = new Dictionary<string, object>

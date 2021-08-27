@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using MelBoxGsm;
 
@@ -38,13 +34,8 @@ namespace MelBox2
         }
 
         private static void SenderTimeoutCheck(object sender, ElapsedEventArgs e)
-        {           
-            if (
-                DateTime.Now.DayOfWeek == DayOfWeek.Saturday ||
-                DateTime.Now.DayOfWeek == DayOfWeek.Sunday ||
-                Sql.IsHolyday(DateTime.Now)
-                )
-                return; //Nur an Werktagen
+        {            
+            if (Sql.IsWatchTime()) return; //Inaktivität nur zur Geschäftszeit prüfen.
 
             DataTable dt = Sql.SelectOverdueSenders();
 
@@ -54,18 +45,18 @@ namespace MelBox2
                 string company = dt.Rows[i]["Firma"].ToString();
                 string due = dt.Rows[i]["Fällig_seit"].ToString();
 
-                string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<, >{company}<. Meldung fällig seit >{due}<. Melsys bzw. Segno vor Ort prüfen.";
+                string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<{(company.Length > 0 ? $", >{company}<" : string.Empty)}. Meldung fällig seit >{due}<. \r\nMelsys bzw. Segno vor Ort prüfen.";
 
-                Email.Send(Email.Admin, text, $"Inaktivität >{name}<, >{company}<");
+                Log.Info(text, 60723);
+                Email.Send(Email.Admin, text, $"Inaktivität >{name}<{(company.Length > 0 ? $", >{company}< " : string.Empty)}", true);
             }
-
         }
 
         private static void DailyNotification(object sender, ElapsedEventArgs e)
         {
             if (DateTime.Now.Hour != HourOfDailyTasks) return;
 
-            Console.WriteLine($"Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
             Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");        
         }
 
@@ -73,7 +64,7 @@ namespace MelBox2
         {
             if (DateTime.Now.Hour != HourOfDailyTasks) return;
 
-            Console.WriteLine("Prüfe / erstelle Backup der Datenbank.");
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Prüfe / erstelle Backup der Datenbank.");
             Sql.DbBackup();
         }
 
@@ -89,7 +80,7 @@ namespace MelBox2
                 int cpu = (int)perfCpuCount.NextValue();
 
                 string msg = $"Vom Programm zurzeit belegter Arbeitsspeicher: {memory} MB, CPU bei {cpu}%";                
-                Console.WriteLine(msg);
+                Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: {msg}");
 #if !DEBUG
                 if (memory > 100 || cpu > 50)
 #endif

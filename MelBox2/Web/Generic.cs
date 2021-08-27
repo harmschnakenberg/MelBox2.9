@@ -3,16 +3,20 @@ using MelBoxGsm;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using static MelBoxGsm.Gsm;
 
 namespace MelBox2
 {
     public static partial class Html
     {
+        /// <summary>
+        /// Liest Benuter anhand von Cookie aus
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="blockUser">true = Unbekannten Nutzern wird der weitere Zugriff verweigert</param>
+        /// <returns></returns>
         internal static async Task<Person> GetLogedInUserAsync(IHttpContext context, bool blockUser = true)
         {
             Html.ReadCookies(context).TryGetValue("MelBoxId", out string guid);
@@ -60,14 +64,14 @@ namespace MelBox2
             return cookies;
         }
 
-        public static async Task PageAsync(IHttpContext context, string titel, string body, string userName = "")
+        internal static async Task PageAsync(IHttpContext context, string titel, string body, Person user = null )
         {
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
                 { "@Titel", titel },
                 { "@Quality", Gsm.SignalQuality.ToString() },
                 { "@Inhalt", body },
-                { "@User", userName?? string.Empty }
+                { "@User", user == null ? string.Empty : user.Name}
             };
 
             string html = Page(Server.Html_Skeleton, pairs);
@@ -216,27 +220,33 @@ namespace MelBox2
                     }
                     else if (dt.Columns[j].ColumnName.Contains("Sendestatus"))
                     {
+                        string val = dt.Rows[i][j].ToString();
 
-                        html += "<td><span class='material-icons-outlined'>";
+                        html += $"<td><span class='material-icons-outlined' title='Wert: {val}'>";
 
-                        if (int.TryParse(dt.Rows[i][j].ToString(), out int confirmation))
+                        if (int.TryParse(val, out int confirmation))
                         {
                             if (confirmation <= (int)Sql.MsgConfirmation.Success) //von Modem
                                 html += "check";
                             else if (confirmation <= (int)Sql.MsgConfirmation.ReportPending)
-                                html += "hourglass_bottom";
+                                html += "hourglass_empty";
                             else if (confirmation <= (int)Sql.MsgConfirmation.SmsAborted) //von Modem
                                 html += "sms_failed";
                             else if (confirmation < 256) //von Modem ?Bereich undefiniert?
                                 html += "sms";
                             else if (confirmation == (int)Sql.MsgConfirmation.Unknown) //Default Tabelleneintrag
                                 html += "device_unknown";
-                            else if (confirmation == (int)Sql.MsgConfirmation.SendRetry) 
-                                html += "try";
-                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendAborted) 
+                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendRetry)
+                                html += "schedule_send";
+                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendAborted)
                                 html += "cancel_schedule_send";
                             else if (confirmation == (int)Sql.MsgConfirmation.NoReference)
                                 html += "fingerprint";
+
+                            else if (confirmation == (int)Sql.MsgConfirmation.NoDeliveryYet)  // StatusCode = 3 Bedeutung geraten
+                                html += "hourglass_top";
+                            else if (confirmation == (int)Sql.MsgConfirmation.NoDelivery)  // StatusCode = 6 Bedeutung geraten
+                                html += "hourglass_bottom";
 
                             else
                                 html += "error_outline";
@@ -297,39 +307,13 @@ namespace MelBox2
             return value |= (1 << position);
         }
 
-        internal static string DropdownExplanation()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("<div class='w3-dropdown-hover w3-right'>");
-            sb.AppendLine(" <button class='w3-button w3-white'>Legende</button>");
-            sb.AppendLine(" <div class='w3-dropdown-content w3-bar-block w3-border' style='right:0;width:400px;'>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>smartphone</span>SMS</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>email</span>E-Mail</div>");
-            sb.AppendLine("  <hr>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>check</span>&lt;{(int)Sql.MsgConfirmation.Success} Versand bestätigt</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_bottom</span>&lt;{(int)Sql.MsgConfirmation.ReportPending} erwarte externe Bestätigung</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>try</span>{(int)Sql.MsgConfirmation.SendRetry} erneuter Sendeversuch</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms_failed</span>&lt;{(int)Sql.MsgConfirmation.SmsAborted} SMS Senden abgebrochen</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>cancel_schedule_send</span>&lt;{(int)Sql.MsgConfirmation.EmailSendAborted} Email Senden abgebrochen</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>sms</span>Status unbekannt</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>device_unknown</span>{(int)Sql.MsgConfirmation.Unknown} Status unbekannt</div>");
-            sb.AppendLine($"  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>fingerprint</span>{(int)Sql.MsgConfirmation.NoReference} keine Zuweisung</div>");
-            sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>error_outline</span>fehlerhafte Zuweisung</div>");
-            /*sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>hourglass_top</span>erwarte interne Zuweisung</div>"); //nicht verwendet */
-            /*sb.AppendLine("  <div class='w3-bar-item w3-button'><span class='material-icons-outlined'>send</span>Email versand</div>");*/
-            sb.AppendLine(" </div>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
         internal static string FromShiftTable(Person user)
         {
             if (user == null) user = new Person() { Id = 0, Level = 0 };
 
             System.Data.DataTable dt = Sql.SelectShiftsCalendar();
 
-            string html = "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+            string html = Modal("Bereitschaft", TableShiftExplanation()); // "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             html += "<div class='w3-container'>";
             html += "<table class='w3-table-all'>\n";
@@ -456,53 +440,183 @@ namespace MelBox2
             return html;
         }
 
-        internal static string HtmlShowUserCategories()
+        internal static string Modal(string title, string body)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'>");
-            sb.Append("    <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-light-gray' >Benutzerkategorien</button>");
+            sb.Append($"   <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-light-blue w3-display-position w3-badge material-icons-outlined' title='{title}' style='top:140px;right:20px;';>info</button>");
             sb.Append("    <div id = 'id02' class='w3-modal'>");
             sb.Append("        <div class='w3-modal-content'>");
             sb.Append("            <div class='w3-container'>");
-            sb.Append("             <span onclick = \"document.getElementById('id02').style.display='none'\" class='w3-button w3-display-topright'>&times;</span>");
-            sb.Append("             <table class='w3-table w3-bordered'>");
-            sb.Append("             <tr>");
-            sb.Append("               <th colspan='2'>Level</th>");
-            sb.Append("               <th>Rolle</th>");
-            sb.Append("               <th>Funktion</th>");
-            sb.Append("             </tr>");
-            sb.Append("             <tr>");
-            sb.Append("               <td>&gt;=</td>");
-            sb.Append($"              <td>{Sql.Level_Admin}</td>");
-            sb.Append("               <td>Admin</td>");
-            sb.Append("               <td>Benutzerverwaltung, Nachrichten Sperren, Bereitschaft einteilen</td>");
-            sb.Append("             </tr>");
-            sb.Append("             <tr>");
-            sb.Append("               <td>&gt;=</td>");
-            sb.Append($"              <td>{Sql.Level_Reciever}</td>");
-            sb.Append("               <td>Benutzer</td>");
-            sb.Append("               <td>Eigene Benutzerverwaltung, eigene Bereitschaft bearbeiten</td>");
-            sb.Append("             </tr>");
-            sb.Append("             <tr>");
-            sb.Append("               <td>&lt;</td>");
-            sb.Append($"              <td>{Sql.Level_Reciever}</td>");
-            sb.Append("               <td>Beobachter</td>");
-            sb.Append("               <td>nur Anzeige</td>");
-            sb.Append("             </tr>");
-            sb.Append("             <tr>");
-            sb.Append("               <td>=</td>");
-            sb.Append($"              <td>0</td>");
-            sb.Append("               <td>Aspirant</td>");
-            sb.Append("               <td>ohne Zugangsberechtigung, muss durch Admin freigeschaltet werden</td>");
-            sb.Append("             </tr>");
-            sb.Append("             </table>");
+            sb.Append("             <span onclick = \"document.getElementById('id02').style.display='none'\" class='w3-button w3-display-topright' title='Fenster schlie&szlig;en'>&times;</span>");
+            sb.Append($"            <div class='w3-container w3-center'><h3>{title}</h3></div>");
+            sb.Append(body);
+            sb.Append("             <div class='w3-container'>&nbsp;</div>");
             sb.Append("            </div>");
             sb.Append("        </div>");
             sb.Append("    </div>");
             sb.Append("</div>");
+     
+            return sb.ToString();
+        }
+
+        internal static string TableUserCategories()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<table class='w3-table w3-bordered'>");
+            sb.Append("<tr>");
+            sb.Append("  <th colspan='2'>Level</th>");
+            sb.Append("  <th>Rolle</th>");
+            sb.Append("  <th>Funktion</th>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td>&gt;=</td>");
+            sb.Append($" <td>{Sql.Level_Admin}</td>");
+            sb.Append("  <td>Admin</td>");
+            sb.Append("  <td>Benutzerverwaltung, Nachrichten Sperren, Bereitschaft einteilen</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td>&gt;=</td>");
+            sb.Append($" <td>{Sql.Level_Reciever}</td>");
+            sb.Append("  <td>Benutzer</td>");
+            sb.Append("  <td>Eigene Benutzerverwaltung, eigene Bereitschaft bearbeiten</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td>&lt;</td>");
+            sb.Append($" <td>{Sql.Level_Reciever}</td>");
+            sb.Append("  <td>Beobachter</td>");
+            sb.Append("  <td>nur Anzeige</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td>=</td>");
+            sb.Append($" <td>0</td>");
+            sb.Append("  <td>Aspirant</td>");
+            sb.Append("  <td>ohne Zugangsberechtigung, muss durch Admin freigeschaltet werden</td>");
+            sb.Append("</tr>");
+            sb.Append("</table>");
 
             return sb.ToString();
         }
 
+        internal static string TableSendStatusCategories()
+        {
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<table class='w3-table'>");
+            sb.Append("<tr>");
+            sb.Append("  <th>Symbol</th>");
+            sb.Append("  <th>Wert</th>");
+            sb.Append("  <th>Status</th>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>smartphone</span></td>");
+            sb.Append("  <td>&nbsp;</td>");
+            sb.Append("  <td>SMS</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr class='w3-border-bottom'>");
+            sb.Append("  <td><span class='material-icons-outlined'>email</span></td>");
+            sb.Append("  <td>&nbsp;</td>");
+            sb.Append("  <td>Email</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr><hr/></tr>");            
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>check</span></td>");
+            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.Success}</td>");
+            sb.Append("  <td>Empfang bestätigt</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>hourglass_top</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDeliveryYet}</td>");
+            sb.Append("  <td>Zielgerät noch nicht erreichbar (geraten)</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>hourglass_bottom</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDelivery}</td>");
+            sb.Append("  <td>Zielgerät endg&uuml;ltig nicht erreichbar (geraten)</td>");
+            sb.Append("</tr>");
+
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>hourglass_empty</span></td>");
+            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.ReportPending}</td>");
+            sb.Append("  <td>erwarte externe Bestätigung</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>sms_failed</span></td>");
+            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.SmsAborted}</td>");
+            sb.Append("  <td>SMS Senden abgebrochen</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>schedule_send</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendRetry}</td>");
+            sb.Append("  <td>erneuter Sendeversuch</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>cancel_schedule_send</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendAborted}</td>");
+            sb.Append("  <td>Email Senden abgebrochen</td>");
+            sb.Append("</tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>device_unknown</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.Unknown}</td>");
+            sb.Append("  <td>Status unbekannt</td>");
+            sb.Append("</tr>");
+            sb.Append("</tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>fingerprint</span></td>");
+            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoReference}</td>");
+            sb.Append("  <td>keine Zuweisung (keine Sendungsverfolgung)</td>");
+            sb.Append("</tr>");
+            sb.Append("</tr>");
+            sb.Append("  <td><span class='material-icons-outlined'>error_outline</span></td>");
+            sb.Append(" <td>&nbsp;</td>");
+            sb.Append("  <td>fehlerhafte Zuweisung</td>");
+            sb.Append("</tr>");
+            sb.Append("</table>");
+
+            return sb.ToString();
+        }
+
+        internal static string TableShiftExplanation()
+        {
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<table class='w3-table w3-bordered w3-cente'>");
+            sb.Append("<tr>");
+            sb.Append("  <th>Farbe</th>");
+            sb.Append("  <th>Bedeutung</th>");
+            sb.Append("  <th colspan='2'>Bereitschaft</th>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='w3-badge w3-light-gray'>13.</span></td>");
+            sb.Append("  <td>Wochentag</td>");
+            sb.Append("  <td>Mo-Do<br/>Fr</td>");
+            sb.Append("  <td>17 Uhr bis Folgetag 08 Uhr<br/>15 Uhr bis Folgetag 08 Uhr</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='w3-badge w3-sand'>13.</span></td>");
+            sb.Append("  <td>Wochenende</td>");
+            sb.Append("  <td>Sa-So</td>");
+            sb.Append("  <td>08 Uhr bis Folgetag 08 Uhr</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='w3-badge w3-pale-red'>13.</span></td>");
+            sb.Append("  <td>Feiertag</td>");
+            sb.Append("  <td>&nbsp;</td>");
+            sb.Append("  <td>08 Uhr bis Folgetag 08 Uhr</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='w3-tag w3-pale-green'>13.</span></td>");
+            sb.Append("  <td>belegt</td>");
+            sb.Append("  <td colspan='2'>Empfänger ist zugewiesen (siehe Spalte &apos;Name&apos;)</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td><span class='w3-tag w3-light-gray w3-opacity'>13.</span></td>");
+            sb.Append("  <td>nicht belegt</td>");
+            sb.Append("  <td colspan='2'>Empfänger ist nicht zugewiesen<br/>- geht an Bereitschaftshandy</td>");
+            sb.Append("</tr>");
+
+            sb.Append("</table>");
+
+            return sb.ToString();
+        }
     }
 }

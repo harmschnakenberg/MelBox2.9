@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
 [assembly: AssemblyTitle("MelBox2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Liest eingehende SMS aus GSM-Modem udn sendet sie an die Bereitschaft weiter")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Kreutzträger Kältetechnik GmbH & Co. KG")]
 [assembly: AssemblyProduct("MelBox2")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("MelBox")]
 [assembly: AssemblyCulture("")]
 
 // Durch Festlegen von ComVisible auf FALSE werden die Typen in dieser Assembly

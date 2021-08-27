@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using MelBoxGsm;
 
 namespace MelBox2
 {
@@ -83,6 +77,14 @@ namespace MelBox2
                     "CONSTRAINT fk_ToId FOREIGN KEY (ToId) REFERENCES Person (ID) ON DELETE SET DEFAULT, " +
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL, " +
                     "CONSTRAINT fk_ContentId FOREIGN KEY (ContentId) REFERENCES Message (ID) ON DELETE SET DEFAULT " +
+                    "); ";
+
+                //Report-Tabelle nur zum testen. Später rausnehmen?
+                query += "CREATE TABLE Report ( " +
+                    "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                    "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "Reference INTEGER, " +
+                    "DeliveryCode INTEGER " +
                     "); ";
 
                 query += "CREATE TABLE IF NOT EXISTS Shift ( " +

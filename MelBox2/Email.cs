@@ -7,7 +7,7 @@ namespace MelBox2
     {
         public static MailAddress From = new MailAddress("SMSZentrale@Kreutztraeger.de", "SMS-Zentrale");
 
-        public static MailAddress Admin = new MailAddress("harm.Schnakenberg@Kreutztraeger.de", "MelBox2 Admin");
+        public static MailAddress Admin = new MailAddress("harm.schnakenberg@kreutztraeger.de", "MelBox2 Admin");
 
         public static string SmtpHost { get; set; } = "kreutztraeger-de.mail.protection.outlook.com";
         public static int SmtpPort { get; set; } = 25; //587;
@@ -26,8 +26,9 @@ namespace MelBox2
         public static void Send(MailAddress to, string message, string subject = "", bool cc = false)
         {
             var toList = new MailAddressCollection { to };
+            int emailId = new Random().Next(256, int.MaxValue);
 
-            Send(toList, message, subject, cc);
+            Send(toList, message, subject, cc, emailId);
         }
 
         /// <summary>
@@ -38,11 +39,9 @@ namespace MelBox2
         /// <param name="subject">Betreff. Leer: Wird aus message generiert.</param>
         /// <param name="emailId">Id zur Protokollierung der Sendungsverfolgung in der Datenbank</param>
         /// <param name="sendCC">Sende an Ständige Empänger in CC</param>
-        public static void Send(MailAddressCollection toList, string message, string subject = "", bool cc = false)
+        public static void Send(MailAddressCollection toList, string message, string subject, bool cc, int emailId)
         {
             Console.WriteLine("Sende Email: " + message);
-
-            int emailId = new Random().Next(256, int.MaxValue);
 
             MailMessage mail = new MailMessage();
                   
@@ -127,7 +126,7 @@ namespace MelBox2
                         status == SmtpStatusCode.MailboxUnavailable)
                     {
                         Sql.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
-                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.SendRetry); //Erneut senden
+                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.EmailSendRetry); //Erneut senden
 
                         System.Threading.Thread.Sleep(5000);
                         using (var smtpClient = new SmtpClient())
@@ -152,13 +151,12 @@ namespace MelBox2
 #if DEBUG
                 throw;
 #else
-                Program.InsertLog(1, "Unbekannter Fehler beim Versenden einer Email");
+                Sql.InsertLog(1, "Unbekannter Fehler beim Versenden einer Email");
                 Log.Error("Unbekannter Fehler beim Versenden einer Email", 61351);
 #endif
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-            Sql.UpdateSent(emailId, Sql.MsgConfirmation.Success); //Erfolgreich gesendet
             mail.Dispose();
         }
 

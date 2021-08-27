@@ -8,16 +8,26 @@ namespace MelBox2
 {
     partial class Sql
     {
+        //Delivery-Status<st> - Quelle: https://en.wikipedia.org/wiki/GSM_03.40#Discharge_Time
+
+        /// <summary>
+        /// 0-31:     delivered or, more generally, other transaction completed.
+        /// 32-63:    still trying to deliver the message.
+        /// 64-127:   not making any more delivery attempts.
+        /// Weitere Werte sind selbst vergeben.
+        /// </summary>
         public enum MsgConfirmation
         {
+            NoDeliveryYet = 3, //Wenn Empfangshandy aus
+            NoDelivery = 6,//
             Success = 31,
             ReportPending = 63,
             SmsAborted = 127,
             Unknown = 256,
             NoReference = 257,
-            SendRetry = 260,
+            SmsSendRetry = 259,
+            EmailSendRetry = 260,
             EmailSendAborted = 261
-
         }
         //Console.WriteLine($"Empfangsbestätigung erhalten für ID[{reference}]: " + (delviveryStatus > 63 ? "Senden fehlgeschlagen" : delviveryStatus > 31 ? "senden im Gange" : "erfolgreich versendet"));
 
@@ -41,7 +51,7 @@ namespace MelBox2
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Time", sms.SendTimeUtc},
+                { "@Time", sms.SendTimeUtc.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@ToId", sender.Id},
                 { "@ContentId", msg.Id},
                 { "@Reference", sms.Reference},
@@ -64,7 +74,7 @@ namespace MelBox2
                 { "@ToId", sender.Id},
                 { "@ContentId", msg.Id},
                 { "@Reference", reference},
-                { "@Confirmation", MsgConfirmation.ReportPending}
+                { "@Confirmation", MsgConfirmation.Success} //Da keine Email-Empfangsbestätigung implementiert: Gehe erstmal davon aus, dass Email ankommt.
             };
 
             const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference, Confirmation) VALUES(@Time, @ToId, 2, @ContentId, @Reference, @Confirmation); ";
@@ -104,5 +114,19 @@ namespace MelBox2
             _ = NonQuery(query, args);
         }
 
+
+        internal static void InsertReport(Report report) //ungetestet
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Time", report.DischargeTimeUtc.ToString("yyyy-MM-dd HH:mm:ss")},
+                { "@Reference", report.Reference},
+                { "@DeliveryCode", report.DeliveryStatus}
+            };
+
+            const string query = "INSERT INTO Report (Time, Reference, DeliveryCode) VALUES (@Time, @Reference, @DeliveryCode); ";
+
+            _ = NonQuery(query, args);
+        }
     }
 }
