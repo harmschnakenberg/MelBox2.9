@@ -11,34 +11,38 @@ namespace MelBox2
 
             try
             {
-                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug) GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
-                Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);
+                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
+
+                Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath);                
                 Sql.Level_Admin = GetIniValue(nameof(Sql.Level_Admin), Sql.Level_Admin);
                 Sql.Level_Reciever = GetIniValue(nameof(Sql.Level_Reciever), Sql.Level_Reciever);
-                Email.SmtpPort = GetIniValue(nameof(Email.SmtpPort), Email.SmtpPort);
+              
                 Gsm.MaxSendTrysPerSms = GetIniValue(nameof(Gsm.MaxSendTrysPerSms), Gsm.MaxSendTrysPerSms);
-                Gsm.RingSecondsToCallForwarding = GetIniValue(nameof(Gsm.RingSecondsToCallForwarding), Gsm.RingSecondsToCallForwarding);
+                Gsm.RingSecondsBeforeCallForwarding = GetIniValue(nameof(Gsm.RingSecondsBeforeCallForwarding), Gsm.RingSecondsBeforeCallForwarding);
                 Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
+                Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
+                Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName);
+                Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
+                Gsm.GsmCharacterSet = GetIniValue(nameof(Gsm.GsmCharacterSet), Gsm.GsmCharacterSet);
 
+                Email.SmtpPort = GetIniValue(nameof(Email.SmtpPort), Email.SmtpPort);
                 Email.Admin = GetIniValue(nameof(Email.Admin), Email.Admin);
                 Email.From = GetIniValue(nameof(Email.From), Email.From);
-
-                if (bool.TryParse((Sql.SelectIniProperty(nameof(Email.SmtpEnableSSL))?? true).ToString(), out bool b))
-                    Email.SmtpEnableSSL = b;
-
-                Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
-
                 Email.SmtpHost = GetIniValue(nameof(Email.SmtpHost), Email.SmtpHost);
                 Email.SmtpUser = GetIniValue(nameof(Email.SmtpUser), Email.SmtpUser);
                 Email.SmtpPassword = GetIniValue(nameof(Email.SmtpPassword), Email.SmtpPassword);
 
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
-                Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone); 
-                Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName); 
-                Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
+                string b1 = GetIniValue(nameof(Email.SmtpEnableSSL), Email.SmtpEnableSSL.ToString());
+                if (bool.TryParse(b1, out bool b))
+                    Email.SmtpEnableSSL = b;
 
                 Program.LifeMessageTrigger = GetIniValue(nameof(Program.LifeMessageTrigger), string.Join(",", Program.LifeMessageTrigger)).Split(',');
+                Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
+                Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);
+
+                Scheduler.TaskName = GetIniValue(nameof(Scheduler.TaskName), Scheduler.TaskName);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch

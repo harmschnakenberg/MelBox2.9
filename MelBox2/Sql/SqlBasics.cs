@@ -45,8 +45,11 @@ namespace MelBox2
             }
 
             if (numTries == 0)
-              Log.Error($"Die Datenbankdatei >{DbPath}< ist durch ein anderes Programm gesperrt.", 21354);
-
+            {
+                string txt = $"Die Datenbankdatei >{DbPath}< ist durch ein anderes Programm gesperrt.";
+                Console.WriteLine(txt);
+                Log.Error(txt, 21354);
+            }
             return numTries > 0;
         }
 
@@ -243,6 +246,7 @@ namespace MelBox2
 
                 Log.Info("Backup der Datenbank erstellt unter " + backupPath, 41433);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Log.Error("Sql - Fehler DbBackup()\r\n" + ex.Message, 1427);
@@ -250,6 +254,7 @@ namespace MelBox2
                 throw new Exception("Sql-Fehler DbBackup()\r\n" + ex.Message);
 #endif
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>

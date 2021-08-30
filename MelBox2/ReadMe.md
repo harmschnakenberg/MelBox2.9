@@ -8,6 +8,9 @@ Für gesendete SMS wird die Sendungsverfolgung in der Datenbank dokumentiert.
 
 Bedienung (Einstellungen Empfänger & Empfangszeiten) über eine Web-Oberfläche.
 
+
+-	Welches Characterset verwenden? UCS2 (unicode, 140 Zeichen) für Umlaute oder GSM-Characterset (ASCII + Spezial, 160 Zeichen) für längere Nachrichten
+
 TODO: 
 -	Für Intranetnutzung die url des localhosts per Powershell freigeben:
 	URL-Reservierung:
@@ -16,3 +19,5 @@ TODO:
 -	DeliveryCode prüfen: Bei Sendebestätigung (STATUS-REPORT) von GSM-Modem wird GSM3.40 nicht eingehalten? 
 	DeliveryCode <st> scheint nicht  GSM3.40 zu entsprechen. 
 	Bei ausgeschalteten EMpfangsgerät Code 3, später Code 6 ?
+
+-	Rufumleitung: Autom. Rufumleitung zu Bereitschaft? Manuelle Möglichkeit Rufumleitung zu ändern vorsehen?

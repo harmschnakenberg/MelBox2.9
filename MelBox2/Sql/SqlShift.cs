@@ -82,33 +82,36 @@ namespace MelBox2
 
         internal static DateTime ShiftStartTimeUtc(DateTime dateLocal)
         {
-            int hour = 17;
-            DayOfWeek day = dateLocal.DayOfWeek;
-            if (day == DayOfWeek.Friday) hour = 15;
-            if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = 8;
+            //int hour = 17;
+            //DayOfWeek day = dateLocal.DayOfWeek;
+            //if (day == DayOfWeek.Friday) hour = 15;
+            //if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = 8;
 
+            int hour = 12; //Bereitschaftszeiten mit IsWatchTime();
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
         internal static DateTime ShiftEndTimeUtc(DateTime dateLocal)
         {
-            int hour = 8;
+            //int hour = 8;
 
+            int hour = 12; //Bereitschaftszeiten mit IsWatchTime();
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
         internal static List<string> GetCurrentShiftPhoneNumbers()
         {
-            //Bereitschafshandy, falls keine Bereitschaft für jetzt definiert ist
-            const string query1 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
+
+            //Definierte Bereitschaft (SMS) aus Datenbank; Telefonnumer vorhanden, hat zur Zeit Bereitschaft, SMS freigegeben
+            const string query1 = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
 
             DataTable dt = SelectDataTable(query1, null);
 
-            if (dt.Rows.Count == 0) 
+            if (dt.Rows.Count == 0) //keine verdefinierte Bereitschaft gefunden
             {
-                //Definierte Bereitschaft (SMS) aus Datenbank
-                const string query2 = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
-
+                //an Bereitschafshandy
+                const string query2 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
+                
                 dt = SelectDataTable(query2, null);
             }
 
@@ -120,6 +123,12 @@ namespace MelBox2
             }
 
             return phoneNumbers;
+        }
+
+        internal static string GetPhone_Bereitschaftshandy()
+        {
+            const string query = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy';";             
+            return SelectValue(query, null).ToString();
         }
 
         internal static MailAddressCollection GetCurrentShiftEmailAddresses(bool permanentRecievers = false)

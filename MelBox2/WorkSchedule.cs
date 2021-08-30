@@ -12,7 +12,7 @@ namespace MelBox2
         /// <summary>
         /// Starte zu jeder vollen Stunde
         /// </summary>
-        public static void SetHourTimer()
+        public static void SetHourTimer(object sender, ElapsedEventArgs e)
         {
             //Zeit bis zur nächsten vollen Stunde 
             int min = 59 - DateTime.Now.Minute;
@@ -28,8 +28,9 @@ namespace MelBox2
             execute.Elapsed += new ElapsedEventHandler(DailyNotification);
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
+            execute.Elapsed += new ElapsedEventHandler(SetHourTimer);
 
-            execute.AutoReset = true;
+            execute.AutoReset = false;
             execute.Start();
         }
 
@@ -86,6 +87,33 @@ namespace MelBox2
 #endif
                     Log.Info(msg, 88);
             }
+        }
+
+        /// <summary>
+        /// Prüft, ob die Nummer der aktuellen Bereitschaft mit der Nummer für Rufweiterleitung übereinstimmt.
+        /// Ändert ggf. die Weiterleitung.
+        /// Prüft auch, ob es in der DB einen Eintrag für das Berietschaftshandy gibt und erzeugt diesen ggf. (z.B. ausversehen geändert).
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
+        {
+            string backup = Sql.GetPhone_Bereitschaftshandy();
+
+            if (backup?.Length == 0) //'Bereitschaftshandy' nicht in DB vorhanden.
+            {
+                _ = Sql.NonQuery(@"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1); ", null);
+                backup = Sql.GetPhone_Bereitschaftshandy();
+            }
+
+            string phone = Sql.GetCurrentShiftPhoneNumbers()?[0] ?? backup;
+
+            if (Gsm.CallForwardingNumber != phone)
+            {
+                Gsm.CallForwardingNumber = phone;
+                Gsm.SetCallForewarding(Gsm.CallForwardingNumber);
+            }
+
         }
 
     }

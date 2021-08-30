@@ -16,7 +16,8 @@ namespace MelBox2
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
                 { "@Quality" , Gsm.SignalQuality.ToString()},
-                { "@Registered" , Gsm.NetworkRegistration},
+                { "@Registered" , Gsm.NetworkRegistration.RegToString()},
+                { "@ModemType", Gsm.ModemType},
                 { "@OwnName", Gsm.OwnName},
                 { "@OwnNumber", Gsm.OwnNumber},
                 { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
@@ -63,7 +64,7 @@ namespace MelBox2
         {
             System.Data.DataTable sent = Sql.SelectLastSent(100);
 
-            string table = Html.Modal("Sendestatus", Html.TableSendStatusCategories());
+            string table = Html.Modal("Sendestatus", Html.InfoSent());
             table += Html.FromTable(sent, false);
 
             await Html.PageAsync(context, "Ausgang", table);
@@ -85,7 +86,9 @@ namespace MelBox2
                 html = Html.FromTable(overdue, false);
             }
 
-            await Html.PageAsync(context, "Überfällige Rückmeldungen", html);
+            string info = Html.Modal("Überwachte Sender", Html.InfoOverdue());
+
+            await Html.PageAsync(context, "Überfällige Rückmeldungen", info + html);
         }
         #endregion
 
@@ -129,8 +132,7 @@ namespace MelBox2
 
             string form = Html.Page(Server.Html_FormMessage, pairs);
 
-            await Html.PageAsync(context, "Eingang", form, user);
-        
+            await Html.PageAsync(context, "Eingang", form, user);        
         }
 
 
@@ -145,8 +147,9 @@ namespace MelBox2
 
             System.Data.DataTable blocked = Sql.Blocked_View();
             string table = Html.FromTable(blocked, isAdmin, "blocked");
+            string info = Html.Modal("Gesperrte Nachrichten", Html.InfoBlocked(isAdmin));
 
-            await Html.PageAsync(context, "Gesperrte Nachrichten", table, user);
+            await Html.PageAsync(context, "Gesperrte Nachrichten", info + table, user);
         }
 
 
@@ -233,7 +236,7 @@ namespace MelBox2
             string form = Html.Page(Server.Html_FormAccount, pairs);
             string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
 
-            if (isAdmin) form = Html.Modal("Benutzerkategorien", Html.TableUserCategories()) + form ;
+            if (isAdmin) form = Html.Modal("Benutzerkategorien", Html.InfoAccount()) + form ;
 
             await Html.PageAsync(context, "Benutzerkonto", table + form, user);            
         }

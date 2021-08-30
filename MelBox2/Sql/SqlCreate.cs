@@ -5,8 +5,7 @@ namespace MelBox2
 {
     partial class Sql
     {
-        private static readonly string DbPath = Path.Combine(@"C:\MelBox2", "DB", "MelBox2.db");
-
+        public static string DbPath { get; set; } = Path.Combine(@"C:\MelBox2", "DB", "MelBox2.db");
 
         private static void CreateNewDataBase()
         {

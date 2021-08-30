@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
 [assembly: AssemblyTitle("MelBox2")]
-[assembly: AssemblyDescription("Liest eingehende SMS aus GSM-Modem udn sendet sie an die Bereitschaft weiter")]
+[assembly: AssemblyDescription("Liest eingehende SMS aus GSM-Modem und sendet sie an die Bereitschaft weiter")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kreutzträger Kältetechnik GmbH & Co. KG")]
 [assembly: AssemblyProduct("MelBox2")]

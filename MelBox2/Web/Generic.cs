@@ -313,7 +313,7 @@ namespace MelBox2
 
             System.Data.DataTable dt = Sql.SelectShiftsCalendar();
 
-            string html = Modal("Bereitschaft", TableShiftExplanation()); // "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+            string html = Modal("Bereitschaft", InfoShift()); // "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             html += "<div class='w3-container'>";
             html += "<table class='w3-table-all'>\n";
@@ -444,7 +444,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'>");
-            sb.Append($"   <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-light-blue w3-display-position w3-badge material-icons-outlined' title='{title}' style='top:140px;right:20px;';>info</button>");
+            sb.Append($"   <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-cyan w3-display-position w3-badge material-icons-outlined' title='{title}' style='top:140px;right:20px;';>info</button>");
             sb.Append("    <div id = 'id02' class='w3-modal'>");
             sb.Append("        <div class='w3-modal-content'>");
             sb.Append("            <div class='w3-container'>");
@@ -460,7 +460,7 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        internal static string TableUserCategories()
+        internal static string InfoAccount()
         {
             StringBuilder sb = new StringBuilder();
 
@@ -499,7 +499,7 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        internal static string TableSendStatusCategories()
+        internal static string InfoSent()
         {
 
             StringBuilder sb = new StringBuilder();
@@ -575,7 +575,7 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        internal static string TableShiftExplanation()
+        internal static string InfoShift()
         {
 
             StringBuilder sb = new StringBuilder();
@@ -611,12 +611,39 @@ namespace MelBox2
             sb.Append("<tr>");
             sb.Append("  <td><span class='w3-tag w3-light-gray w3-opacity'>13.</span></td>");
             sb.Append("  <td>nicht belegt</td>");
-            sb.Append("  <td colspan='2'>Empfänger ist nicht zugewiesen<br/>- geht an Bereitschaftshandy</td>");
+            sb.Append("  <td colspan='2'>Empfänger ist nicht zugewiesen; geht an Bereitschaftshandy</td>");
             sb.Append("</tr>");
 
             sb.Append("</table>");
 
             return sb.ToString();
         }
+ 
+        internal static string InfoBlocked(bool isAdmin)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append(" <li>&#9711; Die hier aufgelisteten Nachrichten werden zu den anhehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
+            sb.Append(" <li>&#9711; Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum Folgetag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
+            sb.Append(" <li>&#9711; Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");       
+            
+            if (isAdmin) sb.Append(" <li>&#9711; Ist kein Wochentag angehehakt, wird die Sperre aufgehoben.</li>");            
+            
+            sb.Append("</ul></div>");
+            return sb.ToString();
+        }
+
+        internal static string InfoOverdue()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append(" <li>&#9711; Hier werden die &Uuml;berwachten Sender aufgelistet.</li>");
+            sb.Append(" <li>&#9711; Liegt der letzte Eingang einer Nachricht dieser Sender länger als &apos;Max&nbsp;Inaktiv&apos; Stunden zurück, werden die &uumlberf&auml;lligen Sender hier aufgelistet.</li>");
+            sb.Append(" <li>&#9711; Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden.</li>");
+
+            sb.Append("</ul></div>");
+            return sb.ToString();
+        }
+
     }
 }

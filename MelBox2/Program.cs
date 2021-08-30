@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using MelBoxGsm;
-using static MelBoxGsm.Gsm;
 
 namespace MelBox2
 {
@@ -18,6 +17,7 @@ namespace MelBox2
                 return;
             }
 
+            Console.Title = "MelBox2";
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
             Console.WriteLine("Progammstart.");
@@ -42,7 +42,15 @@ namespace MelBox2
 
             Gsm.SetupModem();
 
-            SetHourTimer();
+            SetHourTimer(null, null);
+            Scheduler.CeckOrCreateWatchDog();
+                        
+            //Neustart melden
+            Email.Send(Email.Admin, $"MelBox2 Neustart um {DateTime.Now.ToLongTimeString()}\r\n\r\n" +
+                $"Mobilfunkverbindung ist {Gsm.NetworkRegistration.RegToString()},\r\n" +
+                $"Signalstärke {Gsm.SignalQuality}%,\r\n" +
+                $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
+                $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
 
             bool run = true;
             while (run)
@@ -58,10 +66,13 @@ namespace MelBox2
                         ShowHelp();
                         break;
                     case "ini":
-                        GetIniValues(); Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen."); 
+                        GetIniValues(); Gsm.SetupModem(); Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen."); 
                         break;
                     case "cls":
                         Console.Clear();
+                        break;
+                    case "modem reinit":
+                        Gsm.SetupModem();
                         break;
                     case "sms read sim":
                         SmsRead_Sim();
@@ -92,76 +103,7 @@ namespace MelBox2
 #endif
         }
 
-        private static void Gsm_NetworkStatusEvent(object sender, int quality)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-            Log.Info(AppName + " beendet.", 99);
-            Server.Stop();
-            Gsm.ModemShutdown();
-        }
-
-        private static void Gsm_NewCallRecieved(object sender, string e)
-        {
-            SmsIn dummy = new SmsIn
-            {
-                Phone = e,
-                Message = $"Sprachanruf von >{e}< weitergeleitet an >{CallForwardingNumber}<",
-                TimeUtc = DateTime.UtcNow
-            };
-
-            Sql.InsertRecieved(dummy);
-
-            Email.Send(Email.Admin, $"Sprachanruf {dummy.TimeUtc.ToLocalTime()} weitergeleitet an >{CallForwardingNumber}<.", $"Sprachanruf >{e}<", true);
-        }
-
-        private static void Gsm_NewErrorEvent(object sender, string e)
-        {
-            Log.Warning("GSM-Fehlermeldung - " + e, 1320);
-            Sql.InsertLog(1, "Fehlermeldung Modem: " + e);
-        }
-
-        private static void Gsm_SmsRecievedEvent(object sender, List<SmsIn> e)
-        {
-            ParseNewSms(e);
-        }
-
-        private static void Gsm_SmsReportEvent(object sender, Report e)
-        {
-            Sql.InsertReport(e);
-            Sql.UpdateSent(e);
-        }
-
-        private static void Gsm_FailedSmsSendEvent(object sender, SmsOut e)
-        {
-            string txt = $"Senden von SMS an >{e.Phone}< fehlgeschlagen. Noch {Gsm.MaxSendTrysPerSms - e.SendTryCounter} Versuche. Nachricht >{e.Message}<";
-
-            Sql.InsertLog(Gsm.MaxSendTrysPerSms - e.SendTryCounter, txt);
-
-            Report fake = new Report
-            {
-                DeliveryStatus = (int)(MaxSendTrysPerSms < e.SendTryCounter ? Sql.MsgConfirmation.SmsSendRetry : Sql.MsgConfirmation.SmsAborted),
-                Reference = e.Reference,
-                DischargeTimeUtc = e.SendTimeUtc
-            };
-
-            Sql.UpdateSent(fake); 
-        }
-
-        private static void Gsm_SmsSentEvent(object sender, SmsOut e)
-        {
-            Sql.InsertSent(e);
-        }
-
-
+   
         private static void SmsRead_Sim()
         {
             Console.WriteLine("Simuliere den Empfang einer SMS.");
@@ -172,13 +114,10 @@ namespace MelBox2
                 Phone = "+4942122317123",
                 Status = "REC UNREAD",
                 TimeUtc = DateTime.UtcNow,
-                Message = "MelBox2: Simulierter SMS-Empfang"
+                Message = "MelBox2: Simulierter SMS-Empfang 'Ä' 'Ü' 'Ö' 'ä' 'ü' 'ö' 'ß' Ende"
             };
 
-            List<SmsIn> smsen = new List<SmsIn>
-            {
-                sms
-            };
+            List<SmsIn> smsen = new List<SmsIn> { sms };
 
             ParseNewSms(smsen);
         }
@@ -195,6 +134,7 @@ namespace MelBox2
             sb.AppendLine("".PadRight(32) + $"{(int)ReliableSerialPort.GsmDebug.RequestGsm} = an Modem gesendet");
             sb.AppendLine("".PadRight(32) + $"{(int)ReliableSerialPort.GsmDebug.UnsolicatedResult} = Ereignisse von Modem.");
             sb.AppendLine("Ini".PadRight(32) + "Liest die Initialisierungswerte aus der Datenbank neu ein.");
+            sb.AppendLine("Modem Reinit".PadRight(32) + "Initialisiert das Modem neu.");             
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS mit >MelBox2: Simulierter SMS-Empfang<.");
             sb.AppendLine("### HILFE ENDE ###");

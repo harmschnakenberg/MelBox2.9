@@ -91,7 +91,7 @@ namespace MelBox2
 
             Person p = Sql.SelectOrCreatePerson(smsIn);
             
-        string subject = $"SMS-Eingang >{p.Name}<{ (p.Company.Length > 0 ? $", >{p.Company}<" : string.Empty)}, SMS-Text >{smsIn.Message}<";
+        string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
             //Email An: nur an Bereitschaft
             System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked)  ? Sql.GetCurrentShiftEmailAddresses() : new System.Net.Mail.MailAddressCollection();
