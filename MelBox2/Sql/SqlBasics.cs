@@ -134,9 +134,9 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch
                     {
-#if DEBUG
-                        Console.WriteLine("SelectDataTable: Hinweis: Abfrage hat Schema nicht eingehalten."); //Debug-Info
-#endif
+//#if DEBUG
+//                        Console.WriteLine("SelectDataTable: Hinweis: Abfrage hat Schema nicht eingehalten."); //Debug-Info
+//#endif
                         myTable = new DataTable();
 
                         //Wenn Schema aus DB nicht eingehalten wird (z.B. UNIQUE Constrain in SELECT Abfragen); dann neue DataTable, alle Spalten <string>

@@ -10,7 +10,9 @@ namespace MelBox2
         public static string SmsTestTrigger { get; set; } = "SMSAbruf";
        
         public static string[] LifeMessageTrigger { get; set; } = { "MelSysOK", "SgnAlarmOK" };
-               
+
+        private static bool isFirstParseNewSmsAfterStartup = true; //Dinge, die nur beim ersten Abfragen des SMS-Speichers getan werden sollen
+
         private static void ParseNewSms(List<SmsIn> smsenIn)
         {            
             if (smsenIn.Count == 0) return;
@@ -33,11 +35,13 @@ namespace MelBox2
                 bool isLifeMessage = IsLifeMessage(smsIn);
                 bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
                
-                if (isWatchTime && !isLifeMessage && !isMessageBlocked)
+                if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
                     SendSmsToShift(smsIn);
 
                 SendEmailToShift(smsIn, isWatchTime, isLifeMessage, isMessageBlocked);
             }
+
+            isFirstParseNewSmsAfterStartup = false; 
         }
 
         /// <summary>
@@ -79,33 +83,34 @@ namespace MelBox2
 
         private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage , bool isMessageBlocked)
         {
-            string body = $"Absender \t>{smsIn.Phone}<\r\n" +
-                   $"Text \t\t>{smsIn.Message}<\r\n" +
-                   $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
-                   (
-                   isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
-                   isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da SMS gesperrt." :
-                   isWatchTime ? "Weiterleitung an Bereitschaftshandy außerhalb Geschäftszeiten ist erfolgt." :
-                   "Keine Weiterleitung an Bereitschaftshandy während der Geschäftszeiten."
-                   );
+            string body =  $"Absender \t>{smsIn.Phone}<\r\n" +
+                           $"Text \t\t>{smsIn.Message}<\r\n" +
+                           $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
+                           (
+                           isFirstParseNewSmsAfterStartup ? "SMS bei Neustart GSM - Modem ! Keine Weiterleitung an Bereitschaft." :
+                           isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
+                           isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da SMS gesperrt." :
+                           isWatchTime ? "Weiterleitung an Bereitschaftshandy außerhalb Geschäftszeiten ist erfolgt." :
+                           "Keine Weiterleitung an Bereitschaftshandy während der Geschäftszeiten."
+                           );
 
             Person p = Sql.SelectOrCreatePerson(smsIn);
             
         string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
-            //Email An: nur an Bereitschaft
-            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked)  ? Sql.GetCurrentShiftEmailAddresses() : new System.Net.Mail.MailAddressCollection();
+            //Email An: nur an eingeteilte Bereitschaft
+            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)  
+                                                        ? Sql.GetCurrentShiftEmailAddresses() 
+                                                        : new System.Net.Mail.MailAddressCollection();
 
             if (mc != null && mc.Count > 0)
             {
-                int emailId = new Random().Next(256, int.MaxValue);
+                int emailId = new Random().Next(256, 9999);
 
                 Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
                 Email.Send(mc, body, subject, true, emailId);
             }
         }
-
-
 
     }
 }

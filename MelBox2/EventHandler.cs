@@ -118,7 +118,7 @@ namespace MelBox2
 
             Report fake = new Report
             {
-                DeliveryStatus = (int)(MaxSendTrysPerSms < e.SendTryCounter ? Sql.MsgConfirmation.SmsSendRetry : Sql.MsgConfirmation.SmsAborted),
+                DeliveryStatus = (int)(MaxSendTrysPerSms < e.SendTryCounter ? Gsm.DeliveryStatus.SendRetry : Gsm.DeliveryStatus.ServiceDenied),
                 Reference = e.Reference,
                 DischargeTimeUtc = e.SendTimeUtc
             };

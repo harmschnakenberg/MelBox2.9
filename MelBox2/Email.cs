@@ -126,7 +126,7 @@ namespace MelBox2
                         status == SmtpStatusCode.MailboxUnavailable)
                     {
                         Sql.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
-                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.EmailSendRetry); //Erneut senden
+                        Sql.UpdateSent(emailId, MelBoxGsm.Gsm.DeliveryStatus.SendRetry); //Erneut senden
 
                         System.Threading.Thread.Sleep(5000);
                         using (var smtpClient = new SmtpClient())
@@ -135,7 +135,7 @@ namespace MelBox2
                     else
                     {
                         Sql.InsertLog(1, $"Fehler beim Senden der Email an >{ex.InnerExceptions[i].FailedRecipient}<: {ex.InnerExceptions[i].Message}");
-                        Sql.UpdateSent(emailId, Sql.MsgConfirmation.EmailSendAborted); //Abgebrochen                       
+                        Sql.UpdateSent(emailId, MelBoxGsm.Gsm.DeliveryStatus.ServiceDenied); //Abgebrochen                       
                     }
 
                 }

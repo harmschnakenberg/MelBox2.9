@@ -47,8 +47,8 @@ namespace MelBox2
                         
             //Neustart melden
             Email.Send(Email.Admin, $"MelBox2 Neustart um {DateTime.Now.ToLongTimeString()}\r\n\r\n" +
-                $"Mobilfunkverbindung ist {Gsm.NetworkRegistration.RegToString()},\r\n" +
-                $"Signalstärke {Gsm.SignalQuality}%,\r\n" +
+                $"Mobilfunkverbindung: {Gsm.NetworkRegistration.RegToString()},\r\n" +
+                $"Signalstärke: {(Gsm.SignalQuality > 100 ? 0 : Gsm.SignalQuality)}%,\r\n" +
                 $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
                 $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
 

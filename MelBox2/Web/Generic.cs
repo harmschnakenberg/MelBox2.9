@@ -197,14 +197,14 @@ namespace MelBox2
                     {
                         html += "<td>" + WeekDayCheckBox(int.Parse(dt.Rows[i][j].ToString())) + "</td>";
                     }
-                    else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
-                    {
-                        string x = dt.Rows[i][j].ToString(); //Zeitzone richtig?!
-                        //if (DateTime.TryParse(x, out DateTime time))
-                        //    html += $"<td>{time.ToLocalTime()}</td>";
-                        //else
-                            html += $"<td>{x}</td>";
-                    }
+                    //else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
+                    //{
+                    //    string x = dt.Rows[i][j].ToString(); 
+                    //    //if (DateTime.TryParse(x, out DateTime time))  //Zeitzone richtig?!
+                    //    //    html += $"<td>{time.ToLocalTime()}</td>";
+                    //    //else
+                    //    html += $"<td>{x}</td>";
+                    //}
                     else if (dt.Columns[j].ColumnName.StartsWith("Via"))
                     {
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int via))
@@ -221,42 +221,14 @@ namespace MelBox2
                     else if (dt.Columns[j].ColumnName.Contains("Sendestatus"))
                     {
                         string val = dt.Rows[i][j].ToString();
-
-                        html += $"<td><span class='material-icons-outlined' title='Wert: {val}'>";
-
-                        if (int.TryParse(val, out int confirmation))
-                        {
-                            if (confirmation <= (int)Sql.MsgConfirmation.Success) //von Modem
-                                html += "check";
-                            else if (confirmation <= (int)Sql.MsgConfirmation.ReportPending)
-                                html += "hourglass_empty";
-                            else if (confirmation <= (int)Sql.MsgConfirmation.SmsAborted) //von Modem
-                                html += "sms_failed";
-                            else if (confirmation < 256) //von Modem ?Bereich undefiniert?
-                                html += "sms";
-                            else if (confirmation == (int)Sql.MsgConfirmation.Unknown) //Default Tabelleneintrag
-                                html += "device_unknown";
-                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendRetry)
-                                html += "schedule_send";
-                            else if (confirmation == (int)Sql.MsgConfirmation.EmailSendAborted)
-                                html += "cancel_schedule_send";
-                            else if (confirmation == (int)Sql.MsgConfirmation.NoReference)
-                                html += "fingerprint";
-
-                            else if (confirmation == (int)Sql.MsgConfirmation.NoDeliveryYet)  // StatusCode = 3 Bedeutung geraten
-                                html += "hourglass_top";
-                            else if (confirmation == (int)Sql.MsgConfirmation.NoDelivery)  // StatusCode = 6 Bedeutung geraten
-                                html += "hourglass_bottom";
-
-                            else
-                                html += "error_outline";
-                        }
-                        else
-                        {
-                            html += "error";
-                        }
-
-                        html += "</span></td>";
+                        string deliveryStatus = "-unbekannt-";
+                        string detaildStatus = "-unbekannt-";
+                        string icon = "error";
+                       
+                        if (int.TryParse(val, out int confirmation))                       
+                            deliveryStatus = Gsm.GetDeliveryStatus(confirmation, out detaildStatus, out icon); 
+                        
+                        html += $"<td><span class='material-icons-outlined' title='Wert: [{val}] {deliveryStatus} - {detaildStatus}'>{icon}</span></td>";
                     }                   
                     else
                     {
@@ -499,81 +471,84 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        internal static string InfoSent()
-        {
+        //internal static string InfoSent()
+        //{
 
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<table class='w3-table'>");
-            sb.Append("<tr>");
-            sb.Append("  <th>Symbol</th>");
-            sb.Append("  <th>Wert</th>");
-            sb.Append("  <th>Status</th>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>smartphone</span></td>");
-            sb.Append("  <td>&nbsp;</td>");
-            sb.Append("  <td>SMS</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr class='w3-border-bottom'>");
-            sb.Append("  <td><span class='material-icons-outlined'>email</span></td>");
-            sb.Append("  <td>&nbsp;</td>");
-            sb.Append("  <td>Email</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr><hr/></tr>");            
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>check</span></td>");
-            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.Success}</td>");
-            sb.Append("  <td>Empfang bestätigt</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>hourglass_top</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDeliveryYet}</td>");
-            sb.Append("  <td>Zielgerät noch nicht erreichbar (geraten)</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>hourglass_bottom</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDelivery}</td>");
-            sb.Append("  <td>Zielgerät endg&uuml;ltig nicht erreichbar (geraten)</td>");
-            sb.Append("</tr>");
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.Append("<table class='w3-table'>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <th>Symbol</th>");
+        //    sb.Append("  <th>Wert</th>");
+        //    sb.Append("  <th>Status</th>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>smartphone</span></td>");
+        //    sb.Append("  <td>&nbsp;</td>");
+        //    sb.Append("  <td>SMS</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr class='w3-border-bottom'>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>email</span></td>");
+        //    sb.Append("  <td>&nbsp;</td>");
+        //    sb.Append("  <td>Email</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr><hr/></tr>");            
+        //    sb.Append("<tr>");
 
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>hourglass_empty</span></td>");
-            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.ReportPending}</td>");
-            sb.Append("  <td>erwarte externe Bestätigung</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>sms_failed</span></td>");
-            sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.SmsAborted}</td>");
-            sb.Append("  <td>SMS Senden abgebrochen</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>schedule_send</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendRetry}</td>");
-            sb.Append("  <td>erneuter Sendeversuch</td>");
-            sb.Append("</tr>");
-            sb.Append("<tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>cancel_schedule_send</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendAborted}</td>");
-            sb.Append("  <td>Email Senden abgebrochen</td>");
-            sb.Append("</tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>device_unknown</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.Unknown}</td>");
-            sb.Append("  <td>Status unbekannt</td>");
-            sb.Append("</tr>");
-            sb.Append("</tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>fingerprint</span></td>");
-            sb.Append($" <td>={(int)Sql.MsgConfirmation.NoReference}</td>");
-            sb.Append("  <td>keine Zuweisung (keine Sendungsverfolgung)</td>");
-            sb.Append("</tr>");
-            sb.Append("</tr>");
-            sb.Append("  <td><span class='material-icons-outlined'>error_outline</span></td>");
-            sb.Append(" <td>&nbsp;</td>");
-            sb.Append("  <td>fehlerhafte Zuweisung</td>");
-            sb.Append("</tr>");
-            sb.Append("</table>");
+        //    string status = Gsm.GetDeliveryStatus((int)Gsm.DeliveryStatus.Success, out string details, out string icon);
 
-            return sb.ToString();
-        }
+        //    sb.Append("  <td><span class='material-icons-outlined'>check</span></td>");
+        //    sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.Success}</td>");
+        //    sb.Append("  <td>Empfang bestätigt</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>hourglass_top</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDeliveryYet}</td>");
+        //    sb.Append("  <td>Zielgerät noch nicht erreichbar (geraten)</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>hourglass_bottom</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.NoDelivery}</td>");
+        //    sb.Append("  <td>Zielgerät endg&uuml;ltig nicht erreichbar (geraten)</td>");
+        //    sb.Append("</tr>");
+
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>hourglass_empty</span></td>");
+        //    sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.ReportPending}</td>");
+        //    sb.Append("  <td>erwarte externe Bestätigung</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>sms_failed</span></td>");
+        //    sb.Append($" <td>&lt;{(int)Sql.MsgConfirmation.SmsAborted}</td>");
+        //    sb.Append("  <td>SMS Senden abgebrochen</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>schedule_send</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendRetry}</td>");
+        //    sb.Append("  <td>erneuter Sendeversuch</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("<tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>cancel_schedule_send</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.EmailSendAborted}</td>");
+        //    sb.Append("  <td>Email Senden abgebrochen</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>device_unknown</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.Unknown}</td>");
+        //    sb.Append("  <td>Status unbekannt</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("</tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>fingerprint</span></td>");
+        //    sb.Append($" <td>={(int)Sql.MsgConfirmation.NoReference}</td>");
+        //    sb.Append("  <td>keine Zuweisung (keine Sendungsverfolgung)</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("</tr>");
+        //    sb.Append("  <td><span class='material-icons-outlined'>error_outline</span></td>");
+        //    sb.Append(" <td>&nbsp;</td>");
+        //    sb.Append("  <td>fehlerhafte Zuweisung</td>");
+        //    sb.Append("</tr>");
+        //    sb.Append("</table>");
+
+        //    return sb.ToString();
+        //}
 
         internal static string InfoShift()
         {

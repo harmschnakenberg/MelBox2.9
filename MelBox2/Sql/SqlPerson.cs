@@ -107,7 +107,7 @@ namespace MelBox2
                 p.Via += (int)Via.Sms;
 
             if (payload.TryGetValue("phone", out string phoneStr))
-                p.Phone = phoneStr;
+                p.Phone = NormalizePhone(phoneStr);
 
             if (payload.TryGetValue("keyWord", out string keyWord))
                 p.KeyWord = keyWord;
@@ -119,6 +119,34 @@ namespace MelBox2
                 p.Level = int.Parse(accesslevelStr);
 
             return p;
+        }
+
+       internal static string NormalizePhone(string phone)
+        {
+            // as VB 
+            // Entfernt Zeichen aus psAbsNr sodass in Absendertabelle danach gesucht werden kann
+            // siehe Erläuterungen im TextFile1
+            
+            phone = phone.Replace(" ", "");
+            phone = phone.Replace(",", "");
+            phone = phone.Replace(";", "");
+            phone = phone.Replace(":", "");
+            phone = phone.Replace(".", "");
+            phone = phone.Replace("-", "");
+            phone = phone.Replace("(", "");
+            phone = phone.Replace(")", "");
+
+            if (phone.StartsWith("+"))
+                return phone;
+            else if (phone.StartsWith("00"))
+                phone = "+" + phone.Remove(0, 2);
+            else
+                phone = "+49" + phone.TrimStart('0');
+
+            if (phone[3] == '0')
+                phone = phone.Remove(3, 1);
+
+            return phone;                          
         }
 
         internal static Person SelectOrCreatePerson(SmsIn sms)
@@ -224,7 +252,7 @@ namespace MelBox2
                     { "@Password", Encrypt(password) },
                     { "@Level", level },
                     { "@Company", company },
-                    { "@Phone", phone },
+                    { "@Phone", NormalizePhone(phone) },
                     { "@Email", email},
                     { "@Via", (int)via},
                     { "@MaxInactive", maxInactiveHours}
@@ -259,7 +287,7 @@ namespace MelBox2
                 { "@Name", name },
                 { "@Level", accesslevel },
                 { "@Company", company?? string.Empty  },
-                { "@Phone", phone?? string.Empty  },
+                { "@Phone", NormalizePhone( phone?? string.Empty ) },
                 { "@Email", email?? string.Empty  },
                 { "@Via", via },
                 { "@KeyWord", keyWord?? string.Empty },

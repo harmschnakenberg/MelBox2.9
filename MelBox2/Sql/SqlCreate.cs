@@ -71,7 +71,7 @@ namespace MelBox2
                     "Via INTEGER, " +
                     "ContentId INTEGER, " +
                     "Reference INTEGER, " +
-                    "Confirmation INTEGER DEFAULT 256, " +
+                    "Confirmation INTEGER DEFAULT " + (int)MelBoxGsm.Gsm.DeliveryStatus.Simulated + ", " + 
 
                     "CONSTRAINT fk_ToId FOREIGN KEY (ToId) REFERENCES Person (ID) ON DELETE SET DEFAULT, " +
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL, " +
