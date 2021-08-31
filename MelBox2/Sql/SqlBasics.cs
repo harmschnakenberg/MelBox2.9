@@ -48,6 +48,7 @@ namespace MelBox2
             {
                 string txt = $"Die Datenbankdatei >{DbPath}< ist durch ein anderes Programm gesperrt.";
                 Console.WriteLine(txt);
+                Sql.InsertLog(1, txt);
                 Log.Error(txt, 21354);
             }
             return numTries > 0;

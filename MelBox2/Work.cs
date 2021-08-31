@@ -81,9 +81,9 @@ namespace MelBox2
             }
         }
 
-        private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage , bool isMessageBlocked)
+        private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
         {
-            string body =  $"Absender \t>{smsIn.Phone}<\r\n" +
+            string body = $"Absender \t>{smsIn.Phone}<\r\n" +
                            $"Text \t\t>{smsIn.Message}<\r\n" +
                            $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
                            (
@@ -95,21 +95,21 @@ namespace MelBox2
                            );
 
             Person p = Sql.SelectOrCreatePerson(smsIn);
-            
-        string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
+
+            string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
             //Email An: nur an eingeteilte Bereitschaft
-            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)  
-                                                        ? Sql.GetCurrentShiftEmailAddresses() 
+            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
+                                                        ? Sql.GetCurrentShiftEmailAddresses()
                                                         : new System.Net.Mail.MailAddressCollection();
 
-            if (mc != null && mc.Count > 0)
-            {
-                int emailId = new Random().Next(256, 9999);
+            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft eingeteilt, Email geht an Admin und Dauerempfänger
 
-                Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
-                Email.Send(mc, body, subject, true, emailId);
-            }
+            int emailId = new Random().Next(256, 9999);
+
+            Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            Email.Send(mc, body, subject, true, emailId);
+
         }
 
     }

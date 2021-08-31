@@ -52,7 +52,7 @@ namespace MelBox2
                 { "@ToId", sender.Id},
                 { "@ContentId", msg.Id},
                 { "@Reference", reference},
-                { "@Confirmation", Gsm.DeliveryStatus.Success} //Da keine Email-Empfangsbestätigung implementiert: Gehe erstmal davon aus, dass Email ankommt.
+                { "@Confirmation", Gsm.DeliveryStatus.EmailNoStatus} //Da keine Email-Empfangsbestätigung implementiert: Gehe erstmal davon aus, dass Email ankommt.
             };
 
             const string query = "INSERT INTO Sent(Time, ToId, Via, ContentId, Reference, Confirmation) VALUES(@Time, @ToId, 2, @ContentId, @Reference, @Confirmation); ";

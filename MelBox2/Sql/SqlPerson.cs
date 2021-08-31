@@ -195,7 +195,7 @@ namespace MelBox2
 
             DataTable dt = SelectDataTable(query, args);
 
-            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Email) VALUES ('@Email', 0, @Email); ", args))
+            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Email) VALUES (@Name, 0, @Email); ", args))
                 return SelectPerson(email);
 
             return GetPerson(dt);
@@ -351,8 +351,8 @@ namespace MelBox2
             Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id } };
             Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level } };
 
-            const string query1 = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
-            const string query2 = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level <= @Level ORDER BY Name;";
+            const string query1 = "SELECT ID, Name, Company AS Firma, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
+            const string query2 = "SELECT ID, Name, Company AS Firma, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
 
             if (p.Level >= Level_Admin)
                 return SelectDataTable(query2, args2);

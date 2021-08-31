@@ -7,6 +7,8 @@ namespace MelBox2
 {
     partial class Sql
     {
+        public static int PermanentEmailRecievers { get; private set; }
+
         #region Feiertage
 
         // Aus VB konvertiert
@@ -137,6 +139,8 @@ namespace MelBox2
             const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3) )"; //Bereitschaft per Email
 
             DataTable dt = SelectDataTable(permanentRecievers ? query1 : query2, null);
+
+            if (permanentRecievers) PermanentEmailRecievers = dt.Rows.Count;
 
             MailAddressCollection emailAddresses = new MailAddressCollection();
 

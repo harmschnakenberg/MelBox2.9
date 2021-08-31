@@ -64,8 +64,8 @@ namespace MelBox2
         {
             System.Data.DataTable sent = Sql.SelectLastSent(100);
 
-            // string table = Html.Modal("Sendestatus", Html.InfoSent());
-            string table = Html.FromTable(sent, false);
+            string table = Html.Modal("Sendestatus", Html.InfoSent());
+            table += Html.FromTable(sent, false);
 
             await Html.PageAsync(context, "Ausgang", table);
         }

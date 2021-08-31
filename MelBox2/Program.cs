@@ -9,6 +9,7 @@ namespace MelBox2
     partial class Program
     {
         public static readonly string AppName = Process.GetCurrentProcess().ProcessName;
+      
         static void Main()
         {
             if (Process.GetProcessesByName(AppName).Length > 1)
@@ -103,7 +104,6 @@ namespace MelBox2
 #endif
         }
 
-   
         private static void SmsRead_Sim()
         {
             Console.WriteLine("Simuliere den Empfang einer SMS.");
