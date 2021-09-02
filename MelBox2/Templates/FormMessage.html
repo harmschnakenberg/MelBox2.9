@@ -1,5 +1,5 @@
 ﻿<div class="w3-container">
-    <h2>Nachricht bearbeiten</h2>
+    <h2>Nachricht sperren</h2>
 
     <form action="/blocked/update" method="post">
         <input name="MsgId" type="hidden" value="@MsgId" />
@@ -34,20 +34,21 @@
                 <i class='w3-xxlarge material-icons-outlined w3-left w3-circle w3-margin-right' style='width:60px'>query_builder</i>
 
                 <p>
-                    <script>
+                    <!--<script>
                         function limitHour(val) {
                             document.getElementById("End").setAttribute("max", val);
                         }
-                    </script>
+                    </script>-->
                     <label>von</label>
-                    <input name="Start" type="number" min="0" max="23" onchange="limitHour(this.value)" value="@Start" />
-                    <label>bis Folgetag</label>
+                    <!--<input name="Start" type="number" min="0" max="23" onchange="limitHour(this.value)" value="@Start" />-->
+                    <input name="Start" type="number" min="0" max="23" value="@Start" />
+                    <label>bis</label>
                     <input id="End" name="End" type="number" min="0" max="23" value="@End" />
                 </p>
 
-                <p>Zeiten, zu denen diese Nachricht nicht weitergeleitet wird</p><br>
+                <p>Zeiten, zu denen diese Nachricht <b>nicht</b> weitergeleitet wird</p><br>
             </div>
-            <input type="submit" value="Speichern" class="w3-button w3-block w3-dark-grey" />
+            <input type="submit" value="Sperrzeiten speichern" class="w3-button w3-block w3-dark-grey" />
         </div>
     </form>
 </div>

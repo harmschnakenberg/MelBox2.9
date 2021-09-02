@@ -38,8 +38,9 @@ namespace MelBox2
 
 
         #region Nachrichten
+
+
         [RestRoute("Get", "/in")]
-        [RestRoute("Get", "/in/{Date}")] //noch kein Link implementiert
         public static async Task InBox(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
@@ -49,57 +50,25 @@ namespace MelBox2
             #endregion
 
             System.Data.DataTable rec;
-            if (context.Request.PathParameters.ContainsKey("Date") && DateTime.TryParse(context.Request.PathParameters["Date"].ToString(), out DateTime oneDate))
-                rec = Sql.SelectLastRecieved(oneDate);
+            if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))            
+                rec = Sql.SelectLastRecieved(oneDate);           
             else
-                rec = Sql.SelectLastRecieved(300);
+                rec = Sql.SelectLastRecieved(Html.MaxTableRowsShow);
 
-            string table = Html.FromTable(rec, isAdmin, "blocked");
+            string table = Html.Modal("Empfangene Nachrichten", Html.InfoRecieved(isAdmin));
+            table += Html.ChooseDate("in");
+            table += Html.FromTable(rec, isAdmin, "in");
+           
 
-            await Html.PageAsync(context, "Eingang", table, user);
+            await Html.PageAsync(context, "Empfangene Nachrichten", table, user);
         }
 
-        [RestRoute("Get", "/out")]
-        public static async Task OutBox(IHttpContext context)
-        {
-            System.Data.DataTable sent = Sql.SelectLastSent(100);
-
-            string table = Html.Modal("Sendestatus", Html.InfoSent());
-            table += Html.FromTable(sent, false);
-
-            await Html.PageAsync(context, "Ausgang", table);
-        }
-
-        [RestRoute("Get", "/overdue")]
-        public static async Task OverdueShow(IHttpContext context)
-        {
-            System.Data.DataTable overdue = Sql.SelectOverdueSenders();
-
-            string html;
-            if (overdue.Rows.Count == 0)
-            {
-                html = Html.Alert(3, "Keine Zeitüberschreitung", "Kein überwachter Sender ist überfällig.");
-                html += Html.FromTable(Sql.SelectWatchedSenders(), false);
-            }
-            else
-            {
-                html = Html.FromTable(overdue, false);
-            }
-
-            string info = Html.Modal("Überwachte Sender", Html.InfoOverdue());
-
-            await Html.PageAsync(context, "Überfällige Rückmeldungen", info + html);
-        }
-        #endregion
-
-
-        #region Gesperrte Nachrichten
-        [RestRoute("Get", "/blocked/{recId:num}")]
-        public static async Task InBoxBlock(IHttpContext context)
+        [RestRoute("Get", "/in/{recId:num}")]
+        public static async Task BlockedMessage(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null) return;            
+            if (user == null) return;
             #endregion
 
             var recIdStr = context.Request.PathParameters["recId"];
@@ -131,13 +100,100 @@ namespace MelBox2
             };
 
             string form = Html.Page(Server.Html_FormMessage, pairs);
+            string info = Html.Modal("Gesperrte Nachrichten", Html.InfoBlocked(user.Level >= Server.Level_Admin));
 
-            await Html.PageAsync(context, "Eingang", form, user);        
+            await Html.PageAsync(context, "Eingang", info + form, user);
         }
 
 
+
+        [RestRoute("Get", "/out")]
+        public static async Task OutBox(IHttpContext context)
+        {
+            System.Data.DataTable sent;
+            if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))
+               // if (context.Request.PathParameters.ContainsKey("Date") && DateTime.TryParse(context.Request.PathParameters["Date"].ToString(), out DateTime oneDate))
+                sent = Sql.SelectLastSent(oneDate);
+            else
+                sent = Sql.SelectLastSent(Html.MaxTableRowsShow);
+
+            string table = Html.Modal("Sendestatus", Html.InfoSent());
+            table += Html.ChooseDate("out");
+            table += Html.FromTable(sent, false);
+
+            await Html.PageAsync(context, "Gesendete Nachrichten", table);
+        }
+
+        [RestRoute("Get", "/overdue")]
+        public static async Task OverdueShow(IHttpContext context)
+        {
+            System.Data.DataTable overdue = Sql.SelectOverdueSenders();
+
+            string html;
+            if (overdue.Rows.Count == 0)
+            {
+                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig.");
+                html += Html.FromTable(Sql.SelectWatchedSenders(), false);
+            }
+            else
+            {
+                html = Html.FromTable(overdue, false);
+            }
+
+            string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
+
+            await Html.PageAsync(context, "Sender&uuml;berwachung", info + html);
+        }
+        #endregion
+
+
+        #region Gesperrte Nachrichten
+            
+
+        [RestRoute("Get", "/blocked/{msgId:num}")]
+        public static async Task InBoxBlock(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
+            var msgIdStr = context.Request.PathParameters["msgId"];
+            _ = int.TryParse(msgIdStr, out int msgId);
+
+            Message msg = Sql.SelectMessage(msgId);
+
+            bool mo = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Monday);
+            bool tu = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Tuesday);
+            bool we = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Wednesday);
+            bool th = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Thursday);
+            bool fr = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Friday);
+            bool sa = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Saturday);
+            bool su = Html.IsBitSet(msg.BlockDays, (int)DayOfWeek.Sunday);
+
+            Dictionary<string, string> pairs = new Dictionary<string, string>
+            {
+                { "@MsgId", msg.Id.ToString() },
+                { "@Message", msg.Content },
+                { "@Mo", mo ? "checked" : string.Empty },
+                { "@Tu", tu ? "checked" : string.Empty },
+                { "@We", we ? "checked" : string.Empty },
+                { "@Th", th ? "checked" : string.Empty },
+                { "@Fr", fr ? "checked" : string.Empty },
+                { "@Sa", sa ? "checked" : string.Empty },
+                { "@Su", su ? "checked" : string.Empty },
+                { "@Start", msg.BlockStart.ToString() },
+                { "@End", msg.BlockEnd.ToString() }
+            };
+
+            string form = Html.Page(Server.Html_FormMessage, pairs);
+            string info = Html.Modal("Gesperrte Nachrichten", Html.InfoBlocked(user.Level >= Server.Level_Admin));
+
+            await Html.PageAsync(context, "Eingang", info + form, user);
+        }
+
         [RestRoute("Get", "/blocked")]
-        public static async Task BlockedMessage(IHttpContext context)
+        public static async Task BlockedMessages(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context, false);
@@ -168,14 +224,16 @@ namespace MelBox2
             
             string alert;
             if (!Sql.UpdateMessage(msg.Id, msg.BlockDays, msg.BlockStart, msg.BlockEnd))
-                alert = Html.Alert(1, "Nachricht aktualisieren fehlgeschlagen", $"Die Nachricht {msg.Id}<p><i>{msg.Content}</i></p> konnte nicht geändert werden.");
+                alert = Html.Alert(1, "Sperrzeiten aktualisieren fehlgeschlagen", $"Die Nachricht [{msg.Id}]<p><i>{msg.Content}</i></p> konnte nicht geändert werden.");
+            else if (msg.BlockDays == 0)
+                alert = Html.Alert(3, "Sperrzeiten entfernt", $"Die Weiterleitung der Nachricht [{msg.Id}]<p><i>{msg.Content}</i></p> wird nicht gesperrt.");
             else
-                alert = Html.Alert(2, "Nachricht aktualisiert", $"Änderungen für die Nachricht {msg.Id}<p><i>{msg.Content}</i></p> gespeichert.");
+                alert = Html.Alert(2, "Sperrzeiten aktualisiert", $"Änderungen für die Nachricht [{msg.Id}]<p><i>{msg.Content}</i></p> gespeichert.");
 
             System.Data.DataTable sent = Sql.Blocked_View();
             string table = Html.FromTable(sent, isAdmin, "blocked");
 
-            await Html.PageAsync(context, "Nachricht aktualisiert", alert + table, user);
+            await Html.PageAsync(context, "Sperrzeiten aktualisiert", alert + table, user);
         }
         #endregion
 
@@ -352,11 +410,12 @@ namespace MelBox2
         {
             Dictionary<string, string> payload = Html.Payload(context);
             payload.TryGetValue("name", out string name);
-            //payload.TryGetValue("password", out string password); //Sicherheit!
+            payload.TryGetValue("password", out string password); //Sicherheit!?
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
                 { "@Name", name },
+                { "@Password", password },
                 { "@Company", "Kreutzträger Kältetechnik, Bremen" }
             };
 
@@ -446,7 +505,7 @@ namespace MelBox2
             Person user = await Html.GetLogedInUserAsync(context, false);           
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienste", table, user);
+            await Html.PageAsync(context, "Bereitschaft", table, user);
         }
 
         [RestRoute("Get", "/shift/{shiftId:num}")]
@@ -468,7 +527,9 @@ namespace MelBox2
                 { "@ContactOptions", contactOptions },
                 { "@MinDate",  DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") },
                 { "@StartDate", shift.StartUtc.ToLocalTime().ToString("yyyy-MM-dd") },
-                { "@EndDate", shift.EndUtc.ToLocalTime().ToString("yyyy-MM-dd") },             
+                { "@EndDate", shift.EndUtc.ToLocalTime().ToString("yyyy-MM-dd") },
+                { "@StartTime", shift.StartUtc.ToLocalTime().ToShortTimeString() },
+                { "@EndTime", shift.EndUtc.ToLocalTime().ToShortTimeString() },
                 { "@Route", "update" }
             };
 
@@ -476,7 +537,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user);
+            await Html.PageAsync(context, "Bereitschaft", table + form, user);
         }
 
         [RestRoute("Get", "/shift/{shiftDate}")]
@@ -502,6 +563,8 @@ namespace MelBox2
                 { "@MinDate", DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") },
                 { "@StartDate", startDate.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@EndDate", endDate.ToLocalTime().ToString("yyyy-MM-dd") },
+                { "@StartTime", startDate.ToLocalTime().ToShortTimeString() },
+                { "@EndTime", endDate.ToLocalTime().ToShortTimeString() },
                 { "@Route", "new" }
             };
 
@@ -509,7 +572,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaftsdienst", table + form, user);
+            await Html.PageAsync(context, "Bereitschaft", table + form, user);
         }
 
         [RestRoute("Post", "/shift/new")]
@@ -521,20 +584,16 @@ namespace MelBox2
             Dictionary<string, string> payload = Html.Payload(context);
             Shift shift = Sql.GetShift(payload);
             if (shift.PersonId == 0) shift.PersonId = user.Id;
-            shift.StartUtc = Sql.ShiftStartTimeUtc(shift.StartUtc);
-            shift.EndUtc = Sql.ShiftEndTimeUtc(shift.EndUtc);
 
             bool success = true;
             List <Shift> shifts = Sql.SplitShift(shift);
-            foreach (Shift splitShift in shifts)
-            {
+            foreach (Shift splitShift in shifts)            
                 if (!Sql.InsertShift(splitShift)) success = false;
-            }
-
+            
             string alert;
 
             if (success)
-                alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} wurde erfolgreich erstellt.");
+                alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde erfolgreich erstellt.");
             else
                 alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Die Bereitschaft konnte nicht in der Datenbank gespeichert werden.");
 
@@ -553,26 +612,34 @@ namespace MelBox2
             Shift shift = Sql.GetShift(payload);
             if (shift.PersonId == 0) shift.PersonId = user.Id;
 
-            shift.StartUtc = Sql.ShiftStartTimeUtc(shift.StartUtc);
-            shift.EndUtc = Sql.ShiftEndTimeUtc(shift.EndUtc);
+            int shiftHours = (int)shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
             bool success = true;
             List<Shift> shifts = Sql.SplitShift(shift);
+
+            if (shiftHours > 0)
             for (int i = 0; i < shifts.Count; i++)
             {
-                if (i == 0)                
-                    if (!Sql.UpdateShift(shifts[i])) success = false;
-                else
-                    if (!Sql.InsertShift(shifts[i])) success = false;
+                    if (i == 0) //Warum geht hier die Kurzschreibweise nicht?!?
+                    { 
+                        if (!Sql.UpdateShift(shifts[i])) success = false; 
+                    }
+                    else { if (!Sql.InsertShift(shifts[i])) success = false; }
             }
 
-            double shiftHours = shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
-
             string alert;
+            string shiftName = Sql.SelectPerson(shift.PersonId).Name;
+
             if (shiftHours > 0 && user.Level >= Server.Level_Reciever && success)
-                alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} ({shiftHours} Std.) wurde erfolgreich geändert.");
+            {
+                alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde erfolgreich geändert.");
+                Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für >{shiftName}< wurde geändert durch >{user.Name}<");
+            }
             else if (user.Level >= Server.Level_Admin && Sql.DeleteShift(shift.Id))
-                alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime().ToShortDateString()} bis {shift.EndUtc.ToLocalTime().ToShortDateString()} wurde gelöscht.");
+            {
+                alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde gelöscht.");
+                Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] für >{shiftName}< wurde gelöscht durch >{user.Name}<");
+            }
             else
                 alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
 
@@ -592,10 +659,12 @@ namespace MelBox2
             bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
-            System.Data.DataTable log = Sql.SelectLastLogs(500);
+            System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow);
             string table = Html.FromTable(log, false, "");
-            int del = 400;
-            string html = !isAdmin ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-block w3-red w3-padding'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
+            int del = 100;
+            string html = user.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
+
+            html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
 
             await Html.PageAsync(context, "Log", table + html, user);
         }
@@ -629,7 +698,9 @@ namespace MelBox2
                 }
             }
 
-            System.Data.DataTable log = Sql.SelectLastLogs(500);
+            html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
+
+            System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow);
             string table = Html.FromTable(log, false, "");
 
             await Html.PageAsync(context, "Log", html + table, user);
@@ -640,7 +711,8 @@ namespace MelBox2
         [RestRoute]
         public static async Task Home(IHttpContext context)
         {
-            string form = Html.Page(Server.Html_FormLogin, null);
+            string form = Html.Modal("Login und Registrierung", Html.InfoLogin());
+            form += Html.Page(Server.Html_FormLogin, null);
 
             await Html.PageAsync(context, "Login", form);
         }

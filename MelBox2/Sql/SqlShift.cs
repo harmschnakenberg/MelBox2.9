@@ -84,20 +84,17 @@ namespace MelBox2
 
         internal static DateTime ShiftStartTimeUtc(DateTime dateLocal)
         {
-            //int hour = 17;
-            //DayOfWeek day = dateLocal.DayOfWeek;
-            //if (day == DayOfWeek.Friday) hour = 15;
-            //if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = 8;
+            int hour = 17;
+            DayOfWeek day = dateLocal.DayOfWeek;
+            if (day == DayOfWeek.Friday) hour = 15;
+            if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = 8;
 
-            int hour = 12; //Bereitschaftszeiten mit IsWatchTime();
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
         internal static DateTime ShiftEndTimeUtc(DateTime dateLocal)
         {
-            //int hour = 8;
-
-            int hour = 12; //Bereitschaftszeiten mit IsWatchTime();
+            int hour = 8;
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
@@ -195,34 +192,45 @@ namespace MelBox2
         /// <param name="shift"></param>
         /// <returns>Bereitschaften, jeweils in einer Kalenderwoche</returns>
         internal static List<Shift> SplitShift(Shift shift)
-        {            
+        {
             List<Shift> shifts = new List<Shift>();
             DateTime localStart = shift.StartUtc;
             DateTime localEnd = shift.StartUtc;
 
             if (localStart.CompareTo(localEnd) > 0) localEnd = localStart; //Wenn Ende vor Start liegt
 
-            while (localEnd.Date != shift.EndUtc.Date)
+            if (shift.StartUtc.Date == shift.EndUtc.Date)
             {
-                do
-                {
-                    localEnd = localEnd.AddDays(1);
-                }
-                while (localEnd.Date != shift.EndUtc.Date && localEnd.DayOfWeek != DayOfWeek.Monday);
-
-                localEnd = Sql.ShiftEndTimeUtc(localEnd);
-
-                shifts.Add( new Shift
-                {
-                    Id = shift.Id,
-                    PersonId = shift.PersonId,
-                    StartUtc = localStart,
-                    EndUtc = localEnd
-                });
-                               
-                localStart = Sql.ShiftStartTimeUtc(localEnd);
+                shifts.Add(shift);
+                return shifts;
             }
-            
+            else
+            {
+                while (localEnd.Date != shift.EndUtc.Date)
+                {
+                    do
+                    {
+                        localEnd = localEnd.AddDays(1);
+                    }
+                    while (localEnd.Date != shift.EndUtc.Date && localEnd.DayOfWeek != DayOfWeek.Monday);
+
+                    if (localEnd.Date == shift.EndUtc.Date) 
+                        localEnd = shift.EndUtc; //ausgewählte End-Uhrzeit beibehalten 
+                    else
+                        localEnd = Sql.ShiftEndTimeUtc(localEnd.ToLocalTime()); //Standard-End-Uhrzeit nehmen
+
+                    shifts.Add(new Shift
+                    {
+                        Id = shift.Id,
+                        PersonId = shift.PersonId,
+                        StartUtc = localStart,
+                        EndUtc = localEnd
+                    });
+
+                    localStart = Sql.ShiftStartTimeUtc(localEnd.ToLocalTime());
+                }
+            }
+
             return shifts;
         }
 
@@ -285,10 +293,26 @@ namespace MelBox2
                 s.PersonId = personId;
 
             if (payload.ContainsKey("Start") && payload.TryGetValue("Start", out string startStr) && DateTime.TryParse(startStr, out DateTime start))
-                s.StartUtc= start;
+            {
+                s.StartUtc = start;
+                if (payload.ContainsKey("StartTime") && payload.TryGetValue("StartTime", out string startTStr) && DateTime.TryParse(startTStr, out DateTime startTime))
+                {
+                    int h = startTime.ToUniversalTime().Hour;
+                    int m = startTime.ToUniversalTime().Minute;
+                    s.StartUtc = s.StartUtc.AddHours(h).AddMinutes(m);
+                }
+            }
 
             if (payload.ContainsKey("End") && payload.TryGetValue("End", out string endStr) && DateTime.TryParse(endStr, out DateTime end))
+            {
                 s.EndUtc = end;
+                if (payload.ContainsKey("EndTime") && payload.TryGetValue("EndTime", out string endTStr) && DateTime.TryParse(endTStr, out DateTime endTime))
+                {
+                    int h = endTime.ToUniversalTime().Hour;
+                    int m = endTime.ToUniversalTime().Minute;
+                    s.EndUtc = s.EndUtc.AddHours(h).AddMinutes(m);
+                }
+            }
 
             return s;
         }

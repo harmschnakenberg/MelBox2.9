@@ -16,6 +16,8 @@ TODO:
 	URL-Reservierung:
 	netsh http add urlacl url=http://+:1234/ user=schnakenbUrg
 
+-	Firewall TCP-Port öffnen --> Prgramme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
+
 -	DeliveryCode prüfen: Bei Sendebestätigung (STATUS-REPORT) von GSM-Modem wird GSM3.40 nicht eingehalten? 
 	DeliveryCode <st> scheint nicht  GSM3.40 zu entsprechen. 
 	Bei ausgeschalteten EMpfangsgerät Code 3, später Code 6 ?

@@ -24,6 +24,7 @@ namespace MelBox2
             Console.WriteLine("Progammstart.");
             ShowHelp();
             Log.Info(AppName + " gestartet.", 100);
+            Sql.InsertLog(3, AppName + " gestartet.");
 
             Server.Start();
             Gsm.AdminPhone = "+4916095285xxx";
@@ -33,6 +34,7 @@ namespace MelBox2
             Sql.DbBackup();
             GetIniValues();
 
+            ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
             Gsm.NewErrorEvent += Gsm_NewErrorEvent;
             Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
             Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
@@ -104,6 +106,12 @@ namespace MelBox2
 #endif
         }
 
+        private static void ReliableSerialPort_SerialPortErrorEvent(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
+        {
+            Console.WriteLine("Fehler COM-Port: " + e);
+            Log.Error("Fehler COM-Port: " + e, 1122);
+        }
+
         private static void SmsRead_Sim()
         {
             Console.WriteLine("Simuliere den Empfang einer SMS.");
@@ -114,7 +122,7 @@ namespace MelBox2
                 Phone = "+4942122317123",
                 Status = "REC UNREAD",
                 TimeUtc = DateTime.UtcNow,
-                Message = "MelBox2: Simulierter SMS-Empfang 'Ä' 'Ü' 'Ö' 'ä' 'ü' 'ö' 'ß' Ende"
+                Message = "MelBox2: Simulierter SMS-Empfang. Test: 'Ä' 'Ü' 'Ö' 'ä' 'ü' 'ö' 'ß' Ende"
             };
 
             List<SmsIn> smsen = new List<SmsIn> { sms };
@@ -141,5 +149,17 @@ namespace MelBox2
 
             Console.WriteLine(sb.ToString());
         }
+
+
+        //private static void Restart(int errorNum)
+        //{
+        //    ProcessStartInfo Info = new ProcessStartInfo();
+        //    Info.Arguments = "/C ping 127.0.0.1 -n 2 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"";
+        //    Info.WindowStyle = ProcessWindowStyle.Hidden;
+        //    Info.CreateNoWindow = true;
+        //    Info.FileName = "cmd.exe";
+        //    Process.Start(Info);
+        //    Environment.Exit(errorNum);
+        //}
     }
 }

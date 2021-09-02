@@ -2,9 +2,30 @@
     <script>
         function minEndDate(x) {
             var d = new Date(document.getElementById('StartDate').value);
-            d.setDate(d.getDate() + 1);
+            d.setDate(d.getDate()); // d.setDate(d.getDate() + 1);
             x.min = d.toISOString().substr(0, 10);
         }
+
+        function setStartTime(x) {
+            var d = new Date(document.getElementById('StartTime').value);
+
+            switch (x.value.getDay()) {
+                case 0:
+                case 6:
+                    d.setHours(8, 0);
+                case 5:
+                    d.setHours(15, 0);
+                    break;
+                default:
+                    d.setHours(17, 0);
+            }          
+        }
+
+        function addTime(t, target) {
+            var d = new Date(document.getElementById(target).value);
+            d.setHours(t.value.getHours(), t.value.getMinutes());
+        }
+
     </script>
 
     <div class="w3-modal-content w3-card-4 w3-display-middle" style="max-width:600px">
@@ -29,10 +50,14 @@
                     <label class="w3-col w3-half"><b>bis</b></label>
                 </div>
                 <div class="w3-row">
-                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate">
-                    <input name="End" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate(this)">
+                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate" onchange="setStartTime(this)">
+                    <input name="End" id="EndDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate(this)">
                 </div>
-                
+                <div class="w3-row">
+                    <input name="StartTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@StartTime" onchange="addTime(this, 'StartDate')">
+                    <input name="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onchange="addTime(this, 'EndDate')">
+                </div>
+
                 <div class="w3-row">
                     <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Verwerfen</button>
                     <button class="w3-button w3-block w3-teal w3-section w3-padding w3-margin-left w3-col w3-third w3-right" type="submit">Speichern</button>

@@ -1,18 +1,48 @@
 ﻿<div class='w3-row w3-margin'>
     <div class='w3-container w3-quarter'></div>
-    <div class='w3-card w3-half'>
-        <div class='w3-container w3-cyan'>
-            <h2>Login</h2>
+    <div class='w3-half'>
+        <div class='w3-card'>
+            <div class='w3-container w3-cyan'>
+                <h2>Login</h2>
+            </div>
+            <form class='w3-margin w3-padding' name="form1" method="post" autocomplete="on">
+                <label><b>Benutzer*</b></label>
+                <input class='w3-input w3-border' name='name' type='text' placeholder='Benutzername' required>
+                <label><b>Passwort*</b></label>
+                <input class='w3-input w3-border' name='password' type='password' pattern='.{4,}' placeholder='Mind. 4 Zeichen' required>
+                <p>
+                    <button class='w3-button w3-cyan' formaction='/login' title="Login, um personalisierte Funktionen freischalten">Login</button>
+                    <button class='w3-button w3-sand w3-right' formaction='/register' title="nur registrierte Benutzer k&ouml;nnen sich einloggen">Registrieren</button>
+                </p>
+            </form>
         </div>
-        <form class='w3-margin' name="form1" method="post" autocomplete="on">
-            <label><b>Benutzer</b></label>
-            <input class='w3-input w3-border' name='name' type='text' placeholder='Benutzername' required>
-            <label><b>Passwort</b></label>
-            <input class='w3-input w3-border' name='password' type='password' pattern='.{4,}' placeholder='Mind. 4 Zeichen' required>
-            <p>
-                <button class='w3-button w3-cyan' formaction='/login'>Login</button>
-                <button class='w3-button w3-sand w3-right' formaction='/register'>Registrieren</button>
+        <div class="w3-container w3-margin">
+            <p class="w3-right w3-opacity">
+                * = erforderlich
             </p>
-        </form>
+            <button onclick="showMe('help1')" class="w3-btn w3-block w3-cyan">Hilfe</button>
+
+            <div id="help1" class="w3-hide w3-container w3-center w3-pale-blue w3-padding">
+                <p>
+                    In der rechten oberen Ecke wird das Info-Symbol angezeigt:
+                    <button class='w3-button w3-cyan w3-hover-cyan w3-badge material-icons-outlined' title="Informationen finden Sie durch Klick auf dieses Symbol">info</button><br />
+                    Klick auf das Info-Symbol blendet Erl&auml;uterungen für die angezeigte Seite ein.
+                </p>
+                <p>
+                    Erklärungen zu einzelnen Symbolen werden eingeblendet, wenn man mit dem Mauszeiger darüber stehen bleibt.
+                </p>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    function showMe(id) {
+        var x = document.getElementById(id);
+        if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+        } else {
+            x.className = x.className.replace(" w3-show", "");
+        }
+    }
+</script>

@@ -89,8 +89,10 @@ namespace MelBox2
                 query += "CREATE TABLE IF NOT EXISTS Shift ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "PersonId INTEGER, " +
-                    "Start TEXT NOT NULL UNIQUE, " +
-                    "End TEXT NOT NULL UNIQUE, " +
+                  //"Start TEXT NOT NULL UNIQUE, " +
+                  //"End TEXT NOT NULL UNIQUE, " +
+                    "Start TEXT NOT NULL, " +
+                    "End TEXT NOT NULL, " +
                     "CONSTRAINT fk_PersonId FOREIGN KEY (PersonId) REFERENCES Person (ID) ON DELETE SET DEFAULT " +
                     "); ";
 
@@ -139,31 +141,44 @@ namespace MelBox2
 
                 query += "CREATE VIEW View_WatchedSenders AS SELECT Id, Name, Company AS Firma, MaxInactive || ' Std.' AS Max_Inaktiv FROM Person WHERE MaxInactive > 0 ORDER BY Firma; ";
 
+                //query += "CREATE VIEW View_Calendar AS " +
+                //         "SELECT s.ID, p.ID AS PersonId, p.name, p.Via, s.Start, s.End, strftime('%W', s.Start) AS KW, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days')||'x' END AS Mo, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days')||'x'  END AS Di, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days')||'x'  END AS Mi, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days')||'x'  END AS Do, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-0 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days')||'x'  END AS Fr, " +
+                //         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days')||'x'  END AS Sa, " +
+                //         "CASE WHEN strftime('%w', s.Start) = '0' THEN " +
+                //         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-6 days')||'x'  END " +
+                //         "ELSE " +
+                //         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days')||'x'  END " +
+                //         "END  AS So, " +
+                //         "CASE WHEN s.End > DATE(s.Start, 'weekday 6', '+3 days') THEN '...' END AS mehr " +
+                //         "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID " +
+                //         "WHERE s.End > date('now', '-1 day') " +
+                //         "ORDER BY Start; ";
+
                 query += "CREATE VIEW View_Calendar AS " +
                          "SELECT s.ID, p.ID AS PersonId, p.name, p.Via, s.Start, s.End, strftime('%W', s.Start) AS KW, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days')||'x' END AS Mo, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days')||'x'  END AS Di, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days')||'x'  END AS Mi, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days')||'x'  END AS Do, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-0 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days')||'x'  END AS Fr, " +
-                         "CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days')||'x'  END AS Sa, " +
-                         "CASE WHEN strftime('%w', s.Start) = '0' THEN " +
-                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '-6 days')||'x'  END " +
-                         "ELSE " +
-                         "  CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+2 days') BETWEEN s.Start AND s.End THEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days')||'x'  END " +
-                         "END  AS So, " +
-                         "CASE WHEN s.End > DATE(s.Start, 'weekday 6', '+3 days') THEN '...' END AS mehr " +
-                         "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID " +
-                         "WHERE s.End > date('now', '-1 day') " +
-                         "ORDER BY Start; ";
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-5 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Mo, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-4 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Di, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-3 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-3 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Mi, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-2 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-2 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Do, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-1 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-1 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Fr, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '-0 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Sa, " +
+                         "DATE(s.Start, 'localtime', 'weekday 6', '+1 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS So " +
+                         "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID WHERE s.End > date('now', '-1 day') ORDER BY Start; ";
 
                 query += "CREATE VIEW View_Calendar_Full AS " + 
                         "SELECT * FROM View_Calendar " +
                         "UNION " +
-                        "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATE(d, 'weekday 1') AS Start, NULL AS End, " +
-                        "strftime('%W', d) AS KW, date(d, 'weekday 1') AS Mo, date(d, 'weekday 2') AS Di, date(d, 'weekday 3') AS Mi, " +
-                        "date(d, 'weekday 4') AS Do, date(d, 'weekday 5') AS Fr, date(d, 'weekday 6') AS Sa, date(d, 'weekday 0') AS So, " +
-                        "NULL AS mehr FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) UNION ALL " +
+                        "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATETIME(d, 'weekday 1') AS Start, NULL AS End, " +
+                        "strftime('%W', d) AS KW, " +
+                        "date(d, 'weekday 1') || CASE WHEN date(d, 'weekday 1') IN (SELECT DATE(Shift.End) FROM Shift WHERE strftime('%w', Shift.End) = '1') THEN 'x' ELSE '' END AS Mo, " + //Montage markieren, wenn sie das ENde einer Bereitschaft sind
+                        "date(d, 'weekday 2') AS Di, date(d, 'weekday 3') AS Mi, " +
+                        "date(d, 'weekday 4') AS Do, date(d, 'weekday 5') AS Fr, date(d, 'weekday 6') AS Sa, date(d, 'weekday 0') AS So " +
+                        "FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) UNION ALL " +
                         "SELECT date(d, '+4 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
                         "WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
                         "ORDER BY Start; ";

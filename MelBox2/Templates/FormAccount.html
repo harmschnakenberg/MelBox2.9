@@ -23,7 +23,7 @@
             <div class="w3-section">
                 <input name="Id" type="hidden" value="@Id" />
 
-                <label><b>Benutzername</b></label>
+                <label><b>Benutzername*</b></label>
                 <div class="w3-row">
                     <div class="w3-col w3-right" style="width:110px">
                         <input class="w3-input w3-border" value="@UserRole" disabled>
@@ -33,7 +33,7 @@
                     </div>
                 </div>
 
-                <label><b>Password</b></label>
+                <label><b>Password</b> <span class="w3-opacity">leer lassen = keine &Auml;nderung</span></label>
                 <div class="w3-row">
                     <div class="w3-col w3-right" style="width:110px">
                         <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly />
@@ -43,14 +43,14 @@
                     </div>
                 </div>
 
-                <label><b>Firma</b></label>
-                <div class="w3-row">                    
+                <label><b>Firma</b> <span class="w3-opacity">optinonal zur besseren Zuordnung</span></label>
+                <div class="w3-row">
                     <div class="w3-rest w3-margin-bottom">
-                        <input name="company" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Firmennamen und -Ort eingeben" value="@Company">  
+                        <input name="company" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Firmennamen und -Ort eingeben" value="@Company">
                     </div>
                 </div>
 
-                <label><b>Email</b></label>
+                <label><b>Email</b> <span class="w3-opacity">wird nur verwendet, wenn angehakt</span></label>
                 <div class="w3-row">
                     <div class="w3-col" style="width:40px">
                         <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail>
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <label><b>Mobiltelefon</b></label>
+                <label><b>Mobiltelefon</b> <span class="w3-opacity">wird nur verwendet, wenn angehakt</span></label>
                 <div class="w3-row">
                     <div class="w3-col" style="width:40px">
                         <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone />
@@ -81,16 +81,16 @@
                 <label><b>Schlüsselwort</b></label>
                 <input name="KeyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly />
 
-                <label><b>Senderüberwachung: Maximale Zeit zwischen Meldungen</b></label>
+                <label><b>Senderüberwachung</b> <span class="w3-opacity">Maximale Zeit zwischen Meldungen</span></label>
                 <div class="w3-row">
                     <div class="w3-col" style="width:75px">
                         <input name="MaxInactiveHours" type="number" class="w3-input w3-border" value="@MaxInactiveHours" @disabled />
                     </div>
-                    <div class="w3-rest w3-container w3-panel">Stunden <i>  (0 = keine &Uuml;berwachung)</i></div>
+                    <div class="w3-rest w3-container w3-panel">Stunden <span class="w3-opacity">(0 = keine &Uuml;berwachung)</span></div>
                 </div>
 
                 <div class="w3-row">
-                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Verwerfen</button>
+                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Abbrechen</button>
                     @NewContact
                     @DeleteContact
                     <button class="w3-button w3-block w3-teal w3-section w3-padding w3-col w3-quarter w3-margin-left  w3-right" type="submit">&Auml;ndern</button>

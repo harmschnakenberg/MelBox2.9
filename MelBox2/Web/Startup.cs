@@ -28,12 +28,13 @@ namespace MelBox2
         }
 
         public void ConfigureServer(IRestServer server)
-        {
-            server.Prefixes.Add($"http://localhost:{_serverPort}/");
-            //server.Prefixes.Add($"http://+:{_serverPort}/");
+        {            
+            server.Prefixes.Add($"http://+:{_serverPort}/");
+            //server.Prefixes.Add($"http://localhost:{_serverPort}/");
 
             /* Configure Router Options (if supported by your router implementation) */
             server.Router.Options.SendExceptionMessages = true;
+            
         }
     }
 

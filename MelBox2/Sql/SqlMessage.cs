@@ -162,6 +162,21 @@ namespace MelBox2
             return msg;
         }
 
+        public static Message SelectMessage(int msgId)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@msgId", msgId}
+            };
+
+            const string query = "SELECT r.ContentId AS ID, m.Content, m.BlockDays, m.BlockStart, m.BlockEnd FROM Recieved r JOIN Message AS m ON m.ID = r.ContentId  WHERE m.ID = @msgId";
+
+            DataTable dt = SelectDataTable(query, args);
+
+            return GetMessage(dt);
+        }
+
+
         public static DataTable Blocked_View(string content = "")
         {
             string query = "SELECT * FROM View_Blocked ";

@@ -22,6 +22,19 @@ namespace MelBox2
             return SelectDataTable(query, args);
         }
 
+        internal static DataTable SelectLastSent(System.DateTime date)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Date", date}
+            };
+
+            const string query = "SELECT Gesendet, An, Inhalt, Ref, Via, Sendestatus AS Status FROM View_Sent WHERE date(Gesendet) = date(@Date) ORDER BY Gesendet DESC;"; 
+
+            return SelectDataTable(query, args);
+        }
+
+
         internal static void InsertSent(SmsOut sms) //ungetestet
         {
             Person sender = SelectPerson(sms);

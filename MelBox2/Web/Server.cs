@@ -42,7 +42,7 @@ namespace MelBox2
 
                 restServer.AfterStarting += (s) =>
                 {
-                    Process.Start("explorer", s.Prefixes.First());
+                    Process.Start("explorer", s.Prefixes.First().Replace("+", System.Net.Dns.GetHostName()));
                     Console.WriteLine("Web-Server gestartet.");
                 };
 

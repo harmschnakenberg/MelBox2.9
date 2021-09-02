@@ -21,18 +21,18 @@
 </head>
 <body onload="setQuality();">
     <div class="w3-bar w3-light-grey w3-border">
-        <a href="/" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>login</i></a>
-        <a href="/in" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>drafts</i></a>
-        <a href="/out" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>forward_to_inbox</i></a>
-        <a href="/overdue" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>pending_actions</i></a>
-        <a href="/blocked" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>notifications_off</i></a>
-        <a href="/shift" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>event_note</i></a>
-        <a href="/account" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>assignment_ind</i></a>
-        <a href="/log" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>assignment</i></a>
-        <a href="/gsm" class="w3-bar-item w3-button w3-border-right"><i class='w3-xlarge material-icons-outlined'>perm_device_information</i></a>
+        <a href="/" class="w3-bar-item w3-button w3-border-right" title="Login"><i class='w3-xlarge material-icons-outlined'>login</i></a>
+        <a href="/in" class="w3-bar-item w3-button w3-border-right" title="Empfangene Nachrichten"><i class='w3-xlarge material-icons-outlined'>drafts</i></a>
+        <a href="/out" class="w3-bar-item w3-button w3-border-right" title="Gesendete Nachrichten"><i class='w3-xlarge material-icons-outlined'>forward_to_inbox</i></a>
+        <a href="/overdue" class="w3-bar-item w3-button w3-border-right" title="Sender&uuml;berwachung"><i class='w3-xlarge material-icons-outlined'>pending_actions</i></a>
+        <a href="/blocked" class="w3-bar-item w3-button w3-border-right" title="Gesperrte Nachrichten"><i class='w3-xlarge material-icons-outlined'>notifications_off</i></a>
+        <a href="/shift" class="w3-bar-item w3-button w3-border-right" title="Bereitschaft"><i class='w3-xlarge material-icons-outlined'>event_note</i></a>
+        <a href="/account" class="w3-bar-item w3-button w3-border-right" title="Benutzerkonto"><i class='w3-xlarge material-icons-outlined'>assignment_ind</i></a>
+        <a href="/log" class="w3-bar-item w3-button w3-border-right" title="Logbuch"><i class='w3-xlarge material-icons-outlined'>assignment</i></a>
+        <a href="/gsm" class="w3-bar-item w3-button w3-border-right" title="Modem Info"><i class='w3-xlarge material-icons-outlined'>perm_device_information</i></a>
 
         <div class="w3-margin w3-grey w3-round w3-right" style="width:100px">
-            <div id="gsmQuality" class="quality w3-blue w3-round w3-center" style="width:0%">@Quality%</div>
+            <div id="gsmQuality" class="quality w3-blue w3-round w3-center" style="width:0%" title="Empfangsqualit&auml;t Mobilfunk">@Quality%</div>
         </div>
         <i class='w3-margin-top w3-right material-icons-outlined'>@GsmConnect</i>
     </div>
@@ -42,7 +42,7 @@
             <h1>@Titel</h1>
         </div>
         <div class="w3-quarter w3-container">
-            <h5 class="w3-right-align w3-text-gray">@User</h5>
+            <h5 class="w3-right-align w3-text-gray" title="Angemeldeter Benutzer">@User</h5>
         </div>
     </header>
    
@@ -51,7 +51,7 @@
     </div>
 
     <footer class="w3-container w3-cyan">
-        <a href='#header' class='w3-button w3-right'><i class='material-icons-outlined'>arrow_circle_up</i></a>
+        <a href='#header' class='w3-button w3-right'><i class='material-icons-outlined' title="nach oben">arrow_circle_up</i></a>
     </footer>
 
 </body>
