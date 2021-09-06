@@ -395,17 +395,13 @@ namespace MelBox2
 
             //add header row
             html += "<tr class='item'>";
-
-            if (user.Id > 0)
-            {
-                html += "<th>Edit</th>";
-            }
-
-            html += "<th>Nr</th><th>Name</th><th>Via</th><th>Beginn</th><th>Ende</th><th>KW</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>";
+            html += "<th>Edit</th><th>Nr</th><th>Name</th><th>Via</th><th>Beginn</th><th>Ende</th><th>KW</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>";
             html += "</tr>\n";
 
             List<DateTime> holydays = Sql.Holydays(DateTime.Now);
             holydays.AddRange(Sql.Holydays(DateTime.Now.AddYears(1))); // Feiertage auch im kommenden Jahr anzeigen
+
+            DateTime lastRowEnd = DateTime.MinValue; //Merker, ob Bereitschaft über Kalenderwoche hinaus geht.
 
             //add rows
             for (int i = 0; i < dt.Rows.Count; i++)
@@ -428,6 +424,8 @@ namespace MelBox2
                         "<a href='/shift/" + route + "'><i class='material-icons-outlined'>build</i></a>" +
                         "</td>";
                 }
+                else
+                    html += "<td></td>";
 
                 #endregion
 
@@ -464,18 +462,26 @@ namespace MelBox2
                 #endregion
 
                 #region Wochentage
+                //Wenn in dieser Woche die selbe Person Bereitschaft hat wie in der Vorwoche, den Bereitschaftswechesel am Montag nicht hervorheben
+                bool sameAsLastWeek = i > 0 
+                    && start.DayOfWeek == DayOfWeek.Monday
+                    && dt.Rows[i-1]["Name"].ToString() == contactName 
+                    && start.Date == lastRowEnd.Date; 
+
                 for (int j = 7; j < dt.Columns.Count; j++)
                 {
                     var dateStr = dt.Rows[i][j].ToString();
                     bool isMarked = dateStr.EndsWith("x");
                     _ = DateTime.TryParse(dateStr.TrimEnd('x') ?? "", out DateTime date);
-                    bool isHandoverDay = (isMarked && date.Date == start.Date) || (isMarked && date.Date == end.Date);
+                    bool isHandoverDay = (isMarked && date.Date == start.Date && !sameAsLastWeek) || (isMarked && date.Date == end.Date);
 
                     html += WeekDayColor(holydays, date, isMarked, isHandoverDay);
                 }
                 #endregion
 
                 html += "</tr>\n";
+
+                lastRowEnd = end;
             }
 
             html += "</table>\n";
@@ -545,10 +551,12 @@ namespace MelBox2
             sb.Append("</tr>");
             sb.Append("</table>");
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
-            
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+
+            sb.Append($" <li><b>Abo</b>: Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. </li>");
+
             if (Sql.PermanentEmailRecievers > 0)
-                sb.Append($" <li>&#9711; >{Sql.PermanentEmailRecievers}< Emailempf&auml;nger werden immer stumm benachrichtigt.</li>");
+                sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
             
             sb.Append("</ul></div>");
 
@@ -593,7 +601,7 @@ namespace MelBox2
             sb.Append("<tr>");          
             sb.Append("</table>");
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append($" <li>Es werden max. {Html.MaxTableRowsShow} gesendete Nachrichten angezeigt.</li>");
             sb.Append(" <li>&Uuml;ber die Schaltfl&auml;che &quot;Datum w&auml;hlen&quot; lassen sich die an einem bestimmten Tag versendeten Nachrichten anzeigen.</li>");
             sb.Append("</ul></div>");
@@ -612,24 +620,32 @@ namespace MelBox2
             sb.Append("  <th colspan='2'>Normalzeit Bereitschaft</th>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append("  <td><span class='w3-badge w3-light-gray'>13.</span></td>");
+            sb.Append("  <td class='w3-light-gray'>13.</td>");
             sb.Append("  <td>Wochentag</td>");
             sb.Append("  <td>Mo-Do<br/>Fr</td>");
             sb.Append("  <td>17 Uhr bis Folgetag 08 Uhr<br/>15 Uhr bis Folgetag 08 Uhr</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append("  <td><span class='w3-badge w3-sand'>13.</span></td>");
+            sb.Append("  <td class='w3-sand'>13.</td>");
             sb.Append("  <td>Wochenende</td>");
             sb.Append("  <td>Sa-So</td>");
             sb.Append("  <td>08 Uhr bis Folgetag 08 Uhr</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append("  <td><span class='w3-badge w3-pale-red'>13.</span></td>");
+            sb.Append("  <td class='w3-pale-red'>13.</td>");
             sb.Append("  <td>Feiertag</td>");
             sb.Append("  <td>&nbsp;</td>");
             sb.Append("  <td>08 Uhr bis Folgetag 08 Uhr</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
+            sb.Append("<tr>");
+            sb.Append("  <td class='w3-green w3-text-black'>13.</td>");
+            sb.Append("  <td>Heute</td>");
+            sb.Append("  <td></td>");
+            sb.Append("  <td></td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+   
             sb.Append("  <th>Farbe</th>");
             sb.Append("  <th>Bedeutung</th>");
             sb.Append("  <th colspan='2'>Zuweisung Empf&auml;nger</th>");
@@ -649,13 +665,13 @@ namespace MelBox2
             sb.Append("  <td>nicht zugewiesen</td>");
             sb.Append("  <td colspan='2'>Es ist kein Empf&auml;nger namentlich zugewiesen -<br/>Nachrichten werden an das Bereitschaftshandy weitergeleitet</td>");
             sb.Append("</tr>");
-
             sb.Append("</table>");
 
-            sb.Append("<div class='w3-container'><b>Organisation</b><ul class='w3-ul 3-card'>");
-            sb.Append(" <li>Die Bereitschaft ist Kalenderwochenweise organisiert.<br/>Sie soll gew&ouml;hnlich von Montag, 17 Uhr bis zum folgenden Montag 8 Uhr gehen.</li>");
-            sb.Append(" <li>Es lassen sich individuelle Zeiten einrichten. Zeitliche L&uuml;cken oder &Uuml;berschneidungen werden <b>nicht</b> gesondert hervorgehoben. Alle &Auml;nderungen liegen in der Verantwortung des jeweiligen Benutzers.</li>");
-            sb.Append(" <li>Hinweis bei &Auml;nderungen: Liegt das Ende vor dem Beginn wird der Eintrag gel&ouml;scht.</li>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append("<li><b>Organisation</b></li>");
+            sb.Append("<li>Die Bereitschaft ist Kalenderwochenweise organisiert.<br/>Sie soll gew&ouml;hnlich von Montag, 17 Uhr bis zum folgenden Montag 8 Uhr gehen.</li>");
+            sb.Append("<li>Es lassen sich individuelle Zeiten einrichten. Zeitliche L&uuml;cken oder &Uuml;berschneidungen werden <b>nicht</b> gesondert hervorgehoben. Alle &Auml;nderungen liegen in der Verantwortung des jeweiligen Benutzers.</li>");
+            sb.Append("<li>Hinweis bei &Auml;nderungen: Eintr&auml;ge mit einer Zeit < 1 Std. werden gel&ouml;scht.</li>");
 
             sb.Append("</ul></div>");
 
@@ -665,7 +681,7 @@ namespace MelBox2
         internal static string InfoRecieved(bool isAdmin)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append($" <li>Hier werden die zuletzt empfangenen {Html.MaxTableRowsShow} Nachrichten angezeigt.</li>");
             sb.Append(" <li>&Uuml;ber die Schaltfl&auml;che &quot;Datum w&auml;hlen&quot; lassen sich die an einem bestimmten Tag eingegangenen Nachrichten anzeigen.</li>");
 
@@ -678,7 +694,7 @@ namespace MelBox2
         internal static string InfoBlocked(bool isAdmin)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append(" <li>&#9711; Die hier angezeigten Nachrichten werden zu den anhehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
             sb.Append(" <li>&#9711; Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum n&auml;chsten Tag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
             sb.Append(" <li>&#9711; Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");       
@@ -715,7 +731,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append(" <li>Änderungen sind nur durch eingeloggte Benutzer m&ouml;glich.</li>");
             sb.Append(" <li>Einloggen k&ouml;nnen sich nur registrierte und freigeschaltete Benutzer.<br/>Die Freischaltung muss durch einen Administrator erfolgen.</li>");
             sb.Append(" <li>Bei der Registrierung sind mindestens anzugeben:");
@@ -729,7 +745,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append(" <li>Hier werden Änderungen und Ereignisse protokolliert.</li>");
             sb.Append($" <li>Es werden maximal {Html.MaxTableRowsShow} Eintr&auml;ge angezeigt.</li>");
             sb.Append(" <li>Bei der Registrierung sind mindestens anzugeben:");

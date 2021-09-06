@@ -43,13 +43,15 @@ namespace MelBox2
         }
 
         /// <summary>
-        /// Wird ausgeführt bevor das Programm-Fenster beendet wird.
+        /// Wird ausgeführt bevor das Programm-Fenster beendet wird. 
+        /// Wird nicht bei 'brutalem beenden' durch X am Konsolengfenster odder Shutdown getriggert!
+        /// SerialPort daher nochmal möglichst separat abfangen!
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            Log.Info(AppName + " beendet.", 99);
+            Log.Info(AppName + " ordnungsgemäß beendet.", 99);
             Server.Stop();
             Gsm.ModemShutdown();
         }
@@ -80,6 +82,9 @@ namespace MelBox2
         /// <param name="e"></param>
         private static void Gsm_NewErrorEvent(object sender, string e)
         {
+#if !DEBUG
+            Email.Send(Email.Admin, DateTime.Now + " MelBox2 GSM-Fehlermeldung - " + e);
+#endif
             Log.Warning("GSM-Fehlermeldung - " + e, 1320);
             Sql.InsertLog(1, "Fehlermeldung Modem: " + e);
         }

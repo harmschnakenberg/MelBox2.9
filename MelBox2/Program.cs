@@ -14,12 +14,17 @@ namespace MelBox2
         {
             if (Process.GetProcessesByName(AppName).Length > 1)
             {
-                Log.Warning($"Es kann nur eine Instanz von {AppName} ausgeführt werden.", 739);                
+                //if (Args.Length == 0)                
+                    Log.Warning($"Es kann nur eine Instanz von {AppName} ausgeführt werden.", 739);                
                 return;
             }
 
             Console.Title = "MelBox2";
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
+            MelBoxGsm.CleanClose.CloseConsoleHandler += new CleanClose.EventHandler(CleanClose.Handler); //erzwungenes Beenden (X am Konsolenfenster)
+            CleanClose.SetConsoleCtrlHandler(CleanClose.CloseConsoleHandler, true);
+
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit; //Normales Beenden 
 
             Console.WriteLine("Progammstart.");
             ShowHelp();

@@ -293,10 +293,9 @@ namespace MelBox2
 
             string form = Html.Page(Server.Html_FormAccount, pairs);
             string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
+            string info = Html.Modal("Benutzerkategorien", Html.InfoAccount());
 
-            if (isAdmin) form = Html.Modal("Benutzerkategorien", Html.InfoAccount()) + form ;
-
-            await Html.PageAsync(context, "Benutzerkonto", table + form, user);            
+            await Html.PageAsync(context, "Benutzerkonto", info + table + form, user);            
         }
         
         [RestRoute("Post", "/account/new")]
@@ -525,7 +524,7 @@ namespace MelBox2
             {
                 { "@Id", shift.Id.ToString() },
                 { "@ContactOptions", contactOptions },
-                { "@MinDate",  DateTime.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd") },
+                { "@MinDate",  DateTime.UtcNow.Date.ToString("yyyy-MM-dd") },
                 { "@StartDate", shift.StartUtc.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@EndDate", shift.EndUtc.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@StartTime", shift.StartUtc.ToLocalTime().ToShortTimeString() },

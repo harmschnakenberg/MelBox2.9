@@ -332,14 +332,18 @@ namespace MelBox2
                 dt = SelectDataTable(queryUser, argsUser);
 
             string options = string.Empty;
+            string readOnly = dt.Rows.Count == 1 ? " readonly" : string.Empty;
+
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 int id = int.Parse(dt.Rows[i][0].ToString());
                 string name = dt.Rows[i][1].ToString();
                 string selected = (id == p.Id) ? "selected" : string.Empty;
 
-                if (p.Level >= Level_Admin || id == p.Level)
-                    options += $"<option value='{id}' {selected}>{name}</option>" + Environment.NewLine;
+ 
+
+                if (p.Level >= Level_Admin || id == p.Id)
+                    options += $"<option value='{id}' {selected}{readOnly}>{name}</option>" + Environment.NewLine;
             }
 
             return options;

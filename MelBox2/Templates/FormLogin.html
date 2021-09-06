@@ -6,9 +6,9 @@
                 <h2>Login</h2>
             </div>
             <form class='w3-margin w3-padding' name="form1" method="post" autocomplete="on">
-                <label><b>Benutzer*</b></label>
+                <label><b>Benutzer<span class="w3-opacity">*</span></b></label>
                 <input class='w3-input w3-border' name='name' type='text' placeholder='Benutzername' required>
-                <label><b>Passwort*</b></label>
+                <label><b>Passwort<span class="w3-opacity">*</span></b></label>
                 <input class='w3-input w3-border' name='password' type='password' pattern='.{4,}' placeholder='Mind. 4 Zeichen' required>
                 <p>
                     <button class='w3-button w3-cyan' formaction='/login' title="Login, um personalisierte Funktionen freischalten">Login</button>
@@ -16,12 +16,10 @@
                 </p>
             </form>
         </div>
-        <div class="w3-container w3-margin">
-            <p class="w3-right w3-opacity">
-                * = erforderlich
-            </p>
-            <button onclick="showMe('help1')" class="w3-btn w3-block w3-cyan">Hilfe</button>
+        <div class="w3-container">
+            <p class="w3-opacity">* = erforderlich</p>
 
+            <button onclick="showMe('help1')" class="w3-button w3-cyan">Hilfe</button>
             <div id="help1" class="w3-hide w3-container w3-center w3-pale-blue w3-padding">
                 <p>
                     In der rechten oberen Ecke wird das Info-Symbol angezeigt:

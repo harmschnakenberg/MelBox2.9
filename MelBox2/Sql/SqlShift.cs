@@ -300,6 +300,9 @@ namespace MelBox2
                     int h = startTime.ToUniversalTime().Hour;
                     int m = startTime.ToUniversalTime().Minute;
                     s.StartUtc = s.StartUtc.AddHours(h).AddMinutes(m);
+
+                    if (!s.StartUtc.IsDaylightSavingTime()) 
+                        s.StartUtc = s.StartUtc.AddHours(1);
                 }
             }
 
@@ -311,6 +314,9 @@ namespace MelBox2
                     int h = endTime.ToUniversalTime().Hour;
                     int m = endTime.ToUniversalTime().Minute;
                     s.EndUtc = s.EndUtc.AddHours(h).AddMinutes(m);
+
+                    if (!s.EndUtc.IsDaylightSavingTime())
+                        s.EndUtc = s.EndUtc.AddHours(1);
                 }
             }
 

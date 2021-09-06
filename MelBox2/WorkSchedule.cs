@@ -20,15 +20,15 @@ namespace MelBox2
 
             TimeSpan span = new TimeSpan(0, min, sec);
 #if DEBUG
-            Log.Info($"Nächste Senderüberprüfung in {min} min.", 65053);
+            Log.Info($"Nächste Senderüberprüfung in {min} min. {sec} sek.", 65053);
 #endif
             Timer execute = new Timer(span.TotalMilliseconds);
             
-            execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);
-            execute.Elapsed += new ElapsedEventHandler(DailyNotification);
+            execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
             execute.Elapsed += new ElapsedEventHandler(SetHourTimer);
+            execute.Elapsed += new ElapsedEventHandler(DailyNotification); //Stundensprung beachten!
 
             execute.AutoReset = false;
             execute.Start();
@@ -77,7 +77,7 @@ namespace MelBox2
             {
                 // The proc.PrivateMemorySize64 will returns the private memory usage in byte.
                 // Would like to Convert it to Megabyte? divide it by 2^20
-                long memory = proc.PrivateMemorySize64 / (1024 * 1024);
+                long memory = proc.PrivateMemorySize64 / (1 << 20); // (1024 * 1024);
                 int cpu = (int)perfCpuCount.NextValue();
 
                 string msg = $"Vom Programm zurzeit belegter Arbeitsspeicher: {memory} MB, CPU bei {cpu}%";                

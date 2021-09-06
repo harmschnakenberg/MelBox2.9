@@ -18,22 +18,23 @@
                     break;
                 default:
                     d.setHours(17, 0);
-            }          
+            }
         }
 
         function addTime(t, target) {
             var d = new Date(document.getElementById(target).value);
             d.setHours(t.value.getHours(), t.value.getMinutes());
         }
-
     </script>
 
     <div class="w3-modal-content w3-card-4 w3-display-middle" style="max-width:600px">
-
         <div class="w3-center">
             <br>
             <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Fenster schlie&szlig;en">&times;</span>
             <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>event_note</i>
+        </div>
+        <div class="w3-center">
+            <b>@Id</b>
         </div>
 
         <form class="w3-container" action="/shift/@Route" method="post">
@@ -59,7 +60,7 @@
                 </div>
 
                 <div class="w3-row">
-                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Verwerfen</button>
+                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Abbrechen</button>
                     <button class="w3-button w3-block w3-teal w3-section w3-padding w3-margin-left w3-col w3-third w3-right" type="submit">Speichern</button>
                 </div>
             </div>

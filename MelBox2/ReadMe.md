@@ -8,7 +8,6 @@ Für gesendete SMS wird die Sendungsverfolgung in der Datenbank dokumentiert.
 
 Bedienung (Einstellungen Empfänger & Empfangszeiten) über eine Web-Oberfläche.
 
-
 -	Welches Characterset verwenden? UCS2 (unicode, 140 Zeichen) für Umlaute oder GSM-Characterset (ASCII + Spezial, 160 Zeichen) für längere Nachrichten
 
 TODO: 
@@ -16,10 +15,9 @@ TODO:
 	URL-Reservierung:
 	netsh http add urlacl url=http://+:1234/ user=schnakenbUrg
 
--	Firewall TCP-Port öffnen --> Prgramme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
+-	Firewall TCP-Port öffnen --> Programme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
 
--	DeliveryCode prüfen: Bei Sendebestätigung (STATUS-REPORT) von GSM-Modem wird GSM3.40 nicht eingehalten? 
-	DeliveryCode <st> scheint nicht  GSM3.40 zu entsprechen. 
-	Bei ausgeschalteten EMpfangsgerät Code 3, später Code 6 ?
+-	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51
 
--	Rufumleitung: Autom. Rufumleitung zu Bereitschaft? Manuelle Möglichkeit Rufumleitung zu ändern vorsehen?
+-	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft testen! 
+					Manuelle Möglichkeit Rufumleitung zu ändern vorsehen?
