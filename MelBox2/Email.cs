@@ -41,18 +41,19 @@ namespace MelBox2
         /// <param name="sendCC">Sende an Ständige Empänger in CC</param>
         public static void Send(MailAddressCollection toList, string message, string subject, bool cc, int emailId)
         {
+#if DEBUG
             Console.WriteLine("Sende Email: " + message);
-
+#endif
             MailMessage mail = new MailMessage();
                   
             try
             {
-                #region From
+#region From
                 mail.From = From;
                 mail.Sender = From;
-                #endregion
+#endregion
 
-                #region To          
+#region To          
 
                 foreach (var to in toList ?? new MailAddressCollection() { Admin })
                 {
@@ -80,9 +81,9 @@ namespace MelBox2
                 if (!mail.To.Contains(Admin) && !mail.CC.Contains(Admin)) //Email geht in jedem Fall an Admin
                     mail.Bcc.Add(Admin);
 
-                #endregion
+#endregion
 
-                #region Message                
+#region Message                
                 if (subject.Length == 0)                    
                     subject = message.Normalize();
 
@@ -93,9 +94,9 @@ namespace MelBox2
                 mail.Subject = subject;
 
                 mail.Body = message.Normalize();
-                #endregion
+#endregion
 
-                #region Smtp
+#region Smtp
                 //Siehe https://docs.microsoft.com/de-de/dotnet/api/system.net.mail.smtpclient.sendasync?view=net-5.0
 
                 using (var smtpClient = new SmtpClient())
@@ -115,7 +116,7 @@ namespace MelBox2
                     //smtpClient.SendCompleted += SmtpClient_SendCompleted;  
                     //smtpClient.SendAsync(mail, emailId); //emailId = Zufallszahl größer 255 (Sms-Ids können zwischen 0 bis 255 liegen)
                 }
-                #endregion
+#endregion
             }
             catch (SmtpFailedRecipientsException ex)
             {

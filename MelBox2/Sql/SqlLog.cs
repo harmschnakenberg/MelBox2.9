@@ -20,12 +20,13 @@ namespace MelBox2
             _ = NonQuery($"INSERT INTO Log (Prio, Content) VALUES (@Prio, @Content);", args);
         }
 
-        public static DataTable SelectLastLogs(int maxPrio = 3)
+        public static DataTable SelectLastLogs(int maxRows = 300,  int maxPrio = 3)
         {
-            string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT 1000;";
+            string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
+                { "@LIMIT", maxRows },
                 { "@Prio", maxPrio }
             };
 

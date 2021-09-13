@@ -6,23 +6,24 @@ namespace MelBox2
     partial class Program
     {
         private static void GetIniValues()
-        {
-            Console.WriteLine("Initialisiere Konfiguration aus Datenbank.");
-
+        {           
             try
             {
-                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
+                Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath); // Erst die richtige Datenbank laden!
+                Console.WriteLine("Initialisiere Konfiguration aus Datenbankdatei: " + Sql.DbPath);
 
-                Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath);                
+                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
+                
                 Sql.Level_Admin = GetIniValue(nameof(Sql.Level_Admin), Sql.Level_Admin);
                 Sql.Level_Reciever = GetIniValue(nameof(Sql.Level_Reciever), Sql.Level_Reciever);
               
                 Gsm.MaxSendTrysPerSms = GetIniValue(nameof(Gsm.MaxSendTrysPerSms), Gsm.MaxSendTrysPerSms);
                 Gsm.RingSecondsBeforeCallForwarding = GetIniValue(nameof(Gsm.RingSecondsBeforeCallForwarding), Gsm.RingSecondsBeforeCallForwarding);
-                Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
+                Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);               
                 Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
                 Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
+                Console.WriteLine("Fehler und Debug-Medlungen gehen an: " + Gsm.AdminPhone);
+
                 Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName);
                 Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
                 Gsm.GsmCharacterSet = GetIniValue(nameof(Gsm.GsmCharacterSet), Gsm.GsmCharacterSet);
@@ -67,6 +68,7 @@ namespace MelBox2
 
         private static string GetIniValue(string propertyName, string standardValue)
         {
+            
             object result = Sql.SelectIniProperty(propertyName);
 
             if (result == null && Sql.InsertIniProperty(propertyName, standardValue))

@@ -23,7 +23,7 @@ namespace MelBox2
                 { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
                 { "@ProviderName" , Gsm.ProviderName},
                 { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
-                { "@ForewardingActive", $"<i class='material-icons-outlined'>{(Gsm.CallForwardingActive ? "phone_forwarded" : "phone_disabled")}</i>" },
+                { "@ForewardingActive", $"<i class='material-icons-outlined' title={(Gsm.CallForwardingActive ? "'Rufweiterleitung aktiv'> phone_forwarded" : "'keine Rufweiterleitung'>phone_disabled")}</i>" },
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
                 { "@AdminPhone", Gsm.AdminPhone},
@@ -132,12 +132,13 @@ namespace MelBox2
             string html;
             if (overdue.Rows.Count == 0)
             {
-                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig.");
+                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");
                 html += Html.FromTable(Sql.SelectWatchedSenders(), false);
             }
             else
             {
-                html = Html.FromTable(overdue, false);
+                html = Html.Alert(1, "Zeit&uuml;berschreitung", "Diese Absender haben l&auml;nger keine Nachricht geschickt. Bitte Meldeweg &Uuml;berpr&uuml;fen.");
+                html += Html.FromTable(overdue, false);
             }
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
@@ -311,19 +312,23 @@ namespace MelBox2
             #endregion
 
             #region Kontakt erstellen
-            Person nP = Sql.NewPerson(payload);
+            Person p = Sql.NewPerson(payload);
+            Person p_known = Sql.SelectPerson(p.Name); // Gibt es die Person schon?
             #endregion
 
-            bool success = Sql.InsertPerson(nP.Name, nP.Password, nP.Level, nP.Company, nP.Phone, nP.Email, nP.Via, nP.MaxInactive);
             string alert;
-
-            if (success)
+            
+            if (p_known.Id > 0)
             {
-                alert = Html.Alert(3, "Neuen Kontakt gespeichert", "Der Kontakt " + nP.Name + " wurde erfolgreich neu erstellt.");
-                Sql.InsertLog(2, "Der Kontakt >" + nP.Name + "< wurde neu erstellt durch >" + user.Name + "< [" + user.Level + "]");
+                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", $"Der Kontakt [{ p_known.Id}] {p_known.Name} existiert bereits in der Datenbank.");
+            }
+            else if (Sql.InsertPerson(p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, p.Via, p.MaxInactive))
+            {
+                alert = Html.Alert(3, "Neuen Kontakt gespeichert", "Der Kontakt " + p.Name + " wurde erfolgreich neu erstellt.");
+                Sql.InsertLog(2, "Der Kontakt >" + p.Name + "< wurde neu erstellt durch >" + user.Name + "< [" + user.Level + "]");
             }
             else
-                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt " + nP.Name + " konnte nicht in der Datenbank gespeichert werden.");
+                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt " + p.Name + " konnte nicht in der Datenbank gespeichert werden.");
 
             await Html.PageAsync(context, "Benutzerkonto erstellen", alert, user);
         }
@@ -338,24 +343,24 @@ namespace MelBox2
 
             #region Kontakt erstellen
             Dictionary<string, string> payload = Html.Payload(context);
-            Person uP = Sql.NewPerson(payload);
+            Person p = Sql.NewPerson(payload);
 
             //kann maximal eigenen Access-Level vergeben.
-            if (uP.Level > user.Level)
-                uP.Level = user.Level; 
+            if (p.Level > user.Level)
+                p.Level = user.Level; 
             #endregion
 
-            bool success = uP.Id > 0 && Sql.UpdatePerson(uP.Id, uP.Name, uP.Password, uP.Level, uP.Company, uP.Phone, uP.Email, (int)uP.Via, uP.KeyWord, uP.MaxInactive);
+            bool success = p.Id > 0 && Sql.UpdatePerson(p.Id, p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, (int)p.Via, p.KeyWord, p.MaxInactive);
 
             string alert;
 
             if (success)
             {
-                alert = Html.Alert(3, "Kontakt gespeichert", "Der Kontakt [" + uP.Id + "] " + uP.Name + " wurde erfolgreich geändert.");
-                Sql.InsertLog(2, "Der Kontakt [" + uP.Id + "] >" + uP.Name + "< wurde geändert durch >" + user.Name + "< [" + user.Level + "]");
+                alert = Html.Alert(3, "Kontakt gespeichert", "Der Kontakt [" + p.Id + "] " + p.Name + " wurde erfolgreich geändert.");
+                Sql.InsertLog(2, "Der Kontakt [" + p.Id + "] >" + p.Name + "< wurde geändert durch >" + user.Name + "< [" + user.Level + "]");
             }
             else
-                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + uP.Id + "] " + uP.Name + " konnte in der Datenbank nicht geändert werden.");
+                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
 
             string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
 
@@ -429,25 +434,28 @@ namespace MelBox2
             #region Kontakt erstellen 
             Dictionary<string, string> payload = Html.Payload(context);
 
-            Person p = Sql.NewPerson(payload);          
-                                
-            if (p.Id > 0)
+            Person p_new = Sql.NewPerson(payload);
+            Person p_known = Sql.SelectPerson(p_new.Name);
+            
+            if (p_known.Id > 0)
             {
-                string error = Html.Alert(1, "Registrierung fehlgeschlagen", $"Der Benutzername {p.Name} ist bereits vergeben." + @"<a href='/' class='w3-bar-item w3-button w3-teal w3-margin'>Nochmal</a>");
+                string error = Html.Alert(1, "Registrierung fehlgeschlagen", $"Der Benutzername {p_new.Name} ist bereits vergeben." + @"<a href='/' class='w3-bar-item w3-button w3-teal w3-margin'>Nochmal</a>");
                 await Html.PageAsync(context, "Benutzerregistrierung fehlgeschlagen", error);
                 return;
             }
 
             #endregion
 
-            bool success = Sql.InsertPerson(p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, p.Via, p.MaxInactive);
+
+
+            bool success = Sql.InsertPerson(p_new.Name, p_new.Password, p_new.Level, p_new.Company, p_new.Phone, p_new.Email, p_new.Via, p_new.MaxInactive);
 
             string alert;
 
             if (success)
             {
-                alert = Html.Alert(3, $"Erfolgreich registriert", $"Willkommen {p.Name}!<br/> Die Registrierung muss noch durch einen Administrator bestätigt werden, bevor Sie sich einloggen können. Informieren Sie einen Administrator.");
-                Sql.InsertLog(2, $"Neuer Benutzer >{p.Name}< im Web-Portal registriert.");
+                alert = Html.Alert(3, $"Erfolgreich registriert", $"Willkommen {p_new.Name}!<br/> Die Registrierung muss noch durch einen Administrator bestätigt werden, bevor Sie sich einloggen können. Informieren Sie einen Administrator.");
+                Sql.InsertLog(2, $"Neuer Benutzer >{p_new.Name}< im Web-Portal registriert.");
             }
             else
                 alert = Html.Alert(1, "Registrierung fehlgeschlagen", "Es ist ein Fehler bei der Registrierung aufgetreten. Wenden Sie sich an den Administrator.");
@@ -585,10 +593,11 @@ namespace MelBox2
             if (shift.PersonId == 0) shift.PersonId = user.Id;
 
             bool success = true;
-            List <Shift> shifts = Sql.SplitShift(shift);
-            foreach (Shift splitShift in shifts)            
+
+            List<Shift> shifts = Sql.SplitShift(shift);
+            foreach (Shift splitShift in shifts)
                 if (!Sql.InsertShift(splitShift)) success = false;
-            
+
             string alert;
 
             if (success)
@@ -617,14 +626,13 @@ namespace MelBox2
             List<Shift> shifts = Sql.SplitShift(shift);
 
             if (shiftHours > 0)
-            for (int i = 0; i < shifts.Count; i++)
-            {
-                    if (i == 0) //Warum geht hier die Kurzschreibweise nicht?!?
-                    { 
-                        if (!Sql.UpdateShift(shifts[i])) success = false; 
-                    }
-                    else { if (!Sql.InsertShift(shifts[i])) success = false; }
-            }
+                for (int i = 0; i < shifts.Count; i++)
+                {
+                    if (i == 0)
+                    { if (!Sql.UpdateShift(shifts[i])) success = false; }
+                    else
+                    { if (!Sql.InsertShift(shifts[i])) success = false; }
+                }
 
             string alert;
             string shiftName = Sql.SelectPerson(shift.PersonId).Name;
@@ -651,6 +659,7 @@ namespace MelBox2
 
         #region Log
         [RestRoute("Get", "/log")]
+        [RestRoute("Get", "/log/{maxPrio:num}")]
         public static async Task LoggingShow(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
@@ -658,7 +667,11 @@ namespace MelBox2
             bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
-            System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow);
+            int maxPrio = 3;
+            if (context.Request.PathParameters.ContainsKey("maxPrio"))
+                _ = int.TryParse(context.Request.PathParameters["maxPrio"], out maxPrio);
+            
+            System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
             string table = Html.FromTable(log, false, "");
             int del = 100;
             string html = user.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
@@ -713,7 +726,7 @@ namespace MelBox2
             string form = Html.Modal("Login und Registrierung", Html.InfoLogin());
             form += Html.Page(Server.Html_FormLogin, null);
 
-            await Html.PageAsync(context, "Login", form);
+            await Html.PageAsync(context, "MelBox2", form);
         }
 
     }

@@ -100,7 +100,7 @@ namespace MelBox2
         /// <param name="args">Parameter für SQL-Abfrage</param>
         /// <returns>Tabelle mit dem Ergebnis der Abfrage.</returns>
         internal static DataTable SelectDataTable(string query, Dictionary<string, object> args)
-        {
+        {           
             DataTable myTable = new DataTable();
 
             if (!CheckDbFile()) return myTable;

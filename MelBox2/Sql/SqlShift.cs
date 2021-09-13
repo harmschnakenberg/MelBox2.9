@@ -124,9 +124,18 @@ namespace MelBox2
             return phoneNumbers;
         }
 
+
+        /// <summary>
+        /// Gibt die Bereitschaftshandynummer aus. Wenn es keinen Eintrag für das Bereitschaftshandy in der DB gibt, wird einer erzeugt.
+        /// </summary>
+        /// <returns>Bereitschaftshandynummer</returns>
         internal static string GetPhone_Bereitschaftshandy()
         {
-            const string query = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy';";             
+            const string query =  "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES " + 
+                                  @"('Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1) " +                                
+                                  "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); "+
+                                  "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy';";  
+            
             return SelectValue(query, null).ToString();
         }
 
@@ -197,9 +206,7 @@ namespace MelBox2
             DateTime localStart = shift.StartUtc;
             DateTime localEnd = shift.StartUtc;
 
-            if (localStart.CompareTo(localEnd) > 0) localEnd = localStart; //Wenn Ende vor Start liegt
-
-            if (shift.StartUtc.Date == shift.EndUtc.Date)
+            if (shift.StartUtc.Date == shift.EndUtc.Date || shift.StartUtc.CompareTo(shift.EndUtc) > 0) //Wenn nur einen Tag lang oder Ende vor Start liegt.
             {
                 shifts.Add(shift);
                 return shifts;
@@ -241,6 +248,9 @@ namespace MelBox2
         /// <returns></returns>
         internal static bool InsertShift(Shift shift)
         {
+            if (shift.StartUtc.CompareTo(shift.EndUtc) > 0) //Wenn Ende vor Start liegt, abbrechen.            
+                return false;
+            
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@PersonId", shift.PersonId},

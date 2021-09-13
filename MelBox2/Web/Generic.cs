@@ -263,6 +263,16 @@ namespace MelBox2
             return sb.ToString();
         }
 
+        internal static string FormLogFilter()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<table class='w3-table w3-bordered'>");
+            sb.Append("<tr>");
+
+            return sb.ToString();
+        }
+
         #endregion
 
 
@@ -671,7 +681,8 @@ namespace MelBox2
             sb.Append("<li><b>Organisation</b></li>");
             sb.Append("<li>Die Bereitschaft ist Kalenderwochenweise organisiert.<br/>Sie soll gew&ouml;hnlich von Montag, 17 Uhr bis zum folgenden Montag 8 Uhr gehen.</li>");
             sb.Append("<li>Es lassen sich individuelle Zeiten einrichten. Zeitliche L&uuml;cken oder &Uuml;berschneidungen werden <b>nicht</b> gesondert hervorgehoben. Alle &Auml;nderungen liegen in der Verantwortung des jeweiligen Benutzers.</li>");
-            sb.Append("<li>Hinweis bei &Auml;nderungen: Eintr&auml;ge mit einer Zeit < 1 Std. werden gel&ouml;scht.</li>");
+            sb.Append("<li>Benutzer k&ouml;nnen eine neue Kalenderwoche einrichten oder eigene Zeiten bearbeiten.<br/>Administratoren k&ouml;nnen auch Zeiten anderer Benutzer &auml;ndern.</li>");
+            sb.Append("<li>Hinweis bei &Auml;nderungen: Eintr&auml;ge mit einer Dauer von 0 Std. werden gel&ouml;scht.</li>");
 
             sb.Append("</ul></div>");
 
@@ -748,9 +759,6 @@ namespace MelBox2
             sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             sb.Append(" <li>Hier werden Änderungen und Ereignisse protokolliert.</li>");
             sb.Append($" <li>Es werden maximal {Html.MaxTableRowsShow} Eintr&auml;ge angezeigt.</li>");
-            sb.Append(" <li>Bei der Registrierung sind mindestens anzugeben:");
-            sb.Append("   <lu><li>ein noch ungenutzter Benutzername</li><li>ein pers&ouml;nliches Passwort</li></lu></li>");
-
             sb.Append("</ul></div>");
             return sb.ToString();
         }

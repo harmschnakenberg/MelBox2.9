@@ -78,6 +78,21 @@ namespace MelBox2
             return GetPerson(dt);
         }
 
+        internal static Person SelectPerson(string name)
+        {
+
+            const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Name = @Name;";
+
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Name", name }
+            };
+
+            DataTable dt = SelectDataTable(query, args);
+
+            return GetPerson(dt);
+        }
+
         internal static Person NewPerson(Dictionary<string, string> payload)
         {
             Person p = new Person();

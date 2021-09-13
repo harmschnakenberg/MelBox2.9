@@ -18,7 +18,7 @@ namespace MelBox2
             int min = 59 - DateTime.Now.Minute;
             int sec = 59 - DateTime.Now.Second;
 
-            TimeSpan span = new TimeSpan(0, min, sec);
+            TimeSpan span = new TimeSpan(0, min, sec + 10); //In jedem Fall erst nach dem Stundensprung ausführen
 #if DEBUG
             Log.Info($"Nächste Senderüberprüfung in {min} min. {sec} sek.", 65053);
 #endif
@@ -27,9 +27,9 @@ namespace MelBox2
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
-            execute.Elapsed += new ElapsedEventHandler(SetHourTimer);
             execute.Elapsed += new ElapsedEventHandler(DailyNotification); //Stundensprung beachten!
-
+            execute.Elapsed += new ElapsedEventHandler(SetHourTimer);
+            
             execute.AutoReset = false;
             execute.Start();
         }
@@ -99,13 +99,6 @@ namespace MelBox2
         private static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
         {
             string backup = Sql.GetPhone_Bereitschaftshandy();
-
-            if (backup?.Length == 0) //'Bereitschaftshandy' nicht in DB vorhanden.
-            {
-                _ = Sql.NonQuery(@"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1); ", null);
-                backup = Sql.GetPhone_Bereitschaftshandy();
-            }
-
             string phone = Sql.GetCurrentShiftPhoneNumbers()?[0] ?? backup;
 
             if (Gsm.CallForwardingNumber != phone)

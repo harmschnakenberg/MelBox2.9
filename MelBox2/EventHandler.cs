@@ -56,6 +56,14 @@ namespace MelBox2
             Gsm.ModemShutdown();
         }
 
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Log.Info($"{AppName} durch Tastenkombination Strg + {e.SpecialKey} beendet.", 98);
+            Server.Stop();
+            Gsm.ModemShutdown();
+        }
+
+
         /// <summary>
         /// Ein neuer Sprachanruf wurde erkannt.
         /// </summary>
@@ -63,6 +71,7 @@ namespace MelBox2
         /// <param name="e"></param>
         private static void Gsm_NewCallRecieved(object sender, string e)
         {
+            
             SmsIn dummy = new SmsIn
             {
                 Phone = e,
@@ -70,10 +79,13 @@ namespace MelBox2
                 TimeUtc = DateTime.UtcNow
             };
 
+            Console.WriteLine(dummy.Message);
             Sql.InsertRecieved(dummy);
 
             Email.Send(Email.Admin, $"Sprachanruf {dummy.TimeUtc.ToLocalTime()} weitergeleitet an >{CallForwardingNumber}<.", $"Sprachanruf >{e}<", true);
         }
+
+        static Timer emailTimer = new Timer();
 
         /// <summary>
         /// Das GSM-Modem hat einen Fehler gemeldet
@@ -83,10 +95,23 @@ namespace MelBox2
         private static void Gsm_NewErrorEvent(object sender, string e)
         {
 #if !DEBUG
-            Email.Send(Email.Admin, DateTime.Now + " MelBox2 GSM-Fehlermeldung - " + e);
+            if (!emailTimer.Enabled) // Sende Emails mit GSM-Fehlermeldung nicht häufiger als im Abstand von 30 sec.
+            {
+                emailTimer.Interval = 30000;
+                emailTimer.AutoReset = false;
+                emailTimer.Enabled = true;
+                emailTimer.Elapsed += EmailTimer_Elapsed;
+                emailTimer.Start();
+            }            
 #endif
             Log.Warning("GSM-Fehlermeldung - " + e, 1320);
-            Sql.InsertLog(1, "Fehlermeldung Modem: " + e);
+            Sql.InsertLog(1, "Fehlermeldung Modem: " + e);            
+        }
+
+        private static void EmailTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Email.Send(Email.Admin, Gsm.LastError.Item1 + " MelBox2 GSM-Fehlermeldung - " + Gsm.LastError.Item2);
+            emailTimer.Enabled = false;
         }
 
         /// <summary>

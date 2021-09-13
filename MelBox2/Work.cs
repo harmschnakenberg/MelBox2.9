@@ -32,7 +32,7 @@ namespace MelBox2
                 
                 bool isSmsTest = IsSmsTest(smsIn);
                 if (isSmsTest) continue; //'SmsAbruf' nicht an Bereitschaft und Emailverteiler senden. 
-                bool isLifeMessage = IsLifeMessage(smsIn);
+                bool isLifeMessage = IsLifeMessage(smsIn); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
                 bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
                
                 if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
