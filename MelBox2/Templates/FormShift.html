@@ -1,29 +1,75 @@
 ﻿<div id="id01">
     <script>
-        function minEndDate(x) {
-            var d = new Date(document.getElementById('StartDate').value);
-            d.setDate(d.getDate()); // d.setDate(d.getDate() + 1);
-            x.min = d.toISOString().substr(0, 10);
+        function addZero(i) {
+            if (i < 10) {
+                i = "0" + i;
+            }
+            return i;
         }
 
-        function setStartTime(x) {
-            var d = new Date(document.getElementById('StartTime').value);
+        Date.prototype.addHours = function (h) {
+            this.setHours(this.getHours() + h);
+            return this;
+        }
 
-            switch (x.value.getDay()) {
-                case 0:
-                case 6:
-                    d.setHours(8, 0);
-                case 5:
-                    d.setHours(15, 0);
-                    break;
-                default:
-                    d.setHours(17, 0);
+        function minEndDate() {
+            var edo = document.getElementById('EndDate');
+            var sd = new Date(document.getElementById('StartDate').value);
+            edo.min = sd.toISOString().substr(0, 10);
+        }
+
+        function checkEndTime(x) {
+            var edo = document.getElementById('EndDate');
+            var eto = document.getElementById('EndTime');
+            var sdo = document.getElementById('StartDate');
+            var sto = document.getElementById('StartTime');
+
+            var ed = new Date(edo.value);           
+            ed.setHours(eto.value.substr(0, 2), eto.value.substr(3, 2));
+            ed.setHours(eto.value.substr(0, 2), eto.value.substr(3, 2));
+
+            var sd = new Date(sdo.value);
+            sd.setHours(sto.value.substr(0, 2), sto.value.substr(3, 2));
+            sd.setHours(sto.value.substr(0, 2), sto.value.substr(3, 2));
+
+            if (sd >= ed) {
+                if (x == 1) {
+                    edo.value = sd.addHours(24).toISOString().substr(0, 10);
+                    eto.value = '08:00';
+                }
+                else {
+                    sdo.value = ed.addHours(-1).toISOString().substr(0, 10);
+                    sto.value = addZero(ed.addHours(-1).getHours()) + ':00';
+                }
             }
         }
 
-        function addTime(t, target) {
+        function setStartTime() {
+            var sd = new Date(document.getElementById('StartDate').value);
+
+            switch (sd.getDay()) {
+                case 0:
+                case 6:
+                    sd.setHours(8, 0);
+                    break;
+                case 5:
+                    sd.setHours(15, 0);
+                    break;
+                default:
+                    sd.setHours(17, 0);
+                    break;
+            }
+
+            var st = addZero(sd.getHours()) + ':' + addZero(sd.getMinutes());
+            document.getElementById('StartTime').value = st;
+
+            checkEndTime(1);
+        }
+
+        function addTime(time, target) {
             var d = new Date(document.getElementById(target).value);
-            d.setHours(t.value.getHours(), t.value.getMinutes());
+            var t = new Date(time.value);
+            d.setHours(t.getHours(), t.getMinutes());
         }
     </script>
 
@@ -42,7 +88,7 @@
                 <input name="Id" type="hidden" value="@Id" />
 
                 <label><b>Benutzername</b></label>
-                <select class="w3-select w3-border" name="PersonId">
+                <select class="w3-select w3-border" name="PersonId" title="Empf&auml;nger ausw&auml;hlen">
                     @ContactOptions
                 </select>
 
@@ -51,13 +97,15 @@
                     <label class="w3-col w3-half"><b>bis</b></label>
                 </div>
                 <div class="w3-row">
-                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate" onchange="setStartTime(this)">
-                    <input name="End" id="EndDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate(this)">
+                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate" onchange="setStartTime()">
+                    <input name="End" id="EndDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate()" onchange="checkEndTime(0)">
                 </div>
                 <div class="w3-row">
-                    <input name="StartTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@StartTime" onchange="addTime(this, 'StartDate')">
-                    <input name="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onchange="addTime(this, 'EndDate')">
+                    <input name="StartTime" id="StartTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@StartTime" onchange="addTime(this, 'StartDate')">
+                    <input name="EndTime" id="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onchange="addTime(this, 'EndDate')">
                 </div>
+                <div id="timeWarner" class="w3-centered w3-text-red" style="visibility:hidden;">Der gew&auml;hlte Zeitraum ist ung&uuml;ltig.</div>
+                <div class="w3-centered w3-opacity">Kann nur durch einen Administrator gel&ouml;scht werden.</div>
 
                 <div class="w3-row">
                     <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Abbrechen</button>

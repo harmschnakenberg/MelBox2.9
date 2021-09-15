@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Timers;
 using MelBoxGsm;
 using static MelBoxGsm.Gsm;
@@ -85,7 +86,7 @@ namespace MelBox2
             Email.Send(Email.Admin, $"Sprachanruf {dummy.TimeUtc.ToLocalTime()} weitergeleitet an >{CallForwardingNumber}<.", $"Sprachanruf >{e}<", true);
         }
 
-        static Timer emailTimer = new Timer();
+        static readonly Timer emailTimer = new Timer();
 
         /// <summary>
         /// Das GSM-Modem hat einen Fehler gemeldet
@@ -164,6 +165,26 @@ namespace MelBox2
         private static void Gsm_SmsSentEvent(object sender, SmsOut e)
         {
             Sql.InsertSent(e);
+        }
+
+        private static void ReliableSerialPort_SerialPortUnavailableEvent(object sender, int e)
+        {
+            //Neustart 
+            ProcessStartInfo Info = new ProcessStartInfo
+            {
+                Arguments = "/C ping 127.0.0.1 -n 10 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"",
+                WindowStyle = ProcessWindowStyle.Normal,
+                CreateNoWindow = true,
+                FileName = "cmd.exe"
+            };
+            Process.Start(Info);
+            Environment.Exit(e);
+        }
+
+        private static void ReliableSerialPort_SerialPortErrorEvent(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
+        {
+            Console.WriteLine("Fehler COM-Port: " + e);
+            Log.Error("Fehler COM-Port: " + e, 1122);
         }
 
 

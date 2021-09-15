@@ -26,6 +26,7 @@ namespace MelBox2
         public static string Html_FormRegister { get; } = Path.Combine(appPath, "Templates", "FormRegister.html");
         public static string Html_FormShift { get; } = Path.Combine(appPath, "Templates", "FormShift.html");
         public static string Html_FormGsm { get; } = Path.Combine(appPath, "Templates", "FormGsm.html");
+        public static string Html_Help { get; } = Path.Combine(appPath, "Templates", "Help.html");
 
         /// <summary>
         /// GUID - User-Id

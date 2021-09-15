@@ -247,6 +247,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="KK.ico" />
+    <None Include="Templates\Help.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ReadMe.md" />
     <None Include="Templates\FormShift.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

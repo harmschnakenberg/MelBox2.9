@@ -13,8 +13,18 @@ namespace MelBox2
         [RestRoute("Get", "/gsm")]
         public static async Task ModemShow(IHttpContext context)
         {
+            Person user = await Html.GetLogedInUserAsync(context, false);
+            bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
+
+            string info = Html.Modal("GSM-Modem",
+                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>"+
+                Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
+                + (isAdmin ? "<form class='w3-margin'>" + Html.ButtonNew("gsm", "Reinitialisieren") : string.Empty) 
+                + "<span class='w3-container w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>");
+
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
+                { "@ModemReinit", info },
                 { "@Quality" , Gsm.SignalQuality.ToString()},
                 { "@Registered" , Gsm.NetworkRegistration.RegToString()},
                 { "@ModemType", Gsm.ModemType},
@@ -27,12 +37,27 @@ namespace MelBox2
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
                 { "@AdminPhone", Gsm.AdminPhone},
-                { "@AdminEmail", Email.Admin.Address }
+                { "@AdminEmail", Email.Admin.Address }                
             };
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
 
             await Html.PageAsync(context, "GSM-Modem", html);
+        }
+
+        [RestRoute("Get", "/gsm/new")]
+        public static async Task ModemReinit(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Admin) return;
+            #endregion
+
+            Gsm.SetupModem();
+
+            string html = Html.Alert(2, "GSM-Modem reinitialisiert", "Die Startprozedur für das GSM-Modem wurde ausgeführt.");
+
+            await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
         }
         #endregion
 
@@ -622,10 +647,13 @@ namespace MelBox2
 
             int shiftHours = (int)shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
-            bool success = true;
+            bool success = true;            
+            string alert;
+            string shiftName = Sql.SelectPerson(shift.PersonId).Name;
             List<Shift> shifts = Sql.SplitShift(shift);
 
-            if (shiftHours > 0)
+            if (shiftHours > 0 && user.Level >= Server.Level_Reciever)
+            {
                 for (int i = 0; i < shifts.Count; i++)
                 {
                     if (i == 0)
@@ -634,21 +662,28 @@ namespace MelBox2
                     { if (!Sql.InsertShift(shifts[i])) success = false; }
                 }
 
-            string alert;
-            string shiftName = Sql.SelectPerson(shift.PersonId).Name;
-
-            if (shiftHours > 0 && user.Level >= Server.Level_Reciever && success)
+                if (success)
+                {
+                    alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde erfolgreich geändert.");
+                    Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für >{shiftName}< wurde geändert durch >{user.Name}<");
+                }
+                else                
+                    alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");                
+            } 
+            else if (user.Level >= Server.Level_Admin )
             {
-                alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde erfolgreich geändert.");
-                Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für >{shiftName}< wurde geändert durch >{user.Name}<");
-            }
-            else if (user.Level >= Server.Level_Admin && Sql.DeleteShift(shift.Id))
-            {
-                alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde gelöscht.");
-                Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] für >{shiftName}< wurde gelöscht durch >{user.Name}<");
+                if (Sql.DeleteShift(shift.Id))
+                {
+                    alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde gelöscht.");
+                    Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] für >{shiftName}< wurde gelöscht durch >{user.Name}<");
+                }
+                else
+                    alert = Html.Alert(2, "Fehler beim Löschen der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
             }
             else
-                alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
+                alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Sie haben keine Berechtigung für die Änderung der Bereitschaft " +
+                    $"Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName}. " +
+                    $"{(shiftHours > 0 ? string.Empty : "Nur Administratoren können Einträge löschen.")}");
 
             string table = Html.FromShiftTable(user);
 
@@ -663,8 +698,7 @@ namespace MelBox2
         public static async Task LoggingShow(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context, false);
-            bool isAdmin = user != null && user.Level >= Server.Level_Admin;
+            Person user = await Html.GetLogedInUserAsync(context, false);              
             #endregion
 
             int maxPrio = 3;
@@ -674,7 +708,7 @@ namespace MelBox2
             System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
             string table = Html.FromTable(log, false, "");
             int del = 100;
-            string html = user.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
+            string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
             html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
 
@@ -719,6 +753,13 @@ namespace MelBox2
         }
         #endregion
 
+        [RestRoute("Get", "/help")]
+        public static async Task HelpMeShow(IHttpContext context)
+        {
+            string html = Html.Page(Server.Html_Help, null);
+
+            await Html.PageAsync(context, "Melbox2 Hilfe", html);
+        }
 
         [RestRoute]
         public static async Task Home(IHttpContext context)

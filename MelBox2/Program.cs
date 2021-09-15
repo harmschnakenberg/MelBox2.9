@@ -36,7 +36,7 @@ namespace MelBox2
             GetIniValues();
 
             Log.Info(startUpMsg, 121);
-            Sql.InsertLog(3, startUpMsg);
+            Sql.InsertLog(3, AppName + " gestartet.");
             Console.WriteLine(startUpMsg);
 
             Server.Start();
@@ -82,13 +82,21 @@ namespace MelBox2
                         ShowHelp();
                         break;
                     case "ini":
-                        GetIniValues(); Gsm.SetupModem(); Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen."); 
+                        {
+                            GetIniValues(); 
+                            Gsm.SetupModem(); 
+                            Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen."); 
+                            Log.Info("Einlesen der Initialisierungswerte aus der Datenbank wurde manuell aus der Konsole angestoßen.", 4112);
+                        }
                         break;
                     case "cls":
                         Console.Clear();
                         break;
                     case "modem reinit":
                         Gsm.SetupModem();
+                        break;
+                    case "modem status":
+                        GetModemParameters();
                         break;
                     case "sms read sim":
                         SmsRead_Sim();
@@ -111,7 +119,10 @@ namespace MelBox2
                         }
                         break;
                     case "restart":
-                        Restart();
+                        {
+                            Log.Info("Die Anwendung wurde mit dem Befehl 'Restart' manuell neugestartet.", 4445);
+                            ReliableSerialPort_SerialPortUnavailableEvent(null, 4445);
+                        }
                         break;
                 }
 
@@ -124,23 +135,6 @@ namespace MelBox2
 
 
 
-        private static void ReliableSerialPort_SerialPortUnavailableEvent(object sender, int e)
-        {
-            //Neustart 
-            ProcessStartInfo Info = new ProcessStartInfo();
-            Info.Arguments = "/C ping 127.0.0.1 -n 5 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"";
-            Info.WindowStyle = ProcessWindowStyle.Normal;
-            Info.CreateNoWindow = true;
-            Info.FileName = "cmd.exe";
-            Process.Start(Info);
-            Environment.Exit(e);
-        }
-
-        private static void ReliableSerialPort_SerialPortErrorEvent(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
-        {
-            Console.WriteLine("Fehler COM-Port: " + e);
-            Log.Error("Fehler COM-Port: " + e, 1122);
-        }
 
         private static void SmsRead_Sim()
         {
@@ -184,7 +178,9 @@ namespace MelBox2
             sb.AppendLine("".PadRight(32) + $"{(int)ReliableSerialPort.GsmDebug.RequestGsm} = an Modem gesendet");
             sb.AppendLine("".PadRight(32) + $"{(int)ReliableSerialPort.GsmDebug.UnsolicatedResult} = Ereignisse von Modem.");
             sb.AppendLine("Ini".PadRight(32) + "Liest die Initialisierungswerte aus der Datenbank neu ein.");
-            sb.AppendLine("Modem Reinit".PadRight(32) + "Initialisiert das Modem neu.");             
+            sb.AppendLine("Modem Reinit".PadRight(32) + "Initialisiert das Modem neu.");
+            sb.AppendLine("Modem Status".PadRight(32) + "Zeigt die wichtigsten aktuellen Verbindungsdaten zum Modem an.");
+            sb.AppendLine("Restart".PadRight(32) + "beendet das Programm und startet es nach 5 Sek. neu.");
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS.");
             sb.AppendLine("### HILFE ENDE ###");
@@ -192,16 +188,31 @@ namespace MelBox2
             Console.WriteLine(sb.ToString());
         }
 
-
-        static void Restart()
+        private static void GetModemParameters()
         {
-            ProcessStartInfo Info = new ProcessStartInfo();
-            Info.Arguments = "/C ping 127.0.0.1 -n 2 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"";
-            Info.WindowStyle = ProcessWindowStyle.Normal;
-            Info.CreateNoWindow = true;
-            Info.FileName = "cmd.exe";
-            Process.Start(Info);
-            Environment.Exit(4444);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"\r\n### GSM MODEM STATUS {DateTime.Now}  ###");
+            sb.AppendLine("Modemtype".PadRight(32) + Gsm.ModemType);
+            sb.AppendLine("Angeschlossen an".PadRight(32) + Gsm.SerialPortName);
+            sb.AppendLine("Kommunikationsmodus".PadRight(32) + (Gsm.IsGsmTextMode ? "Text":"PDU"));
+            sb.AppendLine("Zeichensatz".PadRight(32) + Gsm.GsmCharacterSet);
+            sb.AppendLine("SIM Status".PadRight(32) + Gsm.SimPinStatus);
+            sb.AppendLine("SIM Hinterlegter PIN".PadRight(32) + Gsm.SimPin);
+            sb.AppendLine("SIM Telefonnummer".PadRight(32) + $"{Gsm.OwnNumber} {Gsm.OwnName}");
+            sb.AppendLine("Mobilfunknetzempfang".PadRight(32) + $"{Gsm.SignalQuality}%");
+            sb.AppendLine("Mobilfunknetzstatus überwachen".PadRight(32) + (Gsm.IsNetworkRegistrationNotificationActive ? "ja" : "nein"));
+            sb.AppendLine("Mobilfunknetzstatus".PadRight(32) + Gsm.NetworkRegistration);
+            sb.AppendLine("Mobilfunknetzbetreiber".PadRight(32) + Gsm.ProviderName);
+            sb.AppendLine("SMS Servicecenter".PadRight(32) + Gsm.SmsServiceCenterAddress);
+            sb.AppendLine("SMS Speicherbelegung".PadRight(32) + $"{Gsm.SmsStorageCapacityUsed} / {Gsm.SmsStorageCapacity}");
+            sb.AppendLine("SMS Empfangsbestätigung".PadRight(32) + $"warte max. {Gsm.TrackingTimeoutMinutes} Minuten");
+            sb.AppendLine("SMS max. Sendeversuche".PadRight(32) + Gsm.MaxSendTrysPerSms);
+            sb.AppendLine("Rufweiterleitung".PadRight(32) + (Gsm.CallForwardingActive ? $"nach {Gsm.RingSecondsBeforeCallForwarding} Sek. an {Gsm.CallForwardingNumber}" : "deaktiviert"));
+            sb.AppendLine("Debug-Telefonnummer".PadRight(32) + Gsm.AdminPhone);
+            sb.AppendLine($"Letzter Fehler".PadRight(32) + $"{Gsm.LastError.Item1} >{Gsm.LastError.Item2}<");
+            sb.AppendLine("### GSM MODEM STATUS ENDE ###");
+
+            Console.WriteLine(sb.ToString());
         }
 
     }

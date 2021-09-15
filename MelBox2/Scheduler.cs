@@ -11,11 +11,11 @@ namespace MelBox2
     class Scheduler
     {
         public static string TaskName { get; set; } = "MelBoxWatchDog";
-        static string taskPath = System.Reflection.Assembly.GetAssembly(typeof(Program)).Location;  // Diese exe
+        static readonly string taskPath = System.Reflection.Assembly.GetAssembly(typeof(Program)).Location;  // Diese exe
 
         internal static void CeckOrCreateWatchDog() 
         {
-            if (!HasTask(TaskName) && !CreateSchedulerTask(10, TaskName, taskPath))                
+            if (!HasTask(TaskName) && !CreateSchedulerTask(15, TaskName, taskPath))                
                     Log.Error("Es konnte kein Task zur Überwachung von MelBox erstellt werden.", 1211);                
         }
 
@@ -90,7 +90,9 @@ namespace MelBox2
                 }
                 else
                 {
-                    Log.Info("Es wurde ein neuer Windows-SchedulerTask zur Überwachung von MelBox2 erstelt.", 61301);
+                    string infoText = "Es wurde ein neuer Windows-SchedulerTask zur Überwachung von MelBox2 erstelt.";
+                    Log.Info(infoText, 61301);
+                    Console.WriteLine(infoText);
                     return true;
                 }
             }

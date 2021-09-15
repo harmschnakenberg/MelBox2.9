@@ -86,7 +86,7 @@ namespace MelBox2
             {
                 { "@Titel", titel },
                 { "@Quality", Gsm.SignalQuality.ToString() },
-                { "@GsmConnect", Gsm.NetworkRegistration == Gsm.Registration.Registerd ? Gsm.SignalQuality < 20 ? "signal_cellular_0_bar" : "signal_cellular_4_bar" : "signal_cellular_off"},
+                { "@GsmConnect", Gsm.NetworkRegistration == Gsm.Registration.Registered ? Gsm.SignalQuality < 20 ? "signal_cellular_0_bar" : "signal_cellular_4_bar" : "signal_cellular_off"},
                 { "@Inhalt", body },
                 { "@User", user == null ? string.Empty : user.Name}
             };
@@ -126,9 +126,9 @@ namespace MelBox2
 
         #region html-Snippets
 
-        internal static string ButtonNew(string root)
+        internal static string ButtonNew(string root, string caption = "Neu")
         {
-            return $"<button style='width:20%' class='w3-button w3-block w3-blue w3-section w3-padding w3-margin-right w3-col type='submit' formaction='/{root}/new'>Neu</button>\r\n";
+            return $"<button style='width:20%' class='w3-button w3-block w3-blue w3-section w3-padding w3-margin-right w3-col type='submit' formaction='/{root}/new'>{caption}</button>\r\n";
         }
 
         internal static string ButtonDelete(string root, int id)
@@ -197,7 +197,7 @@ namespace MelBox2
         }
 
         /// <summary>
-        /// Färbe den Tag im Kalender ein
+        /// F&auml;rbe den Tag im Kalender ein
         /// </summary>
         /// <param name="holydays"></param>
         /// <param name="date"></param>
@@ -237,7 +237,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<button onclick=\"showMe('help2')\" class='w3-button w3-cyan w3-display-position' style='top:140px;right:100px;' title='nur 1 Tag anzeigen'>Datum wählen</button>");
+            sb.Append("<button onclick=\"showMe('help2')\" class='w3-button w3-cyan w3-display-position' style='top:140px;right:100px;' title='nur 1 Tag anzeigen'>Datum w&auml;hlen</button>");
             sb.Append("<div id='help2' class='w3-hide w3-container w3-center w3-pale-blue w3-padding '>");
             sb.Append($"  <form id='chooseDate' method='get' onsubmit='setDate()' action='/{root}'>");            
             sb.Append($"   <input name='datum' type='date' value='{DateTime.Now.Date:yyyy-MM-dd}'>");
@@ -509,7 +509,7 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'>");
-            sb.Append($"   <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-cyan w3-display-position w3-badge material-icons-outlined' title='{title}' style='top:140px;right:20px;';>info</button>");
+            sb.Append($"   <button onclick = \"document.getElementById('id02').style.display='block'\" class='w3-button w3-white w3-display-position w3-badge material-icons-outlined' title='{title}' style='top:140px;right:20px;';>info</button>");
             sb.Append("    <div id = 'id02' class='w3-modal'>");
             sb.Append("        <div class='w3-modal-content'>");
             sb.Append("            <div class='w3-container'>");
@@ -561,13 +561,15 @@ namespace MelBox2
             sb.Append("</tr>");
             sb.Append("</table>");
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
 
-            sb.Append($" <li><b>Abo</b>: Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. </li>");
+            sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. </li>");
 
             if (Sql.PermanentEmailRecievers > 0)
                 sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
             
+            sb.Append(" <li><span class='material-icons-outlined'>build</span> &ouml;ffne die Maske zum &Auml;ndern des Benutzerkontos.</li>");
+
             sb.Append("</ul></div>");
 
             return sb.ToString();
@@ -621,9 +623,8 @@ namespace MelBox2
 
         internal static string InfoShift()
         {
-
             StringBuilder sb = new StringBuilder();
-            sb.Append("<table class='w3-table w3-bordered w3-cente'>");
+            sb.Append("<table class='w3-table w3-bordered'>");
             sb.Append("<tr>");
             sb.Append("  <th>Farbe</th>");
             sb.Append("  <th>Bedeutung</th>");
@@ -654,8 +655,7 @@ namespace MelBox2
             sb.Append("  <td></td>");
             sb.Append("  <td></td>");
             sb.Append("</tr>");
-            sb.Append("<tr>");
-   
+            sb.Append("<tr>");  
             sb.Append("  <th>Farbe</th>");
             sb.Append("  <th>Bedeutung</th>");
             sb.Append("  <th colspan='2'>Zuweisung Empf&auml;nger</th>");
@@ -675,16 +675,38 @@ namespace MelBox2
             sb.Append("  <td>nicht zugewiesen</td>");
             sb.Append("  <td colspan='2'>Es ist kein Empf&auml;nger namentlich zugewiesen -<br/>Nachrichten werden an das Bereitschaftshandy weitergeleitet</td>");
             sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append("  <th>Symbol</th>");
+            sb.Append("  <th colspan='3'>Bedeutung</th>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append(" <td><span class='material-icons-outlined'>email</span></td>");
+            sb.Append(" <td colspan='3'>Benachrichtigung per Email</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append(" <td><span class='material-icons-outlined'>phone</span></td>");
+            sb.Append(" <td colspan='3'>Benachrichtigung per SMS</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append(" <td><span class='material-icons-outlined'>report_problem</span></td>");
+            sb.Append("  <td colspan='3'>Kein Benachrichtigungsweg aktiv (keine Weiterleitung)</td>");
+            sb.Append("</tr>");
+            sb.Append("<tr>");
+            sb.Append(" <td><span class='material-icons-outlined'>build</span></td>");
+            sb.Append("  <td colspan='3'>Öffnet eine Maske zur &Auml;nderung des Datensatzes</td>");
+            sb.Append("</tr>");
             sb.Append("</table>");
 
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border w3-margin-top'>");
             sb.Append("<li><b>Organisation</b></li>");
-            sb.Append("<li>Die Bereitschaft ist Kalenderwochenweise organisiert.<br/>Sie soll gew&ouml;hnlich von Montag, 17 Uhr bis zum folgenden Montag 8 Uhr gehen.</li>");
+            sb.Append("<li>Die Bereitschaft ist Kalenderwochenweise organisiert.<br/>Sie soll gew&ouml;hnlich von Montag 17 Uhr bis zum folgenden Montag 8 Uhr gehen.</li>");
             sb.Append("<li>Es lassen sich individuelle Zeiten einrichten. Zeitliche L&uuml;cken oder &Uuml;berschneidungen werden <b>nicht</b> gesondert hervorgehoben. Alle &Auml;nderungen liegen in der Verantwortung des jeweiligen Benutzers.</li>");
             sb.Append("<li>Benutzer k&ouml;nnen eine neue Kalenderwoche einrichten oder eigene Zeiten bearbeiten.<br/>Administratoren k&ouml;nnen auch Zeiten anderer Benutzer &auml;ndern.</li>");
-            sb.Append("<li>Hinweis bei &Auml;nderungen: Eintr&auml;ge mit einer Dauer von 0 Std. werden gel&ouml;scht.</li>");
+            sb.Append("<li>Hinweis zu &Auml;nderungen: Eintr&auml;ge mit einer Dauer von weniger als 1 Std. sind ung&uuml;ltig und werden abgelehnt.</li>");
+            sb.Append("<li>Hinweis zum L&ouml;schen: Eintr&auml;ge k&ouml;nnen nur von Administratoren gel&ouml;scht werden.</li>");
+            
 
-            sb.Append("</ul></div>");
+          sb.Append("</ul></div>");
 
             return sb.ToString();
         }
@@ -706,11 +728,11 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
-            sb.Append(" <li>&#9711; Die hier angezeigten Nachrichten werden zu den anhehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
-            sb.Append(" <li>&#9711; Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum n&auml;chsten Tag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
-            sb.Append(" <li>&#9711; Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");       
-            
-            if (isAdmin) sb.Append(" <li>&#9711; Ist kein Wochentag angehehakt, wird die Sperre aufgehoben.</li>");            
+            sb.Append(" <li>Die hier angezeigten Nachrichten werden zu den anhehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
+            sb.Append(" <li>Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum n&auml;chsten Tag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
+            sb.Append(" <li>Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");
+            sb.Append(" <li>Die Sperrzeiten k&ouml;nnen nur von Administratoren ge&auml;ndert werden.</li>");
+            if (isAdmin) sb.Append(" <li>Ist kein Wochentag angehehakt, wird die Sperre aufgehoben.</li>");            
             
             sb.Append("</ul></div>");
             return sb.ToString();
@@ -719,17 +741,17 @@ namespace MelBox2
         internal static string InfoOverdue()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("<table class='w3-table'>");
+            sb.Append("<table class='w3-table w3-bordered'>");
             sb.Append("<tr>");
-            sb.Append("  <td>&#9711;</td>");
+            sb.Append("  <td></td>");
             sb.Append("  <td>Hier werden Sender aufgelistet, die in regelm&auml;ßigen Abst&auml;nden eine Nachricht senden m&uuml;ssen (&uuml;berwachte Sender).</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append("  <td>&#9711;</td>");
+            sb.Append("  <td></td>");
             sb.Append("  <td>Liegt der letzte Eingang einer Nachricht eines dieser &uuml;berwachten Sender l&auml;nger zur&uuml;ck als in Spalte &apos;Max&nbsp;Inaktiv&apos; angegeben, ist davon auszugehen, dass der Meldeweg gest&ouml;rt ist. (&uuml;berf&auml;llige Sender)</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append("  <td>&#9711;</td>");
+            sb.Append("  <td></td>");
             sb.Append("  <td>Gibt es &uuml;berf&auml;lligen Sender, werden sie statt der &uuml;berwachten Sender hier angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden.</td>");
             sb.Append("</tr>");
 
