@@ -158,6 +158,16 @@ namespace MelBox2
         }
 
         /// <summary>
+        /// Eine SMS zum Senden wurde nicht vom GSM-Modem angenommen (SIM-Karte nicht bereit, Speicherfehler, ungültige Telefonnummer, ...)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">SMS, die hätte gesendet werden sollen</param>
+        private static void Gsm_FailedSmsCommission(object sender, SmsOut e)
+        {
+            Sql.InsertLog(1, $"Sendebefehl von Modem nicht quittiert: SMS an >{e.Phone}< >{e.Message}< wurde nicht versandt.");
+        }
+
+        /// <summary>
         /// Eine SMS ist erfolgreich versendet worden
         /// </summary>
         /// <param name="sender"></param>

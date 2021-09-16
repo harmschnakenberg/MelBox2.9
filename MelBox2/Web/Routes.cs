@@ -19,8 +19,11 @@ namespace MelBox2
             string info = Html.Modal("GSM-Modem",
                 "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>"+
                 Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
-                + (isAdmin ? "<form class='w3-margin'>" + Html.ButtonNew("gsm", "Reinitialisieren") : string.Empty) 
-                + "<span class='w3-container w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>");
+                + (isAdmin ? 
+                "<form class='w3-margin'>" + 
+                Html.ButtonNew("gsm", "Reinitialisieren") + 
+                "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty)
+                );
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {

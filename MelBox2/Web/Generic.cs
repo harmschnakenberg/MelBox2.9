@@ -82,11 +82,18 @@ namespace MelBox2
 
         internal static async Task PageAsync(IHttpContext context, string titel, string body, Person user = null )
         {
+
+            string connectIcon = Gsm.NetworkRegistration != Gsm.Registration.Registered ? "signal_cellular_off" :
+                Gsm.SignalQuality > 50 ? "signal_cellular_4_bar" :
+                Gsm.SignalQuality > 20 ? "network_cell" :
+                "signal_cellular_0_bar";
+
+
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
                 { "@Titel", titel },
                 { "@Quality", Gsm.SignalQuality.ToString() },
-                { "@GsmConnect", Gsm.NetworkRegistration == Gsm.Registration.Registered ? Gsm.SignalQuality < 20 ? "signal_cellular_0_bar" : "signal_cellular_4_bar" : "signal_cellular_off"},
+                { "@GsmConnect", connectIcon},
                 { "@Inhalt", body },
                 { "@User", user == null ? string.Empty : user.Name}
             };
@@ -237,11 +244,11 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<button onclick=\"showMe('help2')\" class='w3-button w3-cyan w3-display-position' style='top:140px;right:100px;' title='nur 1 Tag anzeigen'>Datum w&auml;hlen</button>");
+            sb.Append("<button onclick=\"showMe('help2')\" class='w3-button w3-light-blue w3-display-position' style='top:140px;right:100px;' title='nur 1 Tag anzeigen'>Datum w&auml;hlen</button>");
             sb.Append("<div id='help2' class='w3-hide w3-container w3-center w3-pale-blue w3-padding '>");
             sb.Append($"  <form id='chooseDate' method='get' onsubmit='setDate()' action='/{root}'>");            
             sb.Append($"   <input name='datum' type='date' value='{DateTime.Now.Date:yyyy-MM-dd}'>");
-            sb.Append("    <button class='w3-button w3-cyan w3-padding type='submit' title='nur 1 Tag anzeigen'>Anzeigen</button>");
+            sb.Append("    <button class='w3-button w3-light-blue w3-padding type='submit' title='nur 1 Tag anzeigen'>Anzeigen</button>");
             sb.Append("   </form>");
             sb.Append("</div>");
 

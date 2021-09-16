@@ -52,6 +52,7 @@ namespace MelBox2
             Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
             Gsm.SmsSentEvent += Gsm_SmsSentEvent;
             Gsm.FailedSmsSendEvent += Gsm_FailedSmsSendEvent;
+            Gsm.FailedSmsCommission += Gsm_FailedSmsCommission;
             Gsm.SmsReportEvent += Gsm_SmsReportEvent;
             Gsm.NewCallRecieved += Gsm_NewCallRecieved;
 
@@ -132,9 +133,6 @@ namespace MelBox2
             Console.ReadKey();
 #endif
         }
-
-
-
 
         private static void SmsRead_Sim()
         {
