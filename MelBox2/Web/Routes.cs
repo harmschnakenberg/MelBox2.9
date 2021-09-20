@@ -467,14 +467,12 @@ namespace MelBox2
             
             if (p_known.Id > 0)
             {
-                string error = Html.Alert(1, "Registrierung fehlgeschlagen", $"Der Benutzername {p_new.Name} ist bereits vergeben." + @"<a href='/' class='w3-bar-item w3-button w3-teal w3-margin'>Nochmal</a>");
+                string error = Html.Alert(1, "Registrierung fehlgeschlagen", $"Der Benutzername {p_new.Name} ist bereits vergeben." + @"<a href='/' class='w3-bar-item w3-button w3-light-blue w3-margin'>Nochmal</a>");
                 await Html.PageAsync(context, "Benutzerregistrierung fehlgeschlagen", error);
                 return;
             }
 
             #endregion
-
-
 
             bool success = Sql.InsertPerson(p_new.Name, p_new.Password, p_new.Level, p_new.Company, p_new.Phone, p_new.Email, p_new.Via, p_new.MaxInactive);
 
@@ -620,19 +618,26 @@ namespace MelBox2
             Shift shift = Sql.GetShift(payload);
             if (shift.PersonId == 0) shift.PersonId = user.Id;
 
-            bool success = true;
-
-            List<Shift> shifts = Sql.SplitShift(shift);
-            foreach (Shift splitShift in shifts)
-                if (!Sql.InsertShift(splitShift)) success = false;
-
             string alert;
+            bool success = true;            
+            int shiftHours = (int)shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
-            if (success)
-                alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde erfolgreich erstellt.");
+            if (user.Level < Server.Level_Reciever)            
+                alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Sie haben keine Berechtigung zum Erstellen dieser Bereitschaft.");            
+            else if (shiftHours < 1)            
+                alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", $"Die Bereitschaft vom {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ist ungültig.");
             else
-                alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Die Bereitschaft konnte nicht in der Datenbank gespeichert werden.");
+            {
+                List<Shift> shifts = Sql.SplitShift(shift);
+                foreach (Shift splitShift in shifts)
+                    if (!Sql.InsertShift(splitShift)) success = false;
 
+                if (success)
+                    alert = Html.Alert(3, "Neue Bereitschaft gespeichert", $"Neue Bereitschaft vom {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde erfolgreich erstellt.");
+                else
+                    alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Die Bereitschaft konnte nicht in der Datenbank gespeichert werden.");
+            }
+             
             string table = Html.FromShiftTable(user);
 
             await Html.PageAsync(context, "Bereitschaftszeit erstellen", alert + table, user);

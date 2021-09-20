@@ -141,7 +141,9 @@ namespace MelBox2
             // as VB 
             // Entfernt Zeichen aus psAbsNr sodass in Absendertabelle danach gesucht werden kann
             // siehe Erläuterungen im TextFile1
-            
+
+            if (phone == null || phone.Length < 4) return string.Empty;
+
             phone = phone.Replace(" ", "");
             phone = phone.Replace(",", "");
             phone = phone.Replace(";", "");

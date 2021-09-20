@@ -691,7 +691,7 @@ namespace MelBox2
             sb.Append(" <td colspan='3'>Benachrichtigung per Email</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append(" <td><span class='material-icons-outlined'>phone</span></td>");
+            sb.Append(" <td><span class='material-icons-outlined'>smartphone</span></td>");
             sb.Append(" <td colspan='3'>Benachrichtigung per SMS</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
