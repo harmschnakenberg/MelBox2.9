@@ -76,7 +76,7 @@ namespace MelBox2
             SmsIn dummy = new SmsIn
             {
                 Phone = e,
-                Message = $"Sprachanruf von >{e}< nach >{RingSecondsBeforeCallForwarding}< Sek. weitergeleitet an >{CallForwardingNumber}<",
+                Message = $"Sprachanruf von >{e}< nach {RingSecondsBeforeCallForwarding} Sek. weitergeleitet an >{CallForwardingNumber}<",
                 TimeUtc = DateTime.UtcNow
             };
 

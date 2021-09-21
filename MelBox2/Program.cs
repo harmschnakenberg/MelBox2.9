@@ -125,6 +125,11 @@ namespace MelBox2
                             ReliableSerialPort_SerialPortUnavailableEvent(null, 4445);
                         }
                         break;
+                    case "import contact":
+                        Console.WriteLine("Kontakte as CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;' laden. Dateipfad angeben:");
+                        string path = Console.ReadLine();
+                        Sql.LoadPersonsFromCsv(path);
+                        break;
                 }
 
             }    
@@ -181,6 +186,7 @@ namespace MelBox2
             sb.AppendLine("Restart".PadRight(32) + "beendet das Programm und startet es nach 5 Sek. neu.");
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS.");
+            sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
             sb.AppendLine("### HILFE ENDE ###");
 
             Console.WriteLine(sb.ToString());

@@ -21,6 +21,8 @@ namespace MelBox2
 
         private static string Encrypt(string password)
         {
+            if (password == null) return password;
+
             byte[] data = System.Text.Encoding.UTF8.GetBytes(password);
             data = new System.Security.Cryptography.SHA256Managed().ComputeHash(data);
             return System.Text.Encoding.UTF8.GetString(data);
@@ -62,7 +64,7 @@ namespace MelBox2
 
             return p;
         }
-             
+
         internal static Person SelectPerson(int id)
         {
 
@@ -98,7 +100,7 @@ namespace MelBox2
             Person p = new Person();
 
             if (payload.TryGetValue("Id", out string strId))
-                 p.Id = int.Parse(strId);
+                p.Id = int.Parse(strId);
 
             if (payload.TryGetValue("name", out string name))
                 p.Name = name;
@@ -136,7 +138,7 @@ namespace MelBox2
             return p;
         }
 
-       internal static string NormalizePhone(string phone)
+        internal static string NormalizePhone(string phone)
         {
             // as VB 
             // Entfernt Zeichen aus psAbsNr sodass in Absendertabelle danach gesucht werden kann
@@ -163,7 +165,7 @@ namespace MelBox2
             if (phone[3] == '0')
                 phone = phone.Remove(3, 1);
 
-            return phone;                          
+            return phone;
         }
 
         internal static Person SelectOrCreatePerson(SmsIn sms)
@@ -182,7 +184,7 @@ namespace MelBox2
             DataTable dt = SelectDataTable(query1, args);
 
             if (dt.Rows.Count == 0 && NonQuery(query2, args))
-            {                
+            {
                 return SelectOrCreatePerson(sms);
             }
 
@@ -255,7 +257,7 @@ namespace MelBox2
                 throw;
                 // Was tun?
             }
-            
+
             return string.Empty;
         }
 
@@ -289,6 +291,34 @@ namespace MelBox2
                     "MaxInactive INTEGER, " +
             */
 
+            return NonQuery(query, args);
+        }
+
+        /// <summary>
+        /// Hilfsmethode zum Importieren von Kontaktdaten aus MelBox1. 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="phone"></param>
+        /// <param name="maxInactiveHours"></param>
+        /// <param name="keyWord"></param>
+        /// <returns></returns>
+        private static bool ImportPerson(string name, string phone, int maxInactiveHours, string keyWord)
+        {
+            const string query = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via, KeyWord, MaxInactive) VALUES (@Name, @Password, @Level, @Company, @Phone, @Email, @Via, @KeyWord, @MaxInactive); ";
+
+            Dictionary<string, object> args = new Dictionary<string, object>
+                {
+                    { "@Name", name },
+//                    { "@Password", Encrypt("7307") },
+                    { "@Password", DBNull.Value },
+                    { "@Level", 0 },
+                    { "@Company", name },
+                    { "@Phone", NormalizePhone(phone) },
+                    { "@Email", string.Empty},
+                    { "@Via", (int)Via.Undefined},
+                    { "@KeyWord", keyWord},
+                    { "@MaxInactive", maxInactiveHours}
+                };
             return NonQuery(query, args);
         }
 
@@ -372,13 +402,99 @@ namespace MelBox2
             Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id } };
             Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level } };
 
-            const string query1 = "SELECT ID, Name, Company AS Firma, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
-            const string query2 = "SELECT ID, Name, Company AS Firma, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
+            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
+            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
 
             if (p.Level >= Level_Admin)
                 return SelectDataTable(query2, args2);
             else
                 return SelectDataTable(query1, args1);
+        }
+
+        /// <summary>
+        /// Import von Kontaktdaten aus MelBox1: Tabelle tbl_Absender als CSV einladen.
+        /// Erforderliche Spalten in CSV: 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;'
+        /// </summary>
+        /// <param name="path">pfad zur CSV-Datei</param>
+        public static void LoadPersonsFromCsv(string path)
+        {
+            Console.WriteLine("Versuche Kontakte aus CSV-Datei zu importieren...");
+           
+            if (!System.IO.File.Exists(path))
+            {
+                Console.WriteLine($"Der angegebene Pfad >{path}< ist ungültig. Import abgebrochen.");
+                return;
+            }
+
+            try
+            {
+                string[] lines = System.IO.File.ReadAllLines(path,System.Text.Encoding.GetEncoding("ISO-8859-1")); //wg. Umlaute!
+                string[] captions = lines[0].Split(';');
+
+                int iCol = captions.Length;
+                int iName = 0;
+                int iAbsInakt = 0;
+                int iAbsNr = 0;
+                int iAbsKey = 0;
+                int iAbsRegelID = 0;
+
+                for (int i = 0; i < iCol; i++)
+                {
+                    switch (captions[i])
+                    {
+                        case "AbsName":
+                            iName = i;
+                            break;
+                        case "AbsInakt":
+                            iAbsInakt = i;
+                            break;
+                        case "AbsNr":
+                            iAbsNr = i;
+                            break;
+                        case "AbsRegelID":
+                            iAbsRegelID = i;
+                            break;
+                        case "AbsKey":
+                            iAbsKey = i;
+                            break;
+                    }
+                }
+
+                for (int i = 1; i < lines.Length; i++)
+                {
+
+                    string[] values = lines[i].Split(';');
+
+                    if (values.Length < iCol)
+                    {
+                        Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< Zeile {i} hat die falsche Spaltenanzahl.", 26534);
+                        continue;
+                    }
+
+                    int.TryParse(values[iAbsInakt], out int maxInactive);
+                    int.TryParse(values[iAbsRegelID], out int regelId);
+
+                    string name = values[iName];
+
+                    if (name.Length > 2 && regelId > 0)
+                    {
+                        Person p = Sql.SelectPerson(name);
+
+                        if (p.Id > 0)
+                            Console.WriteLine($"Zeile {i} >{name}<".PadRight(32) +" bereits vergeben. KEIN NEUER EINTRAG!");
+                        else if (ImportPerson(name, values[iAbsNr], maxInactive, values[iAbsKey]))
+                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< ");
+                        else
+                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}<\tFehler beim Schreiben in die Datenbank. KEIN NEUER EINTRAG!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< {ex.Message}", 26535);
+            }
+
+            Console.WriteLine("Importieren aus CSV-Datei beendet. Ergebnis prüfen!");
         }
 
     }
