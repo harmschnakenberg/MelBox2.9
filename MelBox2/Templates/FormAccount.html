@@ -56,7 +56,7 @@
                         <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly />
                     </div>
                     <div class="w3-rest">
-                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort" name="password">
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0} .{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password">
                     </div>
                 </div>
 
@@ -92,12 +92,12 @@
                             <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled>
                         </div>
                         <div class="w3-rest">
-                            <label>Immer bei eingehenden Meldungen benachrichtigen</label>
+                            <label><b>Abo</b> - Immer bei eingehenden Meldungen benachrichtigen</label>
                         </div>
                     </div>
 
                     <label><b>Schlüsselwort</b> <span class="w3-opacity">wird automatisch vergeben</span></label>
-                    <input name="KeyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly />
+                    <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly />
 
 
                     <label><b>Senderüberwachung</b> <span class="w3-opacity">Maximale Zeit zwischen Meldungen</span></label>

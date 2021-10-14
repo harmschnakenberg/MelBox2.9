@@ -94,6 +94,7 @@ namespace MelBox2
                 { "@Titel", titel },
                 { "@Quality", Gsm.SignalQuality.ToString() },
                 { "@GsmConnect", connectIcon},
+                { "@GsmWarning" , (Gsm.NetworkRegistration != Gsm.Registration.Registered ? "keine Verbindung" : string.Empty)},
                 { "@Inhalt", body },
                 { "@User", user == null ? string.Empty : user.Name}
             };
@@ -324,7 +325,7 @@ namespace MelBox2
                 if (isAuthorized)
                 {
                     html += "<td>" +
-                        "<a href='/" + root + "/" + dt.Rows[i][0].ToString() + "'><i class='material-icons-outlined'>build</i></a>" +
+                        "<a href='/" + root + "/" + dt.Rows[i][0].ToString() + "'><i class='material-icons-outlined'>edit</i></a>" +
                         "</td>";
                 }
 
@@ -438,7 +439,7 @@ namespace MelBox2
                     string route = shiftId == 0 ? start.ToShortDateString() : shiftId.ToString();
 
                     html += "<td>" +
-                        "<a href='/shift/" + route + "'><i class='material-icons-outlined'>build</i></a>" +
+                        "<a href='/shift/" + route + "'><i class='material-icons-outlined'>edit</i></a>" +
                         "</td>";
                 }
                 else
@@ -575,7 +576,7 @@ namespace MelBox2
             if (Sql.PermanentEmailRecievers > 0)
                 sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
             
-            sb.Append(" <li><span class='material-icons-outlined'>build</span> &ouml;ffne die Maske zum &Auml;ndern des Benutzerkontos.</li>");
+            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &ouml;ffne die Maske zum &Auml;ndern des Benutzerkontos.</li>");
 
             sb.Append("</ul></div>");
 
@@ -699,7 +700,7 @@ namespace MelBox2
             sb.Append("  <td colspan='3'>Kein Benachrichtigungsweg aktiv (keine Weiterleitung)</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
-            sb.Append(" <td><span class='material-icons-outlined'>build</span></td>");
+            sb.Append(" <td><span class='material-icons-outlined'>edit</span></td>");
             sb.Append("  <td colspan='3'>Öffnet eine Maske zur &Auml;nderung des Datensatzes</td>");
             sb.Append("</tr>");
             sb.Append("</table>");
@@ -725,7 +726,7 @@ namespace MelBox2
             sb.Append($" <li>Hier werden die zuletzt empfangenen {Html.MaxTableRowsShow} Nachrichten angezeigt.</li>");
             sb.Append(" <li>&Uuml;ber die Schaltfl&auml;che &quot;Datum w&auml;hlen&quot; lassen sich die an einem bestimmten Tag eingegangenen Nachrichten anzeigen.</li>");
 
-            if (isAdmin) sb.Append(" <li>Mit dem Button <span class='material-icons-outlined'>build</span> &ouml;ffnet sich die Maske zum Sperren der nebenstehenden Nachricht.</li>");
+            if (isAdmin) sb.Append(" <li>Mit dem Button <span class='material-icons-outlined'>edit</span> &ouml;ffnet sich die Maske zum Sperren der nebenstehenden Nachricht.</li>");
 
             sb.Append("</ul></div>");
             return sb.ToString();
@@ -772,11 +773,9 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
 
             sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
-            sb.Append(" <li>Änderungen sind nur durch eingeloggte Benutzer m&ouml;glich.</li>");
+            sb.Append(" <li>Einige Funktionen und &Auml;nderungen sind nur durch eingeloggte Benutzer m&ouml;glich.</li>");
             sb.Append(" <li>Einloggen k&ouml;nnen sich nur registrierte und freigeschaltete Benutzer.<br/>Die Freischaltung muss durch einen Administrator erfolgen.</li>");
-            sb.Append(" <li>Bei der Registrierung sind mindestens anzugeben:");
-            sb.Append("   <lu><li>ein noch ungenutzter Benutzername</li><li>ein pers&ouml;nliches Passwort</li></lu></li>");
-
+            sb.Append(" <li>Bei der Registrierung sind mindestens anzugeben:<br/>- ein noch ungenutzter Benutzername<br/>- ein pers&ouml;nliches Passwort");
             sb.Append("</ul></div>");
             return sb.ToString();
         }

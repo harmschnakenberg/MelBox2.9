@@ -8,16 +8,23 @@ Für gesendete SMS wird die Sendungsverfolgung in der Datenbank dokumentiert.
 
 Bedienung (Einstellungen Empfänger & Empfangszeiten) über eine Web-Oberfläche.
 
--	Welches Characterset verwenden? UCS2 (unicode, 140 Zeichen) für Umlaute oder GSM-Characterset (ASCII + Spezial, 160 Zeichen) für längere Nachrichten
-
-TODO: 
--	Für Intranetnutzung die url des localhosts per Powershell freigeben:
+EINRICHTEN FÜR INTRANET:
+-	Die url des localhosts per Powershell freigeben:
 	URL-Reservierung:
 	netsh http add urlacl url=http://+:1234/ user=schnakenbUrg
 
--	Firewall TCP-Port öffnen --> Programme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
+-	Firewall TCP-Port öffnen --> Eingehande Regeln -> 
+									- Protokolle und Ports	--> Lokaler Port : TCP 1234
+									- Programme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
+									- Optional: Bereich Lokale IP-Adresse : 192.168.160.0/24
 
+FRAGEN:
+-	Welches Characterset verwenden? UCS2 (unicode, 140 Zeichen) für Umlaute oder GSM-Characterset (ASCII + Spezial, 160 Zeichen) für längere Nachrichten?
+	-> Standard ist Characterset GSM. Bei Sonderzeichen in SMS schaltet das Modem selbsttätig auf UCS2. Ist im Programm abgefangen. Muss die Praxis zeigen.
+
+TODO: 
 -	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51
+		- Statusreport für gesendete SMS: Wird der passende Deleviery-Code bei Fehlern/Verzögerung angezeigt?
 
 -	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft testen! 
 					Manuelle Möglichkeit Rufumleitung zu ändern vorsehen?

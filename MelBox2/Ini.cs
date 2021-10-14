@@ -22,7 +22,7 @@ namespace MelBox2
                 Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);               
                 Gsm.CallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
                 Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
-                Console.WriteLine("Fehler und Debug-Medlungen gehen an: " + Gsm.AdminPhone);
+                Console.WriteLine("Fehler und Debug-Meldungen gehen an: " + Gsm.AdminPhone);
 
                 Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName);
                 Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using MelBoxGsm;
+
 
 namespace MelBox2
 {
@@ -104,8 +105,9 @@ namespace MelBox2
                         break;
                     case "sms read all":
                         List<SmsIn> list = Gsm.SmsRead("ALL");
+                        Console.WriteLine($"Es konnten {list.Count} Nachrichten aus dem Modemspeicher gelesen werden.");
                         foreach (SmsIn sms in list)
-                            Console.WriteLine($"Lese [{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
+                            Console.WriteLine($"[{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
                         break;
                     case "debug":
                         Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");
@@ -126,7 +128,7 @@ namespace MelBox2
                         }
                         break;
                     case "import contact":
-                        Console.WriteLine("Kontakte as CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;' laden. Dateipfad angeben:");
+                        Console.WriteLine("Kontakte als CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;' laden. Siehe alte Tabelle 'Tbl_Absender'. Dateipfad angeben:");
                         string path = Console.ReadLine();
                         Sql.LoadPersonsFromCsv(path);
                         break;
@@ -185,7 +187,7 @@ namespace MelBox2
             sb.AppendLine("Modem Status".PadRight(32) + "Zeigt die wichtigsten aktuellen Verbindungsdaten zum Modem an.");
             sb.AppendLine("Restart".PadRight(32) + "beendet das Programm und startet es nach 5 Sek. neu.");
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
-            sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS.");
+            sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS (wird ggf. an Bereitschaft weitergeleitet).");
             sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
             sb.AppendLine("### HILFE ENDE ###");
 

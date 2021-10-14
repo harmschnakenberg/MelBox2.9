@@ -92,7 +92,7 @@ namespace MelBox2
 
             if (words.Length > 1)
             {
-                KeyWords += " " + words[1].Trim();
+                KeyWords += words[1].Trim();
             }
 
             return KeyWords.ToLower();

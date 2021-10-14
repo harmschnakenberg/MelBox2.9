@@ -79,7 +79,9 @@ namespace MelBox2
 
             System.Data.DataTable rec;
             if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))            
-                rec = Sql.SelectLastRecieved(oneDate);           
+                rec = Sql.SelectLastRecieved(oneDate);    
+            else if (context.Request.QueryString.HasKeys() && context.Request.QueryString.Get("datum") == "heute") //nicht dokumentiert! http://elektro5:1234/in?datum=heute als bookmark
+                rec = Sql.SelectLastRecieved(DateTime.Now.Date);
             else
                 rec = Sql.SelectLastRecieved(Html.MaxTableRowsShow);
 
@@ -177,8 +179,7 @@ namespace MelBox2
 
 
         #region Gesperrte Nachrichten
-            
-
+     
         [RestRoute("Get", "/blocked/{msgId:num}")]
         public static async Task InBoxBlock(IHttpContext context)
         {
@@ -236,7 +237,6 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Gesperrte Nachrichten", info + table, user);
         }
-
 
         [RestRoute("Post", "/blocked/update")]
         public static async Task BlockedMessageUpdate(IHttpContext context)
@@ -537,8 +537,9 @@ namespace MelBox2
         {            
             Person user = await Html.GetLogedInUserAsync(context, false);           
             string table = Html.FromShiftTable(user);
+            string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
 
-            await Html.PageAsync(context, "Bereitschaft", table, user);
+            await Html.PageAsync(context, "Bereitschaft Rufannahme", shiftActive + table, user);
         }
 
         [RestRoute("Get", "/shift/{shiftId:num}")]
@@ -570,7 +571,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaft", table + form, user);
+            await Html.PageAsync(context, "Bereitschaft Rufannahme", table + form, user);
         }
 
         [RestRoute("Get", "/shift/{shiftDate}")]
@@ -605,7 +606,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaft", table + form, user);
+            await Html.PageAsync(context, "Bereitschaft Rufannahme", table + form, user);
         }
 
         [RestRoute("Post", "/shift/new")]
@@ -697,6 +698,45 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Bereitschaftszeit geändert", alert + table, user);
         }
+
+        [RestRoute("Get", "/shift/delete/{shiftId:num}")]
+        public static async Task DeleteShiftFromId(IHttpContext context)
+        {
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Admin) return;
+
+            var shiftIdStr = context.Request.PathParameters["shiftId"];
+            _ = int.TryParse(shiftIdStr, out int shiftId);
+            Shift shift = Sql.GetShift(Sql.SelectShift(shiftId));
+
+            string alert;
+            if (shift.Id == 0)            
+                alert = Html.Alert(2, "Fehler Bereitschaftszeit löschen", $"Die angeforderte Bereitschaft Nr. [{shiftIdStr}] wurde nicht gefunden.");            
+            else
+            {
+                Person p = Sql.SelectPerson(shift.PersonId);
+
+                if (Sql.DeleteShift(shift.Id))
+                {
+                    string msg = $"Die Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime().ToShortDateString()} {shift.StartUtc.ToLocalTime().ToShortTimeString()} bis " +
+                    $"{shift.EndUtc.ToLocalTime().ToShortDateString()} {shift.EndUtc.ToLocalTime().ToShortTimeString()} f&uuml;r {p.Name} wurde gelöscht durch {user.Name}";
+
+                    Sql.InsertLog(1, msg);
+                    alert = Html.Alert(1, "Bereitschaftszeit gelöscht", msg);
+                }
+                else
+                {
+                    string msg = $"Die Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime().ToShortDateString()} {shift.StartUtc.ToLocalTime().ToShortTimeString()} bis " +
+                    $"{shift.EndUtc.ToLocalTime().ToShortDateString()} {shift.EndUtc.ToLocalTime().ToShortTimeString()} f&uuml;r {p.Name} konnte nicht durch {user.Name} gelöscht werden.";
+                    alert = Html.Alert(2, "Fehler Bereitschaftszeit löschen", msg);
+                }
+            }
+
+            string table = Html.FromShiftTable(user);
+
+            await Html.PageAsync(context, "Bereitschaftszeit löschen", alert + table, user);
+        }
+
         #endregion
 
 

@@ -172,7 +172,8 @@ namespace MelBox2
         {
             string keyWord = GetKeyWord(sms.Message);
 
-            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE (Phone = @Phone AND Phone LIKE '+%') OR (KeyWord = @KeyWord AND KeyWord IS NOT NULL AND length(KeyWord) > 0); ";
+            //Erst nach Keyword suchen, da Phone nicht eindeutig sein kann.
+            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Phone = @Phone AND (KeyWord IS NULL OR length(KeyWord) = 0 OR LOWER(KeyWord) = @KeyWord) ORDER BY KeyWord DESC; ";
             const string query2 = "INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -316,7 +317,7 @@ namespace MelBox2
                     { "@Phone", NormalizePhone(phone) },
                     { "@Email", string.Empty},
                     { "@Via", (int)Via.Undefined},
-                    { "@KeyWord", keyWord},
+                    { "@KeyWord", keyWord.ToLower()},
                     { "@MaxInactive", maxInactiveHours}
                 };
             return NonQuery(query, args);
@@ -489,10 +490,12 @@ namespace MelBox2
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< {ex.Message}", 26535);
             }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             Console.WriteLine("Importieren aus CSV-Datei beendet. Ergebnis prüfen!");
         }

@@ -54,7 +54,7 @@ namespace MelBox2
             return feiertage;
         }
 
-        internal static bool IsHolyday(DateTime date)
+        private static bool IsHolyday(DateTime date)
         {
             return Holydays(date).Contains(date);
         }
@@ -336,6 +336,9 @@ namespace MelBox2
         internal static Shift GetShift(DataTable dt)
         {
             Shift s = new Shift();
+
+            if (dt.Rows.Count == 0) 
+                return s;
 
             if (dt.Columns.Contains("ID") && int.TryParse(dt.Rows[0]["ID"].ToString(), out int shiftId))
                 s.Id = shiftId;
