@@ -18,12 +18,13 @@ namespace MelBox2
             int min = 59 - DateTime.Now.Minute;
             int sec = 59 - DateTime.Now.Second;
 
-            TimeSpan span = new TimeSpan(0, min, sec + 10); //In jedem Fall erst nach dem Stundensprung ausführen
+            TimeSpan span = new TimeSpan(0, min, sec + 3); //In jedem Fall erst nach dem Stundensprung ausführen
 #if DEBUG
             Log.Info($"Nächste Senderüberprüfung in {min} min. {sec} sek.", 65053);
 #endif
             Timer execute = new Timer(span.TotalMilliseconds);
-            
+
+            execute.Elapsed += new ElapsedEventHandler(CheckCallForwardingNumber);
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
@@ -92,14 +93,13 @@ namespace MelBox2
         /// <summary>
         /// Prüft, ob die Nummer der aktuellen Bereitschaft mit der Nummer für Rufweiterleitung übereinstimmt.
         /// Ändert ggf. die Weiterleitung.
-        /// Prüft auch, ob es in der DB einen Eintrag für das Berietschaftshandy gibt und erzeugt diesen ggf. (z.B. ausversehen geändert).
+        /// Prüft auch, ob es in der DB einen Eintrag für das Bereitschaftshandy gibt und erzeugt diesen ggf. (z.B. aus Versehen geändert).
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
         {
-            string backup = Sql.GetPhone_Bereitschaftshandy();
-            string phone = Sql.GetCurrentShiftPhoneNumbers()?[0] ?? backup;
+            string phone = Sql.GetCurrentShiftPhoneNumbers()[0];
 
             if (Gsm.CallForwardingNumber != phone)
             {

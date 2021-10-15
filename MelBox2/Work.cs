@@ -13,6 +13,17 @@ namespace MelBox2
 
         private static bool isFirstParseNewSmsAfterStartup = true; //Dinge, die nur beim ersten Abfragen des SMS-Speichers getan werden sollen
 
+        /// <summary>
+        /// Bearbeitet die vom Modem eingelesenen, eingegangenen SMS-Nachrichten: 
+        /// - protokolliert den Eingang in der Datenbank 
+        /// - leitet das Löschen der SMS aus dem Modemspeicher ein
+        /// - prüft auf SMS-Inhalt 'SMS-Abruf'
+        /// - prüft auf SMS-Inhalt 'MelSysOK' oder 'SgnAlarmOK'
+        /// - prüft, ob die Weiterleitung dieser Nachricht gesperrt ist
+        /// - prüft, ob zum Eingangszeitpunkt an die Bereitschaft weitergeleitet werden soll
+        /// - leitet das Senden von SMS oder EMail an die Berietschaft ein
+        /// </summary>
+        /// <param name="smsenIn">Eingegangene SMS</param>
         private static void ParseNewSms(List<SmsIn> smsenIn)
         {            
             if (smsenIn.Count == 0) return;
@@ -47,8 +58,8 @@ namespace MelBox2
         /// <summary>
         /// Prüft, ob die Nachricht 'SmsTestTrigger' z.B 'SmsAbruf' enthält und sendet die Nachricht zurück an den Sender. 
         /// </summary>
-        /// <param name="sms"></param>
-        /// <returns></returns>
+        /// <param name="sms">Eingegangene SMS</param>
+        /// <returns>true = SMS enthält das in 'SmsTestTrigger' definierten Triggerwort</returns>
         private static bool IsSmsTest(SmsIn sms)
         {
             if (!sms.Message.ToLower().StartsWith(SmsTestTrigger.ToLower())) return false;
@@ -62,6 +73,11 @@ namespace MelBox2
             return true; //Dies war 'SMSAbruf'
         }
 
+        /// <summary>
+        /// Prüft, ob der Inhalt der Nachricht eine Routinemeldung ist z.B. 'MelSysOK'
+        /// </summary>
+        /// <param name="sms">Eingegangene SMS</param>
+        /// <returns>true = SMS enthält die in 'LifeMessageTrigger' definierten Triggerworte</returns>
         private static bool IsLifeMessage(SmsIn sms)
         {
             foreach (string trigger in LifeMessageTrigger)
@@ -72,6 +88,10 @@ namespace MelBox2
             return false;
         }
 
+        /// <summary>
+        /// Leitet die empfangene SMS an die aktuelle Bereitschaft (wenn SMS-Benachrichtigung für den Empänger(n) freigegeben ist)
+        /// </summary>
+        /// <param name="sms">Eingegangene SMS</param>
         private static void SendSmsToShift(SmsIn sms)
         {
             foreach (string phone in Sql.GetCurrentShiftPhoneNumbers())
@@ -81,6 +101,14 @@ namespace MelBox2
             }
         }
 
+        /// <summary>
+        /// Leitet die empfangene SMS als EMail an die aktuelle Bereitschaft bzw. den Verteiler.
+        /// Erzeugt in Abhänigkeit 
+        /// </summary>
+        /// <param name="smsIn"></param>
+        /// <param name="isWatchTime"></param>
+        /// <param name="isLifeMessage"></param>
+        /// <param name="isMessageBlocked"></param>
         private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
         {
             string body = $"Absender \t>{smsIn.Phone}<\r\n" +

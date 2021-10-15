@@ -98,6 +98,10 @@ namespace MelBox2
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
+        /// <summary>
+        /// Gibt die Telefonnummern der aktuell gültigen Bereitschaft aus. Wenn zum aktuellen Zeitpunkt keine Bereitschaft definiert ist, wird die Nummer des Bereitschaftshandys ausgegeben.
+        /// </summary>
+        /// <returns>Nummern der zum jetzigen Zeitpunkt gültige Rufbereitschaft</returns>
         internal static List<string> GetCurrentShiftPhoneNumbers()
         {
 
@@ -106,9 +110,9 @@ namespace MelBox2
 
             DataTable dt = SelectDataTable(query1, null);
 
-            if (dt.Rows.Count == 0) //keine verdefinierte Bereitschaft gefunden
+            if (dt.Rows.Count == 0) //keine vordefinierte Bereitschaft (SMS) gefunden
             {
-                //an Bereitschafshandy
+                //an Bereitschafshandy, wenn zur Zeit keine Bereitschaft definiert ist (für den Fall, dass sich die Berietschaft nur per EMail benachrichtigen lässt).
                 const string query2 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
                 
                 dt = SelectDataTable(query2, null);
@@ -121,6 +125,9 @@ namespace MelBox2
                 phoneNumbers.Add(dt.Rows[i]["Phone"].ToString());
             }
 
+            if (phoneNumbers.Count == 0)
+                phoneNumbers.Add(GetPhone_Bereitschaftshandy());
+
             return phoneNumbers;
         }
 
@@ -129,10 +136,10 @@ namespace MelBox2
         /// Gibt die Bereitschaftshandynummer aus. Wenn es keinen Eintrag für das Bereitschaftshandy in der DB gibt, wird einer erzeugt.
         /// </summary>
         /// <returns>Bereitschaftshandynummer</returns>
-        internal static string GetPhone_Bereitschaftshandy()
+        private static string GetPhone_Bereitschaftshandy()
         {
-            const string query =  "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES " + 
-                                  @"('Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1) " +                                
+            const string query =  "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via)  " +
+                                  @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +                                
                                   "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); "+
                                   "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy';";  
             
