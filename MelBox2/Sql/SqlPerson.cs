@@ -400,11 +400,11 @@ namespace MelBox2
 
         internal static DataTable SelectViewablePersons(Person p)
         {
-            Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id } };
-            Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level } };
+            Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id }, {"@CallF", Gsm.CallForwardingNumber } };
+            Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level }, { "@CallF", Gsm.CallForwardingNumber } };
 
-            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
-            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
+            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
+            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
 
             if (p.Level >= Level_Admin)
                 return SelectDataTable(query2, args2);

@@ -61,7 +61,7 @@ namespace MelBox2
             string html = Html.Alert(2, "GSM-Modem reinitialisiert", "Die Startprozedur für das GSM-Modem wurde ausgeführt.");
 
             await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
-        }
+        }           
         #endregion
 
 
@@ -162,14 +162,16 @@ namespace MelBox2
             string html;
             if (overdue.Rows.Count == 0)
             {
-                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");
-                html += Html.FromTable(Sql.SelectWatchedSenders(), false);
+                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");                
             }
             else
             {
                 html = Html.Alert(1, "Zeit&uuml;berschreitung", "Diese Absender haben l&auml;nger keine Nachricht geschickt. Bitte Meldeweg &Uuml;berpr&uuml;fen.");
                 html += Html.FromTable(overdue, false);
+                html += "<hr/>";
             }
+
+            html += Html.FromTable(Sql.SelectWatchedSenders(), false);
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
 

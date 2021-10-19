@@ -359,7 +359,9 @@ namespace MelBox2
                     else if (dt.Columns[j].ColumnName.StartsWith("Abo"))
                     {
                         html += "<td>";
-                        if (dt.Rows[i][j].ToString().Length > 0)
+                        if (dt.Rows[i][j].ToString().StartsWith("y"))
+                            html += "<span class='material-icons-outlined'>call</span>";
+                        else if (dt.Rows[i][j].ToString().StartsWith("x"))
                             html += "<span class='material-icons-outlined'>loyalty</span>";
                         html += "</td>";
                     }
@@ -571,12 +573,13 @@ namespace MelBox2
 
             sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
 
+            sb.Append($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet. </li>");
             sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. </li>");
 
             if (Sql.PermanentEmailRecievers > 0)
                 sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
             
-            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &ouml;ffne die Maske zum &Auml;ndern des Benutzerkontos.</li>");
+            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
 
             sb.Append("</ul></div>");
 

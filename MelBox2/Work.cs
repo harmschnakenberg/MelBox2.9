@@ -105,10 +105,10 @@ namespace MelBox2
         /// Leitet die empfangene SMS als EMail an die aktuelle Bereitschaft bzw. den Verteiler.
         /// Erzeugt in Abhänigkeit 
         /// </summary>
-        /// <param name="smsIn"></param>
-        /// <param name="isWatchTime"></param>
-        /// <param name="isLifeMessage"></param>
-        /// <param name="isMessageBlocked"></param>
+        /// <param name="smsIn">Eingegangene SMS</param>
+        /// <param name="isWatchTime">zur Zeit soll an Bereitschaft gesendet werden.</param>
+        /// <param name="isLifeMessage">eingegangen SMS ist eine Routinemeldung</param>
+        /// <param name="isMessageBlocked">eingegangene SMS ist zur Zeit für Weiterleitung gesperrt</param>
         private static void SendEmailToShift(SmsIn smsIn, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
         {
             string body = $"Absender \t>{smsIn.Phone}<\r\n" +

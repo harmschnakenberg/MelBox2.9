@@ -57,6 +57,8 @@ namespace MelBox2
             Gsm.SmsReportEvent += Gsm_SmsReportEvent;
             Gsm.NewCallRecieved += Gsm_NewCallRecieved;
 
+            CheckCallForwardingNumber(null, null);
+
             Gsm.SetupModem();
 
             SetHourTimer(null, null);
@@ -99,6 +101,16 @@ namespace MelBox2
                         break;
                     case "modem status":
                         GetModemParameters();
+                        break;
+                    case "call forward":
+                        Console.WriteLine("Weiterleitung Sprachanrufe an Telefonnummer: (+49...)");
+                        string phone = Console.ReadLine();
+                        Console.WriteLine($"Sprachanrufe an die Telefonnummer {phone} weiterleiten (j/n)?");
+                        if (Console.ReadKey().Key == ConsoleKey.J)
+                        {
+                            Gsm.SetCallForewarding(phone);
+                            Console.WriteLine($"Sprachanrufe werden an die Telefonnummer {Gsm.CallForwardingNumber} weitergeleitet.");                           
+                        }
                         break;
                     case "sms read sim":
                         SmsRead_Sim();

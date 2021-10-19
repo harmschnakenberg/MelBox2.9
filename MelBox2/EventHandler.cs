@@ -72,7 +72,8 @@ namespace MelBox2
         /// <param name="e"></param>
         private static void Gsm_NewCallRecieved(object sender, string e)
         {
-            
+            //Gsm.SetCallForewarding( Sql.GetCurrentCallForwardingNumber(Program.OverideCallForwardingNumber) ); //Rufumleitung während des eingehenden Anrufs umstellen? Besser nicht..
+
             SmsIn dummy = new SmsIn
             {
                 Phone = e,

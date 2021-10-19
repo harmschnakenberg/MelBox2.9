@@ -6,6 +6,11 @@ namespace MelBox2
     partial class Program
     {
         /// <summary>
+        /// Weiterleitung von Sprachanrufen an diese Nummer erzwingen 
+        /// </summary>
+        public static string OverideCallForwardingNumber { get; set; } = string.Empty;
+
+        /// <summary>
         /// Liest Initialisierungswerte aus der Datenbank
         /// </summary>
         private static void GetIniValues()
@@ -22,14 +27,10 @@ namespace MelBox2
               
                 Gsm.MaxSendTrysPerSms = GetIniValue(nameof(Gsm.MaxSendTrysPerSms), Gsm.MaxSendTrysPerSms);
                 Gsm.RingSecondsBeforeCallForwarding = GetIniValue(nameof(Gsm.RingSecondsBeforeCallForwarding), Gsm.RingSecondsBeforeCallForwarding);
-                Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);               
-                
-                string iniCallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
+                Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
 
-                if (iniCallForwardingNumber.Length > 9)
-                    Gsm.CallForwardingNumber = iniCallForwardingNumber;
-                else
-                    Gsm.CallForwardingNumber = Sql.GetCurrentShiftPhoneNumbers()?[0] ?? Sql.GetPhone_Bereitschaftshandy();
+                OverideCallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
+                Gsm.SetCallForewarding(Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber));
 
                 Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
                 Console.WriteLine("Fehler und Debug-Meldungen gehen an: " + Gsm.AdminPhone);

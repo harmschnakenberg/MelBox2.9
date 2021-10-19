@@ -112,7 +112,7 @@ namespace MelBox2
 
             if (dt.Rows.Count == 0) //keine vordefinierte Bereitschaft (SMS) gefunden
             {
-                //an Bereitschafshandy, wenn zur Zeit keine Bereitschaft definiert ist (für den Fall, dass sich die Berietschaft nur per EMail benachrichtigen lässt).
+                //an Bereitschafshandy, wenn zur Zeit keine Bereitschaft definiert ist (für den Fall, dass sich die Bereitschaft nur per EMail benachrichtigen lässt).
                 const string query2 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
                 
                 dt = SelectDataTable(query2, null);
@@ -125,25 +125,28 @@ namespace MelBox2
                 phoneNumbers.Add(dt.Rows[i]["Phone"].ToString());
             }
 
-            if (phoneNumbers.Count == 0)
-                phoneNumbers.Add(GetPhone_Bereitschaftshandy());
-
             return phoneNumbers;
         }
 
 
         /// <summary>
-        /// Gibt die Bereitschaftshandynummer aus. Wenn es keinen Eintrag für das Bereitschaftshandy in der DB gibt, wird einer erzeugt.
+        /// Gibt die aktuelle Rufweiterleitungsnummer aus. Ist aktuell keine Rufannahme definiert, wird die Nummer des Bereitschaftshandys ausgegeben.
+        /// Gibt es keinen EIntrag für das Berietschaftshandy, wird der EIntrag erzeugt.
         /// </summary>
-        /// <returns>Bereitschaftshandynummer</returns>
-        private static string GetPhone_Bereitschaftshandy()
+        /// <param name="overrideCallForwardingNumber">Überschreibt die automatisch ermittelte Weiterleitungsnummer</param>
+        /// <returns>Telefonnumer an die aktuell Sprachanrufe weitergeleitet werden sollen.</returns>
+        internal static string GetCurrentCallForwardingNumber(string overrideCallForwardingNumber)
         {
-            const string query =  "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via)  " +
-                                  @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +                                
-                                  "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); "+
-                                  "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy';";  
-            
-            return SelectValue(query, null).ToString();
+            if (overrideCallForwardingNumber.Length > 9)
+                return overrideCallForwardingNumber;
+
+            const string query1 = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via)  " +
+                                  @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +
+                                  "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); " +
+                                  "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3) " +
+                                  "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' LIMIT 1; ";
+
+            return SelectValue(query1, null).ToString();
         }
 
         internal static MailAddressCollection GetCurrentShiftEmailAddresses(bool permanentRecievers = false)

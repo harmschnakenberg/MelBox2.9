@@ -99,14 +99,12 @@ namespace MelBox2
         /// <param name="e"></param>
         private static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
         {
-            string phone = Sql.GetCurrentShiftPhoneNumbers()[0];
+            string phone = Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber);
 
-            if (Gsm.CallForwardingNumber != phone)
-            {
-                Gsm.CallForwardingNumber = phone;
-                Gsm.SetCallForewarding(Gsm.CallForwardingNumber);
-            }
+            if (Gsm.CallForwardingNumber != phone)            
+                Gsm.SetCallForewarding(phone);
 
+            Console.WriteLine($"Die aktuelle Rufumleitung ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}, soll an {phone} und geht an {Gsm.CallForwardingNumber}");
         }
 
     }
