@@ -46,6 +46,15 @@ namespace MelBox2
 
             ShowHelp();
 
+            if (ReliableSerialPort.GetPortNames().Length == 0)
+            {
+                string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
+                Console.WriteLine(txt);
+                Sql.InsertLog(1, txt);
+                System.Threading.Thread.Sleep(5000);
+                return;
+            }
+
             ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
             ReliableSerialPort.SerialPortUnavailableEvent += ReliableSerialPort_SerialPortUnavailableEvent;
             Gsm.NewErrorEvent += Gsm_NewErrorEvent;

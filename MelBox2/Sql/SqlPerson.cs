@@ -360,12 +360,14 @@ namespace MelBox2
         }
 
         /// <summary>
-        /// Füllt ein HTML-Select Element mit Optionen
+        /// Gibt in Abhänigkeit von Benutzerrechten eine html-Optionsliste von Benutzern für ein DropDown-Menu aus. 
         /// </summary>
-        /// <param name="p"></param>
-        /// <returns></returns>
-        internal static string HtmlOptionContacts(Person p)
+        /// <param name="p">Person-Objekt der eingeloggten Person</param>
+        /// <param name="selectPersonId">ID, der Person, die ausgewählt sein soll</param>
+        /// <returns>html-Optionsliste für DropDown-Menu</returns>
+        internal static string HtmlOptionContacts(Person p, int selectPersonId)
         {
+            int selectedId = (selectPersonId == 0 ? p.Id : selectPersonId);
             const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level >= @Level ORDER BY Name;";
             const string queryUser = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
 
@@ -386,21 +388,18 @@ namespace MelBox2
             {
                 int id = int.Parse(dt.Rows[i][0].ToString());
                 string name = dt.Rows[i][1].ToString();
-                string selected = (id == p.Id) ? "selected" : string.Empty;
-
- 
+                string selected = (id == selectedId) ? "selected" : string.Empty;
 
                 if (p.Level >= Level_Admin || id == p.Id)
                     options += $"<option value='{id}' {selected}{readOnly}>{name}</option>" + Environment.NewLine;
             }
 
             return options;
-
         }
 
         internal static DataTable SelectViewablePersons(Person p)
         {
-            Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id }, {"@CallF", Gsm.CallForwardingNumber } };
+            Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id }, { "@CallF", Gsm.CallForwardingNumber } };
             Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level }, { "@CallF", Gsm.CallForwardingNumber } };
 
             const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
@@ -420,7 +419,7 @@ namespace MelBox2
         public static void LoadPersonsFromCsv(string path)
         {
             Console.WriteLine("Versuche Kontakte aus CSV-Datei zu importieren...");
-           
+
             if (!System.IO.File.Exists(path))
             {
                 Console.WriteLine($"Der angegebene Pfad >{path}< ist ungültig. Import abgebrochen.");
@@ -429,7 +428,7 @@ namespace MelBox2
 
             try
             {
-                string[] lines = System.IO.File.ReadAllLines(path,System.Text.Encoding.GetEncoding("ISO-8859-1")); //wg. Umlaute!
+                string[] lines = System.IO.File.ReadAllLines(path, System.Text.Encoding.GetEncoding("ISO-8859-1")); //wg. Umlaute!
                 string[] captions = lines[0].Split(';');
 
                 int iCol = captions.Length;
@@ -482,7 +481,7 @@ namespace MelBox2
                         Person p = Sql.SelectPerson(name);
 
                         if (p.Id > 0)
-                            Console.WriteLine($"Zeile {i} >{name}<".PadRight(32) +" bereits vergeben. KEIN NEUER EINTRAG!");
+                            Console.WriteLine($"Zeile {i} >{name}<".PadRight(32) + " bereits vergeben. KEIN NEUER EINTRAG!");
                         else if (ImportPerson(name, values[iAbsNr], maxInactive, values[iAbsKey]))
                             Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< ");
                         else
@@ -537,6 +536,5 @@ namespace MelBox2
                     "KeyWord TEXT, " +
                     "MaxInactive INTEGER, " +
         */
-        }
-
     }
+}

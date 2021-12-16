@@ -61,7 +61,36 @@ namespace MelBox2
             string html = Html.Alert(2, "GSM-Modem reinitialisiert", "Die Startprozedur für das GSM-Modem wurde ausgeführt.");
 
             await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
-        }           
+        }
+
+        [RestRoute("Get", "/gsm/callforward/{phone:num}")]
+        public static async Task ModemCallforward(IHttpContext context)
+    {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Admin) return;
+            #endregion
+
+            var phoneStr = context.Request.PathParameters["phone"];
+            phoneStr = Sql.NormalizePhone(phoneStr);
+
+            string html = string.Empty;
+
+            if (phoneStr.Length < 10)
+                html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist ungültig");
+            else
+            {
+                Gsm.SetCallForewarding(phoneStr);
+                html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden weitergeleitet an die Nummer '{phoneStr}'. Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
+                string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
+
+                Sql.InsertLog(2, txt);
+                Log.Warning(txt,736);
+            }
+
+            await Html.PageAsync(context, "Rufweiterleitung ändern", html);
+        }
+
         #endregion
 
 
@@ -168,7 +197,7 @@ namespace MelBox2
             {
                 html = Html.Alert(1, "Zeit&uuml;berschreitung", "Diese Absender haben l&auml;nger keine Nachricht geschickt. Bitte Meldeweg &Uuml;berpr&uuml;fen.");
                 html += Html.FromTable(overdue, false);
-                html += "<hr/>";
+                html += "<hr/><p>Diese Sender werden auf regelm&auml;&szlig;ige Nachrichteneing&auml;nge &uuml;berwacht:</p>";
             }
 
             html += Html.FromTable(Sql.SelectWatchedSenders(), false);
@@ -319,7 +348,7 @@ namespace MelBox2
                 { "@KeyWord", account.KeyWord },
 
                 { "@NewContact", isAdmin ? Html.ButtonNew("account") : string.Empty },
-                { "@DeleteContact", isAdmin ? Html.ButtonDelete("account", account.Id) : string.Empty}
+                { "@DeleteContact", isAdmin ? Html.ButtonDelete("account", account.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")}
             };
 
             string form = Html.Page(Server.Html_FormAccount, pairs);
@@ -549,13 +578,14 @@ namespace MelBox2
         {
             Person user = await Html.GetLogedInUserAsync(context);
             if (user == null) return;
-
-            string contactOptions = Sql.HtmlOptionContacts(user);
+            bool isAdmin = user.Level >= Server.Level_Admin;
+            
 
             var shiftIdStr = context.Request.PathParameters["shiftId"];
             _ = int.TryParse(shiftIdStr, out int shiftId);
 
             Shift shift = Sql.GetShift(Sql.SelectShift(shiftId));
+            string contactOptions = Sql.HtmlOptionContacts(user, shift.PersonId);
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
@@ -566,7 +596,8 @@ namespace MelBox2
                 { "@EndDate", shift.EndUtc.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@StartTime", shift.StartUtc.ToLocalTime().ToShortTimeString() },
                 { "@EndTime", shift.EndUtc.ToLocalTime().ToShortTimeString() },
-                { "@Route", "update" }
+                { "@Route", "update" },
+                { "@DeleteShift", isAdmin ? Html.ButtonDelete("shift", shift.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")}
             };
 
             string form = Html.Page(Server.Html_FormShift, pairs);
@@ -585,7 +616,7 @@ namespace MelBox2
             var shiftDateStr = context.Request.PathParameters["shiftDate"];
             _ = DateTime.TryParse(shiftDateStr, out DateTime startDate);
 
-            string contactOptions = Sql.HtmlOptionContacts(user);
+            string contactOptions = Sql.HtmlOptionContacts(user, user.Id);
 
             DateTime endDate = startDate.DayOfWeek == DayOfWeek.Monday ? startDate.Date.AddDays(7) : startDate.Date.AddDays(1);
 
@@ -601,7 +632,8 @@ namespace MelBox2
                 { "@EndDate", endDate.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@StartTime", startDate.ToLocalTime().ToShortTimeString() },
                 { "@EndTime", endDate.ToLocalTime().ToShortTimeString() },
-                { "@Route", "new" }
+                { "@Route", "new" },
+                { "@DeleteShift", string.Empty}
             };
 
             string form = Html.Page(Server.Html_FormShift, pairs);
@@ -678,30 +710,19 @@ namespace MelBox2
                     alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde erfolgreich geändert.");
                     Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für >{shiftName}< wurde geändert durch >{user.Name}<");
                 }
-                else                
-                    alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");                
-            } 
-            else if (user.Level >= Server.Level_Admin )
-            {
-                if (Sql.DeleteShift(shift.Id))
-                {
-                    alert = Html.Alert(1, "Bereitschaft gelöscht", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} wurde gelöscht.");
-                    Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] für >{shiftName}< wurde gelöscht durch >{user.Name}<");
-                }
                 else
-                    alert = Html.Alert(2, "Fehler beim Löschen der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
+                    alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
             }
             else
-                alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Sie haben keine Berechtigung für die Änderung der Bereitschaft " +
-                    $"Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName}. " +
-                    $"{(shiftHours > 0 ? string.Empty : "Nur Administratoren können Einträge löschen.")}");
+                alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Sie haben keine Berechtigung für diese Änderung der Bereitschaft " +
+                    $"Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} oder es wurden ungültige Parameter übergeben.");                    
 
             string table = Html.FromShiftTable(user);
 
             await Html.PageAsync(context, "Bereitschaftszeit geändert", alert + table, user);
         }
 
-        [RestRoute("Get", "/shift/delete/{shiftId:num}")]
+        [RestRoute("Post", "/shift/delete/{shiftId:num}")]
         public static async Task DeleteShiftFromId(IHttpContext context)
         {
             Person user = await Html.GetLogedInUserAsync(context);

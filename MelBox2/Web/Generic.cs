@@ -141,7 +141,12 @@ namespace MelBox2
 
         internal static string ButtonDelete(string root, int id)
         {
-            return $"<button style='width:20%' class='w3-button w3-block w3-pink w3-section w3-padding w3-col type='submit' formaction='/{root}/delete/{id}'>Löschen</button>\r\n";
+            return $"<button style='width:20%' class='w3-button w3-block w3-pink w3-section w3-padding w3-col' type='submit' formaction='/{root}/delete/{id}'>Löschen</button>\r\n";
+        }
+
+        internal static string ButtonDeleteDisabled(string tooltip)
+        {
+            return $"<button style='width:20%' class='w3-button w3-block w3-pink w3-section w3-padding w3-col type='submit' title='{tooltip}' disabled>Löschen</button>\r\n";
         }
 
         /// <summary>
@@ -755,7 +760,7 @@ namespace MelBox2
             sb.Append("<table class='w3-table w3-bordered'>");
             sb.Append("<tr>");
             sb.Append("  <td></td>");
-            sb.Append("  <td>Hier werden Sender aufgelistet, die in regelm&auml;ßigen Abst&auml;nden eine Nachricht senden m&uuml;ssen (&uuml;berwachte Sender).</td>");
+            sb.Append("  <td>Hier werden Sender (Anlagen) aufgelistet, die in regelm&auml;ßigen Abst&auml;nden eine Nachricht senden m&uuml;ssen (&uuml;berwachte Sender).</td>");
             sb.Append("</tr>");
             sb.Append("<tr>");
             sb.Append("  <td></td>");
@@ -763,7 +768,14 @@ namespace MelBox2
             sb.Append("</tr>");
             sb.Append("<tr>");
             sb.Append("  <td></td>");
-            sb.Append("  <td>Gibt es &uuml;berf&auml;lligen Sender, werden sie statt der &uuml;berwachten Sender hier angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden.</td>");
+            sb.Append("  <td>Gibt es &uuml;berf&auml;lligen Sender, werden sie hier gesondert angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden." +
+                        "<ol> " +
+                        "<li>Waren im Zeitraum &apos;Max&nbsp;Inaktiv&apos; Meldungen vorhanden?</li>" +
+                        "<li>St&ouml;rmeldungsweiterleitung vor Ort eingeschaltet?</li>" +
+                        "<li>GSM-Modem von Visu erreichbar? Fehlermeldungen von GSM-Modem?</li>" +                        
+                        "<li>Empfangsqualität ausreichend?</li>" +
+                        "<li>Bei EMail-Versand: Kunden-IT informieren</li>" +
+                        "</td>");
             sb.Append("</tr>");
 
             sb.Append("</table>");

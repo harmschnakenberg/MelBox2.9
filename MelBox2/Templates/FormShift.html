@@ -105,11 +105,11 @@
                     <input name="EndTime" id="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onchange="addTime(this, 'EndDate')">
                 </div>
                 <div id="timeWarner" class="w3-centered w3-text-red" style="visibility:hidden;">Der gew&auml;hlte Zeitraum ist ung&uuml;ltig.</div>
-                <div class="w3-centered w3-opacity">Kann nur durch einen Administrator gel&ouml;scht werden.</div>
 
                 <div class="w3-row">
                     <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-margin-right w3-col w3-third">Abbrechen</button>
                     <button class="w3-button w3-block w3-teal w3-section w3-padding w3-margin-left w3-col w3-third w3-right" type="submit">Speichern</button>
+                    @DeleteShift
                 </div>
             </div>
         </form>

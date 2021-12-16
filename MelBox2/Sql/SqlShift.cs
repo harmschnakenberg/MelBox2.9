@@ -315,29 +315,15 @@ namespace MelBox2
             if (payload.ContainsKey("Start") && payload.TryGetValue("Start", out string startStr) && DateTime.TryParse(startStr, out DateTime start))
             {
                 s.StartUtc = start;
-                if (payload.ContainsKey("StartTime") && payload.TryGetValue("StartTime", out string startTStr) && DateTime.TryParse(startTStr, out DateTime startTime))
-                {
-                    int h = startTime.ToUniversalTime().Hour;
-                    int m = startTime.ToUniversalTime().Minute;
-                    s.StartUtc = s.StartUtc.AddHours(h).AddMinutes(m);
-
-                    if (!s.StartUtc.IsDaylightSavingTime()) 
-                        s.StartUtc = s.StartUtc.AddHours(1);
-                }
+                if (payload.ContainsKey("StartTime") && payload.TryGetValue("StartTime", out string startTStr) && DateTime.TryParse(startTStr, out DateTime startTime))                
+                    s.StartUtc = s.StartUtc.AddHours(startTime.Hour).AddMinutes(startTime.Minute).ToUniversalTime();                
             }
 
             if (payload.ContainsKey("End") && payload.TryGetValue("End", out string endStr) && DateTime.TryParse(endStr, out DateTime end))
             {
                 s.EndUtc = end;
-                if (payload.ContainsKey("EndTime") && payload.TryGetValue("EndTime", out string endTStr) && DateTime.TryParse(endTStr, out DateTime endTime))
-                {
-                    int h = endTime.ToUniversalTime().Hour;
-                    int m = endTime.ToUniversalTime().Minute;
-                    s.EndUtc = s.EndUtc.AddHours(h).AddMinutes(m);
-
-                    if (!s.EndUtc.IsDaylightSavingTime())
-                        s.EndUtc = s.EndUtc.AddHours(1);
-                }
+                if (payload.ContainsKey("EndTime") && payload.TryGetValue("EndTime", out string endTStr) && DateTime.TryParse(endTStr, out DateTime endTime))                
+                    s.EndUtc = s.EndUtc.AddHours(endTime.Hour).AddMinutes(endTime.Minute).ToUniversalTime();                
             }
 
             return s;
