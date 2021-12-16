@@ -40,9 +40,12 @@
         </li>
         <li>
             <label>Sprachanrufe weiterleiten an</label>
-            <div class="w3-light-grey">
+            <div class="w3-light-grey" onclick="myFunction('newForward')" >
                 @ForewardingActive @ForewardingNumber
             </div>
+            <form id="newForward" class="w3-hide" action="/gsm/callforward" method="get">
+                @NewForwardingNumber
+            </form>
         </li>
         <li>
             <label>PIN an SIM-Karte</label>
@@ -66,4 +69,14 @@
 
     </ul>
     <br />
+    <script>
+        function myFunction(id) {
+          var x = document.getElementById(id);
+          if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+          } else {
+            x.className = x.className.replace(" w3-show", "");
+          }
+        }
+    </script>
 </div>

@@ -10,43 +10,6 @@ namespace MelBox2
     class Routes
     {
         #region Modem
-        [RestRoute("Get", "/gsm")]
-        public static async Task ModemShow(IHttpContext context)
-        {
-            Person user = await Html.GetLogedInUserAsync(context, false);
-            bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
-
-            string info = Html.Modal("GSM-Modem",
-                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>"+
-                Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
-                + (isAdmin ? 
-                "<form class='w3-margin'>" + 
-                Html.ButtonNew("gsm", "Reinitialisieren") + 
-                "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty)
-                );
-
-            Dictionary<string, string> pairs = new Dictionary<string, string>
-            {
-                { "@ModemReinit", info },
-                { "@Quality" , Gsm.SignalQuality.ToString()},
-                { "@Registered" , Gsm.NetworkRegistration.RegToString()},
-                { "@ModemType", Gsm.ModemType},
-                { "@OwnName", Gsm.OwnName},
-                { "@OwnNumber", Gsm.OwnNumber},
-                { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
-                { "@ProviderName" , Gsm.ProviderName},
-                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
-                { "@ForewardingActive", $"<i class='material-icons-outlined' title={(Gsm.CallForwardingActive ? "'Rufweiterleitung aktiv'> phone_forwarded" : "'keine Rufweiterleitung'>phone_disabled")}</i>" },
-                { "@PinStatus" , Gsm.SimPinStatus},
-                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
-                { "@AdminPhone", Gsm.AdminPhone},
-                { "@AdminEmail", Email.Admin.Address }                
-            };
-
-            string html = Html.Page(Server.Html_FormGsm, pairs);
-
-            await Html.PageAsync(context, "GSM-Modem", html);
-        }
 
         [RestRoute("Get", "/gsm/new")]
         public static async Task ModemReinit(IHttpContext context)
@@ -63,20 +26,21 @@ namespace MelBox2
             await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
         }
 
-        [RestRoute("Get", "/gsm/callforward/{phone:num}")]
+        [RestRoute("Get", "/gsm/callforward")]
         public static async Task ModemCallforward(IHttpContext context)
-    {
+        {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context);
             if (user == null || user.Level < Server.Level_Admin) return;
             #endregion
 
-            var phoneStr = context.Request.PathParameters["phone"];
+            var phoneStr = context.Request.QueryString.Get("phone");
+ 
             phoneStr = Sql.NormalizePhone(phoneStr);
 
             string html = string.Empty;
 
-            if (phoneStr.Length < 10)
+            if (phoneStr?.Length < 10)
                 html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist ungültig");
             else
             {
@@ -85,10 +49,50 @@ namespace MelBox2
                 string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
 
                 Sql.InsertLog(2, txt);
-                Log.Warning(txt,736);
+                Log.Warning(txt, 736);
             }
 
             await Html.PageAsync(context, "Rufweiterleitung ändern", html);
+        }
+
+        [RestRoute("Get", "/gsm")]
+        public static async Task ModemShow(IHttpContext context)
+        {
+            Person user = await Html.GetLogedInUserAsync(context, false);
+            bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
+
+            string info = Html.Modal("GSM-Modem",
+                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>" +
+                Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
+                + (isAdmin ?
+                "<form class='w3-margin'>" +
+                Html.ButtonNew("gsm", "Reinitialisieren") +
+                "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty)
+                );
+
+            Dictionary<string, string> pairs = new Dictionary<string, string>
+            {
+                { "@ModemReinit", info },
+                { "@Quality" , Gsm.SignalQuality.ToString()},
+                { "@Registered" , Gsm.NetworkRegistration.RegToString()},
+                { "@ModemType", Gsm.ModemType},
+                { "@OwnName", Gsm.OwnName},
+                { "@OwnNumber", Gsm.OwnNumber},
+                { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
+                { "@ProviderName" , Gsm.ProviderName},
+                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
+                { "@ForewardingActive", $"<i class='material-icons-outlined' title={(Gsm.CallForwardingActive ? "'Rufweiterleitung aktiv'> phone_forwarded" : "'keine Rufweiterleitung'>phone_disabled")}</i>" },
+                { "@NewForwardingNumber", user.Level < Server.Level_Reciever ? string.Empty : "<input name='phone' pattern='\\d+' placeholder='Mobil-Nr. - nur Zahlen'><input type='submit' value='&Auml;ndern'>" },
+
+                { "@PinStatus" , Gsm.SimPinStatus},
+                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
+                { "@AdminPhone", Gsm.AdminPhone},
+                { "@AdminEmail", Email.Admin.Address }
+            };
+
+            string html = Html.Page(Server.Html_FormGsm, pairs);
+
+            await Html.PageAsync(context, "GSM-Modem", html);
         }
 
         #endregion
