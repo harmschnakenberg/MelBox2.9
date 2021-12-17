@@ -286,6 +286,33 @@ namespace MelBox2
             return sb.ToString();
         }
 
+        /// <summary>
+        /// HTML-Input-Felder zum manuellen Setzen der Rufumleitungsnummer
+        /// </summary>
+        /// <param name="user">Angemeldeter Benutzer (für Berechtigung)</param>
+        /// <returns>HTML-Input-Felder</returns>
+        internal static string ManualUpdateCallworwardNumber(Person user)
+        {
+            if (user == null || user.Level < Server.Level_Reciever) return "<p><i>Bitte einloggen</i></p>";
+
+            if (user.Level >= Server.Level_Admin) // frei einstellbar
+                return "<input class='w3-input w3-light-blue w3-half' name='phone' pattern='\\d+' placeholder='Mobil-Nr. - nur Zahlen'>" +
+                    "<input type='submit' value='Nummer zwangsweise &auml;ndern' class='w3-input w3-blue w3-quarter'>" +
+                    "<input class='w3-input w3-quarter w3-light-red' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";           
+            else if (user.Phone.Length > 9 && ulong.TryParse(user.Phone.TrimStart('+'), out ulong _) ) //nur eigene Nummer
+            {
+                string phoneStr = user.Phone;
+                if (phoneStr.StartsWith("+"))
+                    phoneStr = "0" + user.Phone.Remove(0, 3); //'+49...' -> '0...'
+                                                             
+                return $"<input name='phone' type='hidden' value='{phoneStr}'>" +
+                    $"<input class='w3-input w3-blue w3-threequarter' type='submit' value='Sprachanrufe an mich weiterleiten ({phoneStr})'>" +
+                    $"<input class='w3-input w3-quarter w3-light-red' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";
+            }
+            else
+                return "<p>F&uuml;r den angemeldeten Benuter ist keine g&uuml;ltige Telefonnumer hinterlegt.</p>";
+        }
+        
         #endregion
 
 

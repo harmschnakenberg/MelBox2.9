@@ -31,28 +31,52 @@ namespace MelBox2
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null || user.Level < Server.Level_Admin) return;
+            if (user == null || user.Level < Server.Level_Reciever) return;
             #endregion
 
             var phoneStr = context.Request.QueryString.Get("phone");
- 
             phoneStr = Sql.NormalizePhone(phoneStr);
 
             string html = string.Empty;
 
-            if (phoneStr?.Length < 10)
-                html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist ungültig");
+            if (phoneStr == null || (user.Level < Server.Level_Admin && phoneStr != user.Phone)) //Benutzer dürfen nur ihre eigene Nummer einsetzen
+                html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist nicht zulässig.");
             else
             {
+                Program.OverideCallForwardingNumber = phoneStr;
                 Gsm.SetCallForewarding(phoneStr);
-                html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden weitergeleitet an die Nummer '{phoneStr}'. Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
-                string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
+                html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden bis auf weiteres an die Nummer '{phoneStr}' weitergeleitet . Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
+                string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] bis auf weiteres umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
 
                 Sql.InsertLog(2, txt);
                 Log.Warning(txt, 736);
             }
 
             await Html.PageAsync(context, "Rufweiterleitung ändern", html);
+        }
+
+        [RestRoute("Get", "/gsm/callforward/off")]
+        public static async Task ModemCallforwardOff(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Reciever) return;
+            #endregion
+
+            string oldPhone = Gsm.CallForwardingNumber;
+            string html = string.Empty;
+
+            if (user.Level < Server.Level_Admin && user.Phone != oldPhone)
+                html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren fehlgeschlagen", $"Die Rufweiterleitug an {oldPhone} konnte nicht deaktiviert werden. Sie haben keine Berechtigung.");
+            else
+            {
+                Program.OverideCallForwardingNumber = string.Empty;
+                Program.CheckCallForwardingNumber(null, null);
+
+                html = Html.Alert(4, "Zwangsweise Rufweiterleitung deaktiviert", $"Die erzwungene Rufweiterleitung an {oldPhone} wird deaktiviert. Sprachanrufe werden an die aktuelle Bereitschaft {Gsm.CallForwardingNumber} geleitet.");
+            }
+
+            await Html.PageAsync(context, "Zwangsweise Rufweiterleitung zurücksetzen", html);
         }
 
         [RestRoute("Get", "/gsm")]
@@ -82,7 +106,7 @@ namespace MelBox2
                 { "@ProviderName" , Gsm.ProviderName},
                 { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
                 { "@ForewardingActive", $"<i class='material-icons-outlined' title={(Gsm.CallForwardingActive ? "'Rufweiterleitung aktiv'> phone_forwarded" : "'keine Rufweiterleitung'>phone_disabled")}</i>" },
-                { "@NewForwardingNumber", user.Level < Server.Level_Reciever ? string.Empty : "<input name='phone' pattern='\\d+' placeholder='Mobil-Nr. - nur Zahlen'><input type='submit' value='&Auml;ndern'>" },
+                { "@NewForwardingNumber", Html.ManualUpdateCallworwardNumber(user)},
 
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
@@ -92,7 +116,7 @@ namespace MelBox2
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
 
-            await Html.PageAsync(context, "GSM-Modem", html);
+            await Html.PageAsync(context, "GSM-Modem", html, user);
         }
 
         #endregion

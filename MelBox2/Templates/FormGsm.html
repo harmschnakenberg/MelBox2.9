@@ -3,7 +3,7 @@
 
     <h2>Status</h2>
     <p>Informationen zum angeschlossenen Modem:</p>
-    <ul class="w3-ul w3-card w3-threequarter">
+    <ul class="w3-ul w3-card">
         <li>
             <label>Signal</label>
             <div class="w3-light-grey w3-round">
@@ -39,14 +39,12 @@
             </div>
         </li>
         <li>
-            <label>Sprachanrufe weiterleiten an</label>
-            <div class="w3-light-grey" onclick="myFunction('newForward')" >
+            <label>Sprachanrufe werden weitergeleitet an</label>
+            <div class="w3-light-grey">
                 @ForewardingActive @ForewardingNumber
             </div>
-            <form id="newForward" class="w3-hide" action="/gsm/callforward" method="get">
-                @NewForwardingNumber
-            </form>
         </li>
+
         <li>
             <label>PIN an SIM-Karte</label>
             <div class="w3-light-grey">
@@ -66,17 +64,17 @@
                 @AdminPhone - @AdminEmail
             </div>
         </li>
-
     </ul>
     <br />
-    <script>
-        function myFunction(id) {
-          var x = document.getElementById(id);
-          if (x.className.indexOf("w3-show") == -1) {
-            x.className += " w3-show";
-          } else {
-            x.className = x.className.replace(" w3-show", "");
-          }
-        }
-    </script>
+
+    <h2>Anrufweiterleitung bearbeiten</h2>
+    <div class="w3-card">
+        <label>Sprachanrufe dauerhaft weiterleiten an</label>
+        <form action="/gsm/callforward" method="get">
+            <div>
+                @NewForwardingNumber
+            </div>
+        </form>
+        <div>&nbsp;</div>
+    </div>
 </div>

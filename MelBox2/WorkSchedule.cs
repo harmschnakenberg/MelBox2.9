@@ -97,7 +97,7 @@ namespace MelBox2
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
+        internal static void CheckCallForwardingNumber(object sender, ElapsedEventArgs e)
         {
             string phone = Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber);
 
