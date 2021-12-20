@@ -16,15 +16,17 @@ EINRICHTEN FÜR INTRANET:
 -	Firewall TCP-Port öffnen --> Eingehande Regeln -> 
 									- Protokolle und Ports	--> Lokaler Port : TCP 1234
 									- Programme und Dienste --> Alle Programme - sonst gings bei mir nicht. Fehler?
-									- Optional: Bereich Lokale IP-Adresse : 192.168.160.0/24
+									- Optional: Bereich Lokale IP-Adresse : 192.168.xxx.0/24
 
 FRAGEN:
 -	Welches Characterset verwenden? UCS2 (unicode, 140 Zeichen) für Umlaute oder GSM-Characterset (ASCII + Spezial, 160 Zeichen) für längere Nachrichten?
 	-> Standard ist Characterset GSM. Bei Sonderzeichen in SMS schaltet das Modem selbsttätig auf UCS2. Ist im Programm abgefangen. Muss die Praxis zeigen.
 
 TODO: 
--	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51
-		- Statusreport für gesendete SMS: Wird der passende Deleviery-Code bei Fehlern/Verzögerung angezeigt?
 
--	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft testen! 
-					Manuelle Möglichkeit Rufumleitung zu ändern vorsehen?
+
+PRAXISTEST:
+-	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51
+		- Statusreport für gesendete SMS: Wird immer der passende Deleviery-Code bei Fehlern/Verzögerung angezeigt?
+
+-	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft testen! 					

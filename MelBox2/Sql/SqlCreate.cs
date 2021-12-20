@@ -175,6 +175,7 @@ namespace MelBox2
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.Email + ", 'Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.SmsAndEmail + ", 'SMS + Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmail + ", 'immer Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmailAndSms + ", 'SMS + immer Email'); ";
 
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";

@@ -45,6 +45,7 @@ namespace MelBox2
             {
                 Program.OverideCallForwardingNumber = phoneStr;
                 Gsm.SetCallForewarding(phoneStr);
+                System.Threading.Thread.Sleep(3000);
                 html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden bis auf weiteres an die Nummer '{phoneStr}' weitergeleitet . Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
                 string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] bis auf weiteres umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
 
@@ -94,6 +95,14 @@ namespace MelBox2
                 "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty)
                 );
 
+            string callforward1 = Gsm.CallForwardingActive ? 
+                "<i class='material-icons-outlined w3-text-green' title='Rufweiterleitung aktiv'>phone_forwarded</i>" : 
+                "<i class='material-icons-outlined w3-text-red' title='keine Rufweiterleitung'>phone_disabled</i>";
+
+            string callforward2 = Gsm.CallForwardingNumber == Program.OverideCallForwardingNumber ? 
+                "<i class='material-icons-outlined w3-text-red' title='Nummer fest hinterlegt'>phone_locked</i>" : 
+                string.Empty;
+
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
                 { "@ModemReinit", info },
@@ -104,8 +113,8 @@ namespace MelBox2
                 { "@OwnNumber", Gsm.OwnNumber},
                 { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
                 { "@ProviderName" , Gsm.ProviderName},
-                { "@ForewardingNumber" ,  Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-" },
-                { "@ForewardingActive", $"<i class='material-icons-outlined' title={(Gsm.CallForwardingActive ? "'Rufweiterleitung aktiv'> phone_forwarded" : "'keine Rufweiterleitung'>phone_disabled")}</i>" },
+                { "@ForewardingNumber" ,  (Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-") + callforward2 },
+                { "@ForewardingActive", callforward1 },
                 { "@NewForwardingNumber", Html.ManualUpdateCallworwardNumber(user)},
 
                 { "@PinStatus" , Gsm.SimPinStatus},

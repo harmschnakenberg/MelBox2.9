@@ -295,29 +295,29 @@ namespace MelBox2
         {
             if (user == null || user.Level < Server.Level_Reciever) return "<p><i class='w3-light-grey'>Zum Bearbeiten bitte einloggen</i></p>";
             bool isAdmin = user.Level >= Server.Level_Admin;
+            string html = string.Empty;
 
             if (isAdmin) // frei einstellbar
-                return "<input class='w3-input w3-light-blue w3-half' name='phone' pattern='\\d+' placeholder='Mobil-Nr. - nur Zahlen'>" +
-                    "<input type='submit' value='Nummer zwangsweise &auml;ndern' class='w3-input w3-blue w3-quarter'>" +
-                    "<input class='w3-input w3-quarter w3-light-red' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";           
-            else if (user.Phone.Length > 9 && ulong.TryParse(user.Phone.TrimStart('+'), out ulong _) ) //nur eigene Nummer
+                html = "<input class='w3-button w3-pale-yellow w3-half' name='phone' pattern='\\d{8,}' tite='Telefonummer für Weiterleitung der Sprachanrufe\\r\\n min. 8 Zahlen, keine weiteren Zeichen' placeholder='z.B. 0150123456789'>" +
+                        "<input type='submit' value='Nummer zwangsweise &auml;ndern' class='w3-button w3-blue w3-quarter'>";
+            else if (user.Phone.Length > 9 && ulong.TryParse(user.Phone.TrimStart('+'), out ulong _)) //nur eigene Nummer
             {
                 string phoneStr = user.Phone;
                 if (phoneStr.StartsWith("+"))
                     phoneStr = "0" + user.Phone.Remove(0, 3); //'+49...' -> '0...'
 
-                string html = $"<input name='phone' type='hidden' value='{phoneStr}'>" +
-                    $"<input class='w3-input w3-light-blue w3-threequarter' type='submit' value='Sprachanrufe dauerhaft an mich weiterleiten ({phoneStr})'>";
-
-                if (Program.OverideCallForwardingNumber.Length > 0 && (isAdmin || user.Phone == Program.OverideCallForwardingNumber)) //nur Admin oder Benutzer selbst kann deaktivieren 
-                    html += $"<input class='w3-input w3-quarter w3-light-red' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";
-
-                return html;
+                html =  $"<input name='phone' type='hidden' value='{phoneStr}'>" +
+                        $"<input class='w3-button w3-light-blue w3-threequarter' type='submit' value='Sprachanrufe dauerhaft an mich weiterleiten ({phoneStr})'>";
             }
             else
-                return "<p>F&uuml;r den angemeldeten Benuter ist keine g&uuml;ltige Telefonnumer hinterlegt.</p>";
+                html = "<p>F&uuml;r den angemeldeten Benuter ist keine g&uuml;ltige Telefonnumer hinterlegt.</p>";
+
+            if (Program.OverideCallForwardingNumber.Length > 0 && (isAdmin || user.Phone == Program.OverideCallForwardingNumber)) //nur Admin oder Benutzer selbst kann deaktivieren 
+                html += "<input class='w3-button w3-quarter w3-sand' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";
+
+            return html;
         }
-        
+
         #endregion
 
 

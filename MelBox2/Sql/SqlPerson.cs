@@ -13,7 +13,8 @@ namespace MelBox2
             Sms = 1,
             Email = 2,
             SmsAndEmail = 3,
-            PermanentEmail = 4
+            PermanentEmail = 4,
+            PermanentEmailAndSms = 5
         }
 
         public static int Level_Admin { get; set; } = 9000; //Benutzerverwaltung u. -Einteilung

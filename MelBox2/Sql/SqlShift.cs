@@ -106,7 +106,7 @@ namespace MelBox2
         {
 
             //Definierte Bereitschaft (SMS) aus Datenbank; Telefonnumer vorhanden, hat zur Zeit Bereitschaft, SMS freigegeben
-            const string query1 = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3); ";
+            const string query1 = "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5); ";
 
             DataTable dt = SelectDataTable(query1, null);
 
