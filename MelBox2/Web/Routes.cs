@@ -83,7 +83,7 @@ namespace MelBox2
         [RestRoute("Get", "/gsm")]
         public static async Task ModemShow(IHttpContext context)
         {
-            Person user = await Html.GetLogedInUserAsync(context, false);
+            Person user = await Html.GetLogedInUserAsync(context);
             bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
 
             string info = Html.Modal("GSM-Modem",
@@ -206,6 +206,11 @@ namespace MelBox2
         [RestRoute("Get", "/out")]
         public static async Task OutBox(IHttpContext context)
         {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
             System.Data.DataTable sent;
             if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))
                // if (context.Request.PathParameters.ContainsKey("Date") && DateTime.TryParse(context.Request.PathParameters["Date"].ToString(), out DateTime oneDate))
@@ -223,6 +228,11 @@ namespace MelBox2
         [RestRoute("Get", "/overdue")]
         public static async Task OverdueShow(IHttpContext context)
         {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
             System.Data.DataTable overdue = Sql.SelectOverdueSenders();
 
             string html;
@@ -295,7 +305,7 @@ namespace MelBox2
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context, false);
-          
+
             bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
@@ -385,7 +395,8 @@ namespace MelBox2
                 { "@KeyWord", account.KeyWord },
 
                 { "@NewContact", isAdmin ? Html.ButtonNew("account") : string.Empty },
-                { "@DeleteContact", isAdmin ? Html.ButtonDelete("account", account.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")}
+                { "@DeleteContact", isAdmin ? Html.ButtonDelete("account", account.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")},
+                { "@UpdateContact", user.Level < Server.Level_Reciever ? string.Empty : "<button class='w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left w3-right' type='submit'>&Auml;ndern</button>"}
             };
 
             string form = Html.Page(Server.Html_FormAccount, pairs);
@@ -596,6 +607,18 @@ namespace MelBox2
 
             await Html.PageAsync(context, titel, alert, user);
         }
+
+        [RestRoute("Get", "/login/delete")]
+        public static async Task DeleteCookie(IHttpContext context)
+        {
+            System.Net.Cookie cookie = new System.Net.Cookie("MelBoxId", string.Empty, "/");
+            context.Response.Cookies.Add(cookie);
+           
+            string alert = Html.Alert(4, "Cookie geleert", "Der Cookie mit Ihren codierten Anmeldeinformationen wurde geleert.");
+
+            await Html.PageAsync(context, "Cookie geleert", alert, null);
+        }
+
         #endregion
 
 
@@ -806,7 +829,8 @@ namespace MelBox2
         public static async Task LoggingShow(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context, false);              
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
             #endregion
 
             int maxPrio = 3;
@@ -871,7 +895,7 @@ namespace MelBox2
 
         [RestRoute]
         public static async Task Home(IHttpContext context)
-        {
+        {           
             string form = Html.Modal("Login und Registrierung", Html.InfoLogin());
             form += Html.Page(Server.Html_FormLogin, null);
 
@@ -880,3 +904,4 @@ namespace MelBox2
 
     }
 }
+

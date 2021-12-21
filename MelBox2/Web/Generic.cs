@@ -35,8 +35,8 @@ namespace MelBox2
         /// <returns></returns>
         internal static async Task<Person> GetLogedInUserAsync(IHttpContext context, bool blockUser = true)
         {
-            Html.ReadCookies(context).TryGetValue("MelBoxId", out string guid);
-
+            _ = Html.ReadCookies(context).TryGetValue("MelBoxId", out string guid);
+           
             Person user = new Person();
 
             if (guid == null || !Server.LogedInHash.TryGetValue(guid, out user))
@@ -293,7 +293,7 @@ namespace MelBox2
         /// <returns>HTML-Input-Felder</returns>
         internal static string ManualUpdateCallworwardNumber(Person user)
         {
-            if (user == null || user.Level < Server.Level_Reciever) return "<p><i class='w3-light-grey'>Zum Bearbeiten bitte einloggen</i></p>";
+            if (user == null || user.Level < Server.Level_Reciever) return "<p><i class='w3-opacity'>Keine Berechtigung zum Bearbeiten</i></p>";
             bool isAdmin = user.Level >= Server.Level_Admin;
             string html = string.Empty;
 

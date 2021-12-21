@@ -1,6 +1,6 @@
 ﻿<div class="w3-container">
+    <h3>MelBox2 - Funktionen:</h3>
     <ul class="w3-ul w3-card">
-        <li><h2>MelBox2</h2></li>
         <li>&bull; empf&auml;ngt SMS-Nachrichten und leitet sie an die Bereitschaft weiter</li>
         <li>&bull; listet die empfangenen und versendeten Nachrichten auf</li>
         <li>&bull; verwaltet Nachrichten, die nicht an die Bereitschaft gesendet werden sollen</li>
@@ -10,13 +10,14 @@
         <li>&bull; verwaltet Sender und Empf&auml;ngerdaten z.B. Telefonnummern und Email-Adressen</li>
     </ul>
 
-    <h3>Allgemeine Erl&auml;uterungen:</h3>
+    <h3>Symbolverwendung:</h3>
     <table class="w3-table w3-card w3-bordered">
         <tr>
             <td>&nbsp;</td>
             <td>Tooltip</td>
             <td>Zu vielen Symbolen werden Erkl&auml;rungen eingeblendet, wenn man mit dem Mauszeiger dar&uuml;ber stehen bleibt.</td>
         </tr>
+        <tr>&nbsp;</tr>
         <tr>
             <td><i class='material-icons-outlined'>info</i></td>
             <td>Info-Symbol</td>
@@ -100,7 +101,7 @@
         <tr>
             <td><i class='w3-xlarge material-icons-outlined'>phone_forwarded</i></td>
             <td>Aktiviert</td>
-            <td rowspan="4">Weiterleitung Sprachanrufe</td>
+            <td rowspan="3">Weiterleitung Sprachanrufe</td>
         </tr>
         <tr>
             <td><i class='w3-xlarge material-icons-outlined'>phone_disabled</i></td>
@@ -109,6 +110,35 @@
         <tr>
             <td><i class='w3-xlarge material-icons-outlined'>phone_locked</i></td>
             <td>Nummer fest</td>
+            <td>Sprachanrufe werden nicht an die aktuelle Rufbereitschaft geleitet, sondern an eine fest hinterlegte Telefonnumer</td>
+        </tr>
+    </table>
+
+    <h3>Rollen:</h3>
+    <table class="w3-table w3-card w3-bordered">
+        <tr>
+            <th>Rolle</th>
+            <th>Berechtigung</th>
+        </tr>
+        <tr>
+            <td>Tech-Administrator</td>
+            <td>Betreut die Programmfunktionen von MelBox2. Empfängt die technischen Fehler- und Routinemeldungen aus dem Programm.</td>
+        </tr>
+        <tr>
+            <td>Administrator</td>
+            <td>Betreut die Benutzerverwaltung. Kann Rufbereitschaft einteilen. Kann Nachrichten zur Weiterleitung sperren.</td>
+        </tr>
+        <tr>
+            <td>Benutzer</td>
+            <td>Kann eigene Benutzerdaten und eigene Rufbereitschaft verwalten.</td>
+        </tr>
+        <tr>
+            <td>Beobachter</td>
+            <td>Kann alle Bereiche lesen.</td>
+        </tr>
+        <tr>
+            <td>Aspirant</td>
+            <td>Muss durch einen Administrator für den Login freigeschaltet werden. Sieht nur eingegangene Nachrichten und den Bereitschaftskalender.</td>
         </tr>
     </table>
 </div>

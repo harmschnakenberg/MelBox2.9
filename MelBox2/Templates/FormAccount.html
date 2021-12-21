@@ -56,7 +56,7 @@
                         <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly />
                     </div>
                     <div class="w3-rest">
-                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0} .{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password">
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0}.{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password">
                     </div>
                 </div>
 
@@ -125,7 +125,7 @@
                     <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Abbrechen</button>
                     @NewContact
                     @DeleteContact
-                    <button class="w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left  w3-right" type="submit">&Auml;ndern</button>
+                    @UpdateContact                    
                 </div>
             </div>
         </form>
