@@ -295,7 +295,7 @@ namespace MelBox2
         {
             if (user == null || user.Level < Server.Level_Reciever) return "<p><i class='w3-opacity'>Keine Berechtigung zum Bearbeiten</i></p>";
             bool isAdmin = user.Level >= Server.Level_Admin;
-            string html = string.Empty;
+            string html;
 
             if (isAdmin) // frei einstellbar
                 html = "<input class='w3-button w3-pale-yellow w3-half' name='phone' pattern='\\d{8,}' tite='Telefonummer für Weiterleitung der Sprachanrufe\\r\\n min. 8 Zahlen, keine weiteren Zeichen' placeholder='z.B. 0150123456789'>" +

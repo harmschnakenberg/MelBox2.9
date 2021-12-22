@@ -149,7 +149,7 @@ namespace MelBox2
                         }
                         break;
                     case "import contact":
-                        Console.WriteLine("Kontakte als CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;' laden. Siehe alte Tabelle 'Tbl_Absender'. Dateipfad angeben:");
+                        Console.WriteLine("Kontakte als CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsKey;' laden. Siehe alte Tabelle 'Tbl_Absender'. Optionale Spalte 'AbsEmail;AbsLevel'. Dateipfad angeben:");
                         string path = Console.ReadLine();
                         Sql.LoadPersonsFromCsv(path);
                         break;

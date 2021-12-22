@@ -102,9 +102,13 @@ namespace MelBox2
             string phone = Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber);
 
             if (Gsm.CallForwardingNumber != phone)
-            {
-                Sql.InsertLog(3, $"Sprachanrufe werden weitergeleitet an '{phone}'");
+            {                
                 Gsm.SetCallForewarding(phone);
+
+                if (Gsm.CallForwardingActive)
+                    Sql.InsertLog(3, $"Sprachanrufe werden weitergeleitet an '{phone}'");
+                else
+                    Sql.InsertLog(2, $"Sprachanrufe werden zur Zeit nicht weitergeleitet.");
             }
             
             Console.WriteLine($"Die aktuelle Rufumleitung ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}, soll an {phone} und geht an {Gsm.CallForwardingNumber}");

@@ -304,19 +304,19 @@ namespace MelBox2
         /// <param name="maxInactiveHours"></param>
         /// <param name="keyWord"></param>
         /// <returns></returns>
-        private static bool ImportPerson(string name, string phone, int maxInactiveHours, string keyWord)
+        private static bool ImportPerson(string name, string phone, int maxInactiveHours, string keyWord, string company, string email = "", int level = 0)
         {
             const string query = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via, KeyWord, MaxInactive) VALUES (@Name, @Password, @Level, @Company, @Phone, @Email, @Via, @KeyWord, @MaxInactive); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
                 {
                     { "@Name", name },
-//                    { "@Password", Encrypt("7307") },
+                    { "@Password", Encrypt(name) },
                     { "@Password", DBNull.Value },
-                    { "@Level", 0 },
-                    { "@Company", name },
+                    { "@Level", level },
+                    { "@Company", company },
                     { "@Phone", NormalizePhone(phone) },
-                    { "@Email", string.Empty},
+                    { "@Email", email},
                     { "@Via", (int)Via.Undefined},
                     { "@KeyWord", keyWord.ToLower()},
                     { "@MaxInactive", maxInactiveHours}
@@ -414,7 +414,7 @@ namespace MelBox2
 
         /// <summary>
         /// Import von Kontaktdaten aus MelBox1: Tabelle tbl_Absender als CSV einladen.
-        /// Erforderliche Spalten in CSV: 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;'
+        /// Erforderliche Spalten in CSV: 'AbsName;AbsInakt;AbsNr;AbsRegelID;AbsKey;' Optionale Spalten in CSV: 'AbsEmail'
         /// </summary>
         /// <param name="path">pfad zur CSV-Datei</param>
         public static void LoadPersonsFromCsv(string path)
@@ -427,17 +427,21 @@ namespace MelBox2
                 return;
             }
 
+            int counter = 0;
+
             try
             {
                 string[] lines = System.IO.File.ReadAllLines(path, System.Text.Encoding.GetEncoding("ISO-8859-1")); //wg. Umlaute!
                 string[] captions = lines[0].Split(';');
 
+               
                 int iCol = captions.Length;
                 int iName = 0;
                 int iAbsInakt = 0;
                 int iAbsNr = 0;
                 int iAbsKey = 0;
-                int iAbsRegelID = 0;
+                int iAbsEmail = 0;
+                int iAbsLevel = 0;
 
                 for (int i = 0; i < iCol; i++)
                 {
@@ -450,20 +454,22 @@ namespace MelBox2
                             iAbsInakt = i;
                             break;
                         case "AbsNr":
-                            iAbsNr = i;
-                            break;
-                        case "AbsRegelID":
-                            iAbsRegelID = i;
+                            iAbsNr = i;                            
                             break;
                         case "AbsKey":
                             iAbsKey = i;
+                            break;
+                        case "AbsEmail":
+                            iAbsEmail = i;
+                            break;
+                        case "AbsLevel":
+                            iAbsLevel = i;
                             break;
                     }
                 }
 
                 for (int i = 1; i < lines.Length; i++)
                 {
-
                     string[] values = lines[i].Split(';');
 
                     if (values.Length < iCol)
@@ -472,19 +478,41 @@ namespace MelBox2
                         continue;
                     }
 
-                    int.TryParse(values[iAbsInakt], out int maxInactive);
-                    int.TryParse(values[iAbsRegelID], out int regelId);
+                    _ = int.TryParse(values[iAbsInakt], out int maxInactive);
+
+                    int level = 0;
+                    if (iAbsLevel > 0)
+                        _ = int.TryParse(values[iAbsLevel], out level);
 
                     string name = values[iName];
+                    string email = string.Empty;
+                    string company = string.Empty;
 
-                    if (name.Length > 2 && regelId > 0)
+                    if (iAbsEmail > 0)
+                    {
+                        email = values[iAbsEmail];
+                    
+                        int indexAT = email.IndexOf('@') + 1;
+                        int indexLastDot = email.LastIndexOf('.');
+
+                        if (indexLastDot - indexAT > 0)
+                        {
+                            company = email.Substring(indexAT, indexLastDot - indexAT);
+                            company = company.Substring(0, 1).ToUpper() + company.Substring(1); //erster Bustabe groß
+                        }
+                    }
+
+                    if (name.Length > 2)
                     {
                         Person p = Sql.SelectPerson(name);
 
                         if (p.Id > 0)
                             Console.WriteLine($"Zeile {i} >{name}<".PadRight(32) + " bereits vergeben. KEIN NEUER EINTRAG!");
-                        else if (ImportPerson(name, values[iAbsNr], maxInactive, values[iAbsKey]))
-                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< ");
+                        else if (ImportPerson(name, values[iAbsNr], maxInactive, values[iAbsKey], company, email, level))
+                        {
+                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< "); 
+                            counter++;
+                        }
                         else
                             Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}<\tFehler beim Schreiben in die Datenbank. KEIN NEUER EINTRAG!");
                     }
@@ -493,11 +521,12 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< {ex.Message}", 26535);
+                Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< {ex.Message} \r\n{ex.StackTrace}", 26535);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-            Console.WriteLine("Importieren aus CSV-Datei beendet. Ergebnis prüfen!");
+            Console.WriteLine($"Es wurden {counter} Kontakte mit Name=Passwort über CSV-Import hinzugefügt. Ergebnis prüfen!");
+            Log.Info($"Es wurden {counter} Kontakte über CSV-Import hinzugefügt.", 5623);
         }
 
     }

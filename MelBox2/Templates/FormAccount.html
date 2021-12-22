@@ -46,34 +46,34 @@
                         <input class="w3-input w3-border" value="@UserRole" disabled>
                     </div>
                     <div class="w3-rest">
-                        <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Benutzernamen eingeben" value="@Name">
+                        <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Benutzernamen eingeben" value="@Name" @disabled2>
                     </div>
                 </div>
 
                 <label><b>Passwort</b> <span class="w3-opacity">- leer lassen = keine &Auml;nderung</span></label>
                 <div class="w3-row">
                     <div class="w3-col w3-right" style="width:110px">
-                        <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly />
+                        <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly1 />
                     </div>
                     <div class="w3-rest">
-                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0}.{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password">
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0}.{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password" @disabled2>
                     </div>
                 </div>
 
                 <label><b>Firma</b> <span class="w3-opacity">- optinonal f&uuml;r bessere Zuordnung</span></label>
                 <div class="w3-row">
                     <div class="w3-rest w3-margin-bottom">
-                        <input name="company" type="text" class="w3-input w3-border" placeholder="Firmennamen und -Ort eingeben" value="@Company">
+                        <input name="company" type="text" class="w3-input w3-border" placeholder="Firmennamen und -Ort eingeben" value="@Company" @disabled2>
                     </div>
                 </div>
 
                 <label><b>Mobiltelefon</b> <span class="w3-opacity">wird nur verwendet, wenn angehakt</span></label>
                 <div class="w3-row">
                     <div class="w3-col" style="width:40px">
-                        <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone />
+                        <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone @disabled2/>
                     </div>
                     <div class="w3-rest">
-                        <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone">
+                        <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone" @disabled2>
                     </div>
                 </div>
 
@@ -81,15 +81,15 @@
                     <label><b>Email</b> <span class="w3-opacity">- wird nur verwendet, wenn angehakt</span></label>
                     <div class="w3-row">
                         <div class="w3-col" style="width:40px">
-                            <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail>
+                            <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail @disabled2>
                         </div>
                         <div class="w3-rest">
-                            <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+">
+                            <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+" @disabled2>
                         </div>
                     </div>
                     <div class="w3-row">
                         <div class="w3-col w3-margin-bottom" style="width:40px">
-                            <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled>
+                            <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled1>
                         </div>
                         <div class="w3-rest">
                             <label><b>Abo</b> - Immer bei eingehenden Meldungen benachrichtigen</label>
@@ -97,13 +97,13 @@
                     </div>
 
                     <label><b>Schlüsselwort</b> <span class="w3-opacity">wird automatisch vergeben</span></label>
-                    <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly />
+                    <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly1 />
 
 
                     <label><b>Senderüberwachung</b> <span class="w3-opacity">Maximale Zeit zwischen Meldungen</span></label>
                     <div class="w3-row">
                         <div class="w3-col" style="width:75px">
-                            <input name="MaxInactiveHours" type="number" class="w3-input w3-border" min="0" step="4" value="@MaxInactiveHours" @disabled />
+                            <input name="MaxInactiveHours" type="number" class="w3-input w3-border" min="0" step="4" value="@MaxInactiveHours" @disabled1 />
                         </div>
                         <div class="w3-rest w3-container w3-panel">Stunden <span class="w3-opacity">(0 = keine &Uuml;berwachung)</span></div>
                     </div>

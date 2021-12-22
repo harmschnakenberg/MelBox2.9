@@ -65,7 +65,7 @@ namespace MelBox2
             #endregion
 
             string oldPhone = Gsm.CallForwardingNumber;
-            string html = string.Empty;
+            string html;
 
             if (user.Level < Server.Level_Admin && user.Phone != oldPhone)
                 html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren fehlgeschlagen", $"Die Rufweiterleitug an {oldPhone} konnte nicht deaktiviert werden. Sie haben keine Berechtigung.");
@@ -378,8 +378,9 @@ namespace MelBox2
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
-                { "@readonly", isAdmin ? string.Empty : "readonly" },
-                { "@disabled", isAdmin ? string.Empty : "disabled" },
+                { "@readonly1", isAdmin ? string.Empty : "readonly" },
+                { "@disabled1", isAdmin ? string.Empty : "disabled" },
+                { "@disabled2", user.Level >= Server.Level_Reciever ? string.Empty : "disabled" },
                 { "@Id", account.Id.ToString() },
                 { "@Name", account.Name },
                 { "@Accesslevel", account.Level.ToString() },
