@@ -208,7 +208,7 @@ namespace MelBox2
 
             return html.Append("</span>").ToString();
         }
-
+	
         /// <summary>
         /// F&auml;rbe den Tag im Kalender ein
         /// </summary>
@@ -310,7 +310,7 @@ namespace MelBox2
                         $"<input class='w3-button w3-light-blue w3-threequarter' type='submit' value='Sprachanrufe dauerhaft an mich weiterleiten ({phoneStr})'>";
             }
             else
-                html = "<p>F&uuml;r den angemeldeten Benuter ist keine g&uuml;ltige Telefonnumer hinterlegt.</p>";
+                html = "<p><i>F&uuml;r den angemeldeten Benutzer ist keine g&uuml;ltige Telefonnumer hinterlegt.</i></p>";
 
             if (Program.OverideCallForwardingNumber.Length > 0 && (isAdmin || user.Phone == Program.OverideCallForwardingNumber)) //nur Admin oder Benutzer selbst kann deaktivieren 
                 html += "<input class='w3-button w3-quarter w3-sand' type='submit' formaction='/gsm/callforward/off' value='deaktivieren'>";

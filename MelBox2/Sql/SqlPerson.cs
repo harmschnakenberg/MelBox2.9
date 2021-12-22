@@ -160,9 +160,9 @@ namespace MelBox2
                 return phone;
             else if (phone.StartsWith("00"))
                 phone = "+" + phone.Remove(0, 2);
-            else
+            else if (phone.StartsWith("0"))
                 phone = "+49" + phone.TrimStart('0');
-
+                            
             if (phone[3] == '0')
                 phone = phone.Remove(3, 1);
 
@@ -312,7 +312,7 @@ namespace MelBox2
                 {
                     { "@Name", name },
                     { "@Password", Encrypt(name) },
-                    { "@Password", DBNull.Value },
+                    //{ "@Password", DBNull.Value },
                     { "@Level", level },
                     { "@Company", company },
                     { "@Phone", NormalizePhone(phone) },
@@ -491,15 +491,17 @@ namespace MelBox2
                     if (iAbsEmail > 0)
                     {
                         email = values[iAbsEmail];
-                    
-                        int indexAT = email.IndexOf('@') + 1;
-                        int indexLastDot = email.LastIndexOf('.');
 
-                        if (indexLastDot - indexAT > 0)
-                        {
-                            company = email.Substring(indexAT, indexLastDot - indexAT);
-                            company = company.Substring(0, 1).ToUpper() + company.Substring(1); //erster Bustabe groß
-                        }
+                        if (email.ToLower().Contains("@kreutztraeger."))
+                            company = "Kreutzträger Kältetechnik";
+                        //int indexAT = email.IndexOf('@') + 1;
+                        //int indexLastDot = email.LastIndexOf('.');
+
+                        //if (indexLastDot - indexAT > 0)
+                        //{
+                        //    company = email.Substring(indexAT, indexLastDot - indexAT);
+                        //    company = company.Substring(0, 1).ToUpper() + company.Substring(1); //erster Bustabe groß
+                        //}
                     }
 
                     if (name.Length > 2)
@@ -517,6 +519,9 @@ namespace MelBox2
                             Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}<\tFehler beim Schreiben in die Datenbank. KEIN NEUER EINTRAG!");
                     }
                 }
+
+                Console.WriteLine($"Es wurden {counter} Kontakte mit Name=Passwort über CSV-Import hinzugefügt. Ergebnis prüfen!");
+                Log.Info($"Es wurden {counter} Kontakte über CSV-Import hinzugefügt.", 5623);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -524,11 +529,7 @@ namespace MelBox2
                 Log.Warning($"Fehler beim Import von Kontaktdaten aus CSV-File >{path}< {ex.Message} \r\n{ex.StackTrace}", 26535);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
-
-            Console.WriteLine($"Es wurden {counter} Kontakte mit Name=Passwort über CSV-Import hinzugefügt. Ergebnis prüfen!");
-            Log.Info($"Es wurden {counter} Kontakte über CSV-Import hinzugefügt.", 5623);
         }
-
     }
 
     internal class Person

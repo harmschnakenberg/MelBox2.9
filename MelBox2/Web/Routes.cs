@@ -68,7 +68,7 @@ namespace MelBox2
             string html;
 
             if (user.Level < Server.Level_Admin && user.Phone != oldPhone)
-                html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren fehlgeschlagen", $"Die Rufweiterleitug an {oldPhone} konnte nicht deaktiviert werden. Sie haben keine Berechtigung.");
+                html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren ist fehlgeschlagen", $"Die Rufweiterleitung an '{oldPhone}' konnte nicht deaktiviert werden. Sie haben keine Berechtigung diese Nummer zu &auml;ndern.");
             else
             {
                 Program.OverideCallForwardingNumber = string.Empty;
