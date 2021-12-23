@@ -838,6 +838,19 @@ namespace MelBox2
             return sb.ToString();
         }
 
+        internal static string InfoGsm(bool isAdmin)
+        {
+            return Html.Modal("GSM-Modem",
+                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>" +
+                Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
+                + (isAdmin ?
+                "<form class='w3-margin'>" +
+                Html.ButtonNew("gsm", "Reinitialisieren") +
+                "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty) +
+                "<br/><div class='w3-margin'>Sprachanrufe können an eine fest vergebene Nummer oder an die aktuelle Rufbereitschaft weitergelietet werden. " +
+                "Die Umschaltung bei Wechsel der Rufbereitschaft erfolgt immer zur vollen Stunde.</div>"
+                );
+        }
 
         #endregion
   

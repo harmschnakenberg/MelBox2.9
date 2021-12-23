@@ -86,14 +86,7 @@ namespace MelBox2
             Person user = await Html.GetLogedInUserAsync(context);
             bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
 
-            string info = Html.Modal("GSM-Modem",
-                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>" +
-                Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
-                + (isAdmin ?
-                "<form class='w3-margin'>" +
-                Html.ButtonNew("gsm", "Reinitialisieren") +
-                "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty)
-                );
+            string info = Html.InfoGsm(isAdmin);
 
             string callforward1 = Gsm.CallForwardingActive ? 
                 "<i class='material-icons-outlined w3-text-green' title='Rufweiterleitung aktiv'>phone_forwarded</i>" : 

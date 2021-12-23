@@ -369,16 +369,16 @@ namespace MelBox2
         internal static string HtmlOptionContacts(Person p, int selectPersonId)
         {
             int selectedId = (selectPersonId == 0 ? p.Id : selectPersonId);
-            const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level >= @Level ORDER BY Name;";
+            const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level > 0 ORDER BY Name;";
             const string queryUser = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
 
-            Dictionary<string, object> argsAdmin = new Dictionary<string, object>() { { "@Level", Level_Reciever } };
+           // Dictionary<string, object> argsAdmin = new Dictionary<string, object>() { { "@Level", Level_Reciever } };
             Dictionary<string, object> argsUser = new Dictionary<string, object>() { { "@ID", p.Id } };
 
             DataTable dt;
 
             if (p.Level >= Level_Admin)
-                dt = SelectDataTable(queryAdmin, argsAdmin);
+                dt = SelectDataTable(queryAdmin, null); // argsAdmin);
             else
                 dt = SelectDataTable(queryUser, argsUser);
 

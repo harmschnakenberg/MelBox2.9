@@ -22,6 +22,16 @@ namespace MelBox2
                 return;
             }
 
+            if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
+            {
+                string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
+                Console.WriteLine(txt);
+                Log.Error(txt, 5000);
+                //Sql.InsertLog(1, txt);
+                System.Threading.Thread.Sleep(5000);
+                return;
+            }
+
             Console.Title = "MelBox2";
    
             MelBoxGsm.CleanClose.CloseConsoleHandler += new CleanClose.EventHandler(CleanClose.Handler); //erzwungenes Beenden (X am Konsolenfenster)
@@ -46,14 +56,7 @@ namespace MelBox2
 
             ShowHelp();
 
-            if (ReliableSerialPort.GetPortNames().Length == 0)
-            {
-                string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
-                Console.WriteLine(txt);
-                Sql.InsertLog(1, txt);
-                System.Threading.Thread.Sleep(5000);
-                return;
-            }
+
 
             ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
             ReliableSerialPort.SerialPortUnavailableEvent += ReliableSerialPort_SerialPortUnavailableEvent;

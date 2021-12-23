@@ -131,7 +131,7 @@ namespace MelBox2
 
         /// <summary>
         /// Gibt die aktuelle Rufweiterleitungsnummer aus. Ist aktuell keine Rufannahme definiert, wird die Nummer des Bereitschaftshandys ausgegeben.
-        /// Gibt es keinen EIntrag für das Berietschaftshandy, wird der EIntrag erzeugt.
+        /// Gibt es keinen Eintrag für das Bereitschaftshandy, wird der Eintrag erzeugt.
         /// </summary>
         /// <param name="overrideCallForwardingNumber">Überschreibt die automatisch ermittelte Weiterleitungsnummer</param>
         /// <returns>Telefonnumer an die aktuell Sprachanrufe weitergeleitet werden sollen.</returns>
@@ -144,7 +144,9 @@ namespace MelBox2
                                   @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +
                                   "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); " +
                                   "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3) " +
-                                  "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' LIMIT 1; ";
+                                  "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS " +
+                                  "(SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3)) " +
+                                  "LIMIT 1; ";
 
             return SelectValue(query1, null).ToString();
         }
