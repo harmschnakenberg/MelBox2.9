@@ -45,11 +45,14 @@ namespace MelBox2
                 Email.SmtpHost = GetIniValue(nameof(Email.SmtpHost), Email.SmtpHost);
                 Email.SmtpUser = GetIniValue(nameof(Email.SmtpUser), Email.SmtpUser);
                 Email.SmtpPassword = GetIniValue(nameof(Email.SmtpPassword), Email.SmtpPassword);
+                Email.SmtpEnableSSL = GetIniValue(nameof(Email.SmtpEnableSSL), Email.SmtpEnableSSL);
 
-                string b1 = GetIniValue(nameof(Email.SmtpEnableSSL), Email.SmtpEnableSSL.ToString());
-                if (bool.TryParse(b1, out bool b))
-                    Email.SmtpEnableSSL = b;
-
+                EmailListener.ImapServer = GetIniValue(nameof(EmailListener.ImapServer), EmailListener.ImapServer);
+                EmailListener.ImapPort = GetIniValue(nameof(EmailListener.ImapPort), EmailListener.ImapPort);
+                EmailListener.ImapUserName = GetIniValue(nameof(EmailListener.ImapUserName), EmailListener.ImapUserName);
+                EmailListener.ImapPassword = GetIniValue(nameof(EmailListener.ImapPassword), EmailListener.ImapPassword);
+                EmailListener.ImapEnableSSL = GetIniValue(nameof(EmailListener.ImapEnableSSL), EmailListener.ImapEnableSSL);
+          
                 Program.LifeMessageTrigger = GetIniValue(nameof(Program.LifeMessageTrigger), string.Join(",", Program.LifeMessageTrigger)).Split(',');
                 Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
                 Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);

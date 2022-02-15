@@ -56,7 +56,7 @@ namespace MelBox2
 
         internal static void InsertSent(System.Net.Mail.MailAddress email, string message, int reference) //ungetestet
         {
-            Person sender = SelectPerson(email);
+            Person sender = SelectOrCreatePerson(email);
             Message msg = SelectOrCreateMessage(message);
 
             Dictionary<string, object> args = new Dictionary<string, object>

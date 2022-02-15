@@ -198,6 +198,10 @@ namespace MelBox2
             Log.Error("Fehler COM-Port: " + e, 1122);
         }
 
+        private static void EmailListener_EmailInEvent(object sender, System.Net.Mail.MailMessage e)
+        {
+            ParseNewEmail(e);
+        }
 
     }
 }

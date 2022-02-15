@@ -67,6 +67,24 @@ namespace MelBox2
            return NonQuery(query, args);
         }
 
+        internal static bool InsertRecieved(System.Net.Mail.MailMessage email) //ungetestet
+        {
+            Person sender = SelectOrCreatePerson(email.From);
+            Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
+            
+            Dictionary<string, object> args = new Dictionary<string, object>
+                {
+                    { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                    { "@SenderId", sender.Id},
+                    { "@ContentId", msg.Id }
+                };
+
+            const string query = "INSERT INTO Recieved (Time, SenderId, ContentId) VALUES (@Time, @SenderId, @ContentId);";
+
+            return NonQuery(query, args);
+        }
+
+
 
         internal static DataTable SelectOverdueSenders()
         {

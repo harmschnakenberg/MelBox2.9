@@ -114,5 +114,7 @@ namespace MelBox2
             Console.WriteLine($"Die aktuelle Rufumleitung ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}, soll an {phone} und geht an {Gsm.CallForwardingNumber}");
         }
 
+
+
     }
 }

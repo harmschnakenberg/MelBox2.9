@@ -55,6 +55,23 @@ namespace MelBox2
             isFirstParseNewSmsAfterStartup = false; 
         }
 
+        private static void ParseNewEmail(System.Net.Mail.MailMessage mail)
+        {
+            if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokolliere
+            {
+                //TODO Email löschen?
+            }
+
+            bool isLifeMessage = Program.IsLifeMessage(mail); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
+            bool isMessageBlocked = Sql.IsMessageBlockedNow(Sql.RemoveHTMLTags(mail.Body));
+            bool isWatchTime = Sql.IsWatchTime();
+
+            if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
+                SendSmsToShift( Sql.RemoveHTMLTags(mail.Body) ); //Email ohne HTML an aktuelle Bereitschaft per Sms senden
+           
+            SendEmailToShift(mail, isWatchTime, isLifeMessage, isMessageBlocked); //Empfangene Email an Bereitschaft/Service Email
+        }
+
         /// <summary>
         /// Prüft, ob die Nachricht 'SmsTestTrigger' z.B 'SmsAbruf' enthält und sendet die Nachricht zurück an den Sender. 
         /// </summary>
@@ -88,6 +105,16 @@ namespace MelBox2
             return false;
         }
 
+        internal static bool IsLifeMessage(System.Net.Mail.MailMessage mail)
+        {
+            foreach (string trigger in LifeMessageTrigger)
+            {
+                if (mail.Body.ToLower().Contains(trigger.ToLower())) return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Leitet die empfangene SMS an die aktuelle Bereitschaft (wenn SMS-Benachrichtigung für den Empänger(n) freigegeben ist)
         /// </summary>
@@ -98,6 +125,15 @@ namespace MelBox2
             {
                 //Protokollierung in DB nach Absenden von Modem!
                 SmsSend(phone, sms.Message);
+            }
+        }
+
+        private static void SendSmsToShift(string smsText)
+        {
+            foreach (string phone in Sql.GetCurrentShiftPhoneNumbers())
+            {
+                //Protokollierung in DB nach Absenden von Modem!
+                SmsSend(phone, smsText);
             }
         }
 
@@ -136,6 +172,37 @@ namespace MelBox2
             int emailId = new Random().Next(256, 9999);
 
             Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            Email.Send(mc, body, subject, true, emailId);
+
+        }
+
+        private static void SendEmailToShift(System.Net.Mail.MailMessage mail, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
+        {
+            string body = $"Absender \t>{mail.From.Address}<\r\n" +
+                           $"Text \t\t>{mail.Body}<\r\n" +
+                           $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
+                           (
+                           isFirstParseNewSmsAfterStartup ? "Email bei Neustart MelBox2! Keine Weiterleitung an Bereitschaft." :
+                           isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
+                           isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da Nachricht gesperrt." :
+                           isWatchTime ? "Weiterleitung an Bereitschaft außerhalb Geschäftszeiten ist erfolgt." :
+                           "Keine Weiterleitung an Bereitschaft während der Geschäftszeiten."
+                           );
+
+            Person p = Sql.SelectOrCreatePerson(mail.From);
+
+            string subject = $"Email-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
+
+            //Email An: nur an eingeteilte Bereitschaft
+            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
+                                                        ? Sql.GetCurrentShiftEmailAddresses()
+                                                        : new System.Net.Mail.MailAddressCollection();
+
+            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft eingeteilt, Email geht an Admin und Dauerempfänger
+
+            int emailId = new Random().Next(256, 9999);
+
+            Sql.InsertSent(mc[0], mail.Body, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
             Email.Send(mc, body, subject, true, emailId);
 
         }

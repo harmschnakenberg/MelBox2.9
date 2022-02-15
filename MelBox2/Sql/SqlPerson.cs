@@ -204,20 +204,26 @@ namespace MelBox2
             return SelectOrCreatePerson(smsIn);
         }
 
-        private static Person SelectPerson(System.Net.Mail.MailAddress email)
+        internal static Person SelectOrCreatePerson(System.Net.Mail.MailAddress email)
         {
-            const string query = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Email = @Email AND Name = @Name;";
+            //Suchen, ob vorhanden
+            const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE lower(Email) = @Email OR Name = @Name; ";
+            //Neu erstellen
+            const string query2 = "INSERT INTO Person (Name, Level, Email) VALUES ('Neu_' || @Name, 0, @Email); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Email", email.Address },
-                { "@Name", email.DisplayName }
+                { "@Name", email.DisplayName },
+                { "@Email", email.Address.ToLower()}                
             };
 
-            DataTable dt = SelectDataTable(query, args);
+            DataTable dt = SelectDataTable(query1, args);
 
-            if (dt.Rows.Count == 0 && NonQuery($"INSERT INTO Person (Name, Level, Email) VALUES (@Name, 0, @Email); ", args))
-                return SelectPerson(email);
+            if (dt.Rows.Count == 0 && NonQuery(query2, args))
+            {
+                System.Threading.Thread.Sleep(1000);
+                return SelectOrCreatePerson(email);
+            }
 
             return GetPerson(dt);
         }
@@ -403,8 +409,8 @@ namespace MelBox2
             Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id }, { "@CallF", Gsm.CallForwardingNumber } };
             Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level }, { "@CallF", Gsm.CallForwardingNumber } };
 
-            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
-            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
+            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Email, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
+            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Email, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
 
             if (p.Level >= Level_Admin)
                 return SelectDataTable(query2, args2);

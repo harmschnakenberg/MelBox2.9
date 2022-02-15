@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace MelBox2
 {
@@ -203,6 +204,18 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
+        public static string RemoveHTMLTags(string html)
+        {
+            //Regex regex = new Regex("\\<[^\\>]*\\>");
+            ////<[a-zA-Z/].*?> includes attributes
+            //sring plainText = regex.Replace(html, string.Empty);
+            //return plainText;
+
+            return Regex.Replace(html, "<.*?>", String.Empty)
+                .Replace("&nbsp;",string.Empty)
+                .Replace(Environment.NewLine, " ")
+                .Trim();
+        }
     }
 
     public class Message
