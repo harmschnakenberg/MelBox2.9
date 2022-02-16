@@ -26,7 +26,7 @@ namespace MelBox2
 
                 try
                 {
-                    using (FileStream stream = new FileInfo(DbPath).Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                    using (FileStream stream = new FileInfo(DbPath).Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
                         stream.Close();
                         break;

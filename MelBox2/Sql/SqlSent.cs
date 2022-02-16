@@ -8,32 +8,37 @@ namespace MelBox2
 {
     partial class Sql
     {
-  
 
-        public static DataTable SelectLastSent(int count = 1000)
+        //public static uint SelectLastSentId()
+        //{
+        //    const string query = "SELECT Gesendet, An, Inhalt, Via, Sendestatus AS Status FROM View_Sent ORDER BY Gesendet DESC LIMIT 1;";
+
+        //}
+
+        //public static DataTable SelectLastSent(int lastId, int count = 50)
+        //{
+        //    Dictionary<string, object> args = new Dictionary<string, object>
+        //    {
+        //        { "@EndId", (lastId > 0 ? lastId :  ) },
+        //        { "@StartId", lastId - count }
+        //    };
+
+        //    const string query = "SELECT Gesendet, An, Inhalt, Via, Sendestatus AS Status FROM View_Sent WHERE ID BETWEEN @StartId AND @EndId ORDER BY Gesendet DESC LIMIT 1000;";
+
+        //    return SelectDataTable(query, args);
+        //}
+
+        internal static DataTable SelectSent(System.DateTime date)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@LIMIT", count}
+                { "@Date", date.ToUniversalTime() }
             };
 
-            const string query = "SELECT Gesendet, An, Inhalt, Ref, Via, Sendestatus AS Status FROM View_Sent ORDER BY Gesendet DESC LIMIT @LIMIT;";
+            const string query = "SELECT Gesendet, An, Inhalt, Via, Sendestatus AS Status FROM View_Sent WHERE date(Gesendet) = date(@Date) ORDER BY Gesendet DESC;";
 
             return SelectDataTable(query, args);
         }
-
-        internal static DataTable SelectLastSent(System.DateTime date)
-        {
-            Dictionary<string, object> args = new Dictionary<string, object>
-            {
-                { "@Date", date}
-            };
-
-            const string query = "SELECT Gesendet, An, Inhalt, Ref, Via, Sendestatus AS Status FROM View_Sent WHERE date(Gesendet) = date(@Date) ORDER BY Gesendet DESC;"; 
-
-            return SelectDataTable(query, args);
-        }
-
 
         internal static void InsertSent(SmsOut sms) //ungetestet
         {

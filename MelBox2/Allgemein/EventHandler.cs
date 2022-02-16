@@ -200,6 +200,7 @@ namespace MelBox2
 
         private static void EmailListener_EmailInEvent(object sender, System.Net.Mail.MailMessage e)
         {
+            e.Body = Email.ChangeEncoding(e.Body, e.BodyEncoding, System.Text.Encoding.UTF8); //email-Inhalt in UTF8 konvertieren wg. Umlaute
             ParseNewEmail(e);
         }
 

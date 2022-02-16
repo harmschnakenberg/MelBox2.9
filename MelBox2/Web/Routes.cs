@@ -136,16 +136,16 @@ namespace MelBox2
             bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
-            System.Data.DataTable rec;
-            if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))            
-                rec = Sql.SelectLastRecieved(oneDate);    
-            else if (context.Request.QueryString.HasKeys() && context.Request.QueryString.Get("datum") == "heute") //nicht dokumentiert! http://elektro5:1234/in?datum=heute als bookmark
-                rec = Sql.SelectLastRecieved(DateTime.Now.Date);
-            else
-                rec = Sql.SelectLastRecieved(Html.MaxTableRowsShow);
+            DateTime date = DateTime.Now.Date;
 
+            if (context.Request.QueryString.HasKeys())
+                DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
+
+            System.Data.DataTable rec = Sql.SelectLastRecieved(date);
+            
             string table = Html.Modal("Empfangene Nachrichten", Html.InfoRecieved(isAdmin));
-            table += Html.ChooseDate("in");
+            table += rec.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine empfangenen Nachrichten protokolliert.");
+            table += Html.ChooseDate("in", date);
             table += Html.FromTable(rec, isAdmin, "in");
            
 
@@ -204,15 +204,16 @@ namespace MelBox2
             if (user == null) return;
             #endregion
 
-            System.Data.DataTable sent;
-            if (context.Request.QueryString.HasKeys() && DateTime.TryParse(context.Request.QueryString.Get("datum"), out DateTime oneDate))
-               // if (context.Request.PathParameters.ContainsKey("Date") && DateTime.TryParse(context.Request.PathParameters["Date"].ToString(), out DateTime oneDate))
-                sent = Sql.SelectLastSent(oneDate);
-            else
-                sent = Sql.SelectLastSent(Html.MaxTableRowsShow);
+            DateTime date = DateTime.Now.Date;
 
+            if (context.Request.QueryString.HasKeys())
+                DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
+
+            System.Data.DataTable sent = Sql.SelectSent(date);
+            
             string table = Html.Modal("Sendestatus", Html.InfoSent());
-            table += Html.ChooseDate("out");
+            table += sent.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine gesendeten Nachrichten protokolliert.");
+            table += Html.ChooseDate("out", date);
             table += Html.FromTable(sent, false);
 
             await Html.PageAsync(context, "Gesendete Nachrichten", table);
@@ -231,7 +232,9 @@ namespace MelBox2
             string html;
             if (overdue.Rows.Count == 0)
             {
-                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");                
+                html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");
+                html += "<h3>Liste &uuml;berwachter Sender</h3>";
+                html += Html.FromTable(Sql.SelectWatchedSenders(), false);
             }
             else
             {
@@ -239,8 +242,6 @@ namespace MelBox2
                 html += Html.FromTable(overdue, false);
                 html += "<hr/><p>Diese Sender werden auf regelm&auml;&szlig;ige Nachrichteneing&auml;nge &uuml;berwacht:</p>";
             }
-
-            html += Html.FromTable(Sql.SelectWatchedSenders(), false);
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
 
@@ -370,6 +371,10 @@ namespace MelBox2
 
             #region Anzuzeigenden Benutzer 
             int showId = user.Id;
+            string companyFilter = string.Empty;
+
+            if (context.Request.QueryString.HasKeys())                            
+                companyFilter = context.Request.QueryString.Get("company");
 
             if (context.Request.PathParameters.TryGetValue("id", out string idStr))
             {
@@ -414,11 +419,11 @@ namespace MelBox2
                 { "@UpdateContact", user.Level < Server.Level_Reciever ? string.Empty : "<button class='w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left w3-right' type='submit'>&Auml;ndern</button>"}
             };
 
-            string form = Html.Page(Server.Html_FormAccount, pairs);
-            string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
+            string form = Html.Page(Server.Html_FormAccount, pairs);            
+            string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
             string info = Html.Modal("Benutzerkategorien", Html.InfoAccount());
 
-            await Html.PageAsync(context, "Benutzerkonto", info + table + form, user);            
+            await Html.PageAsync(context, "Benutzerkonto", form + info + table, user);            
         }
         
         [RestRoute("Post", "/account/new")]
@@ -484,7 +489,8 @@ namespace MelBox2
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
 
-            string table = Html.FromTable(Sql.SelectViewablePersons(user), true, "account");
+            string companyFilter = p.Company.Substring(0,3); //Filter hier sinnvoll?
+            string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
 
             await Html.PageAsync(context, "Benutzerkonto ändern", alert + table, user);
         }

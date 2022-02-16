@@ -2,6 +2,7 @@
 using System.Net.Mail;
 using System.Collections.Generic;
 using S22.Imap;
+using System.Text;
 
 namespace MelBox2
 {
@@ -165,6 +166,22 @@ namespace MelBox2
             mail.Dispose();
         }
 
+
+
+        /// <summary>
+        /// Quelle https://codesnippets.fesslersoft.de/how-to-change-the-encoding-of-a-string-using-c-and-vb-net/
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="sourceEncoding"></param>
+        /// <param name="targetEncoding"></param>
+        /// <returns></returns>
+        public static string ChangeEncoding(this string input, Encoding sourceEncoding, Encoding targetEncoding)
+        {
+            byte[] utfBytes = sourceEncoding.GetBytes(input);
+            byte[] isoBytes = Encoding.Convert(sourceEncoding, targetEncoding, utfBytes);
+            return targetEncoding.GetString(isoBytes);
+        }
+
     }
 
 
@@ -278,9 +295,16 @@ namespace MelBox2
             ImapEnableSSL = imapEnableSSL;
 
             Client = new ImapClient(imapServer, imapPort, imapUserName, imapPassword, AuthMethod.Login, imapEnableSSL);
+            Client.IdleError += Client_IdleError;
 
             // We want to be informed when new messages arrive
             Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
+        }
+
+        private void Client_IdleError(object sender, IdleErrorEventArgs e)
+        {
+            Client.Logout();
+            Client.Login(ImapUserName, ImapPassword, AuthMethod.Login);
         }
 
         #region Fields

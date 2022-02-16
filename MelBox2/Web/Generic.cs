@@ -246,31 +246,23 @@ namespace MelBox2
             return html;
         }
 
-        internal static string ChooseDate(string root)
+        internal static string ChooseDate(string root, DateTime date)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<button onclick=\"showMe('help2')\" class='w3-button w3-light-blue w3-display-position' style='top:140px;right:100px;' title='nur 1 Tag anzeigen'>Datum w&auml;hlen</button>");
-            sb.Append("<div id='help2' class='w3-hide w3-container w3-center w3-pale-blue w3-padding '>");
-            sb.Append($"  <form id='chooseDate' method='get' onsubmit='setDate()' action='/{root}'>");            
-            sb.Append($"   <input name='datum' type='date' value='{DateTime.Now.Date:yyyy-MM-dd}'>");
-            sb.Append("    <button class='w3-button w3-light-blue w3-padding type='submit' title='nur 1 Tag anzeigen'>Anzeigen</button>");
+            sb.Append("<div id='help2' class='w3-container w3-center w3-padding '>");
+            sb.Append($"  <form id='chooseDate' method='get' action='/{root}'>");
+            sb.Append("    <button class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
+            sb.Append($"   <input name='datum' id='anzeigedatum' type='date' value='{date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onchange='inc(0);'>");
+            sb.Append("    <button class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
             sb.Append("   </form>");
             sb.Append("</div>");
 
             sb.Append("<script>");
-            sb.Append("function showMe(id) {\r\n");
-            sb.Append(" var x = document.getElementById(id);");
-            sb.Append(" if (x.className.indexOf('w3-show') == -1)\r\n");
-            sb.Append("  {");
-            sb.Append("    x.className += 'w3-show';");
-            sb.Append("  }\r\n");
-            sb.Append("  else");
-            sb.Append("  {");
-            sb.Append("    x.className = x.className.replace('w3-show', '');");
-            sb.Append("  }");
-            sb.Append("}");
-
+            sb.Append(" function inc(x) {");
+            sb.Append("   document.getElementById('anzeigedatum').stepUp(x);");
+            sb.Append("   document.getElementById('chooseDate').submit();");
+            sb.Append(" }");
             sb.Append("</script>");
 
             return sb.ToString();
@@ -782,26 +774,26 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
-            sb.Append(" <li>Die hier angezeigten Nachrichten werden zu den anhehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
+            sb.Append(" <li>Die hier angezeigten Nachrichten werden zu den angehakten Wochentagen <b>nicht</b> an die Bereitschaft weitergeleitet.</li>");
             sb.Append(" <li>Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum n&auml;chsten Tag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
             sb.Append(" <li>Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");
             sb.Append(" <li>Die Sperrzeiten k&ouml;nnen nur von Administratoren ge&auml;ndert werden.</li>");
-            if (isAdmin) sb.Append(" <li>Ist kein Wochentag angehehakt, wird die Sperre aufgehoben.</li>");            
+            if (isAdmin) sb.Append(" <li>Ist kein Wochentag angehakt, wird die Sperre aufgehoben.</li>");            
             
             sb.Append("</ul></div>");
             return sb.ToString();
         }
 
-        internal static string InfoWhitelist()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
-            sb.Append(" <li>Die hier angezeigten E-Mail-Adressen d&uuml;rfen an dieses Programm senden.</li>");
-            sb.Append(" <li>Absender, die nicht in dieser Liste stehen, werden ignoriert.</li>");
+        //internal static string InfoWhitelist()
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+        //    sb.Append(" <li>Die hier angezeigten E-Mail-Adressen d&uuml;rfen an dieses Programm senden.</li>");
+        //    sb.Append(" <li>Absender, die nicht in dieser Liste stehen, werden ignoriert.</li>");
 
-            sb.Append("</ul></div>");
-            return sb.ToString();
-        }
+        //    sb.Append("</ul></div>");
+        //    return sb.ToString();
+        //}
 
 
         internal static string InfoOverdue()
@@ -818,7 +810,7 @@ namespace MelBox2
             sb.Append("</tr>");
             sb.Append("<tr>");
             sb.Append("  <td></td>");
-            sb.Append("  <td>Gibt es &uuml;berf&auml;lligen Sender, werden sie hier gesondert angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden." +
+            sb.Append("  <td>Gibt es &uuml;berf&auml;llige Sender, werden sie hier gesondert angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden." +
                         "<ol> " +
                         "<li>Waren im Zeitraum &apos;Max&nbsp;Inaktiv&apos; Meldungen vorhanden?</li>" +
                         "<li>St&ouml;rmeldungsweiterleitung vor Ort eingeschaltet?</li>" +
