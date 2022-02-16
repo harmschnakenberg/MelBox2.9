@@ -69,6 +69,7 @@ namespace MelBox2
 
         internal static bool InsertRecieved(System.Net.Mail.MailMessage email) //ungetestet
         {
+            
             Person sender = SelectOrCreatePerson(email.From);
             Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
             

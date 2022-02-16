@@ -335,6 +335,25 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Sperrzeiten aktualisiert", alert + table, user);
         }
+
+        //[RestRoute("Get", "/whitelist")]
+        //public static async Task Whitelist(IHttpContext context)
+        //{
+        //    #region Anfragenden Benutzer identifizieren
+        //    Person user = await Html.GetLogedInUserAsync(context, false);
+
+        //    bool isAdmin = user != null && user.Level >= Server.Level_Admin;
+        //    #endregion
+
+        //    System.Data.DataTable whitelist = Sql.SelectWhitelist();
+        //    string table = Html.FromTable(whitelist, isAdmin, "whitelist");
+        //    string info = Html.Modal("Erlaubte Absender", Html.InfoWhitelist());
+
+        //    await Html.PageAsync(context, "Erlaubte Absender", info + table, user);
+        //}
+
+
+
         #endregion
 
 
@@ -363,6 +382,7 @@ namespace MelBox2
             bool viaSms = (account.Via & Sql.Via.Sms) > 0;
             bool viaEmail = (account.Via & Sql.Via.Email) > 0;
             bool viaAlwaysEmail = (account.Via & Sql.Via.PermanentEmail) > 0;
+            bool onEmailWhitelist = (account.Via & Sql.Via.EmailWhitelist) > 0;
 
             string userRole = "Aspirant";
             if (account.Level >= Server.Level_Admin) userRole = "Admin";
@@ -382,6 +402,7 @@ namespace MelBox2
                 { "@Company", account.Company },                
                 { "@viaEmail", viaEmail ? "checked" : string.Empty },
                 { "@viaAlwaysEmail", viaAlwaysEmail ? "checked" : string.Empty },
+                { "@onEmailWhitelist", onEmailWhitelist ? "checked" : string.Empty },
                 { "@Email", account.Email },
                 { "@viaPhone", viaSms ? "checked" : string.Empty },
                 { "@Phone", account.Phone },

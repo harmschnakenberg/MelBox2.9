@@ -91,8 +91,6 @@ namespace MelBox2
                 query += "CREATE TABLE IF NOT EXISTS Shift ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "PersonId INTEGER, " +
-                  //"Start TEXT NOT NULL UNIQUE, " +
-                  //"End TEXT NOT NULL UNIQUE, " +
                     "Start TEXT NOT NULL, " +
                     "End TEXT NOT NULL, " +
                     "CONSTRAINT fk_PersonId FOREIGN KEY (PersonId) REFERENCES Person (ID) ON DELETE SET DEFAULT " +
@@ -103,6 +101,11 @@ namespace MelBox2
                     "Property TEXT NOT NULL UNIQUE, " +
                     "Value TEXT NOT NULL " +                    
                     "); ";
+
+                //query += "CREATE TABLE IF NOT EXISTS Whitelist ( " +
+                //     "ID INTEGER NOT NULL PRIMARY KEY, " +
+                //     "Email TEXT NOT NULL UNIQUE " +
+                //     "); ";
 
                 query += "CREATE VIEW ViewYearFromToday AS " +
                     "SELECT CASE(CAST(strftime('%w', d) AS INT) +6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
@@ -176,6 +179,7 @@ namespace MelBox2
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.SmsAndEmail + ", 'SMS + Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmail + ", 'immer Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmailAndSms + ", 'SMS + immer Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.EmailWhitelist + ", 'freigegebener E-Mail-Absender (Whitelist)'); ";
 
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";
@@ -187,6 +191,17 @@ namespace MelBox2
                 query += "INSERT INTO Sent (ToId, Via, ContentId) VALUES (1, 0, 1); ";
 
                 query += "INSERT INTO Shift (PersonId, Start, End) VALUES (1, DATETIME('now','-3 days','weekday 1'), DATETIME('now','+1 day')); ";
+
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (1, 'kreubereit@gmx.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (2, 'harm.schnakenberg@kreutztraeger.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (3, 'edekaviersen@kreualarm.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (4, 'system@elo-frost.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (5, 'nagelsk@kreualarm.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (6, 'LiButz@kreualarm.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (7, 'LiWald@kreualarm.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (8, 'LiBoen@kreualarm.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (9, 'nh3kaelteanlage@landguth.de'); ";
+                //query += "INSERT INTO Whitelist (ID, Email) VALUES (10, '8866.elreha@metro-logistics.de'); ";
 
                 NonQuery(query, null);
 

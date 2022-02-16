@@ -8,6 +8,9 @@ namespace MelBox2
 
         internal static bool InsertIniProperty(string property, string val)
         {
+            if (val == null)
+                return false;
+
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@Property", property },

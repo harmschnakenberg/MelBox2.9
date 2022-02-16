@@ -96,6 +96,15 @@
                         </div>
                     </div>
 
+                    <div class="w3-row">
+                        <div class="w3-col w3-margin-bottom" style="width:40px">
+                            <input id="onEmailWhitelist" name="onEmailWhitelist" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @onEmailWhitelist @disabled1>
+                        </div>
+                        <div class="w3-rest">
+                            <label><b>Auf Whitelist</b> - Darf EMails an MelBox2 versenden.</label>
+                        </div>
+                    </div>
+
                     <label><b>Schlüsselwort</b> <span class="w3-opacity">wird automatisch vergeben</span></label>
                     <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly1 />
 

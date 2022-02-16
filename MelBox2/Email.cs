@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Net.Mail;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using S22;
 using S22.Imap;
 
 namespace MelBox2
@@ -172,97 +168,105 @@ namespace MelBox2
     }
 
 
-    class EmailReciever
-    {
-      
-
-        //Email empfangen
-        //Quelle: https://github.com/smiley22/S22.Imap
-        //Beispiele: https://github.com/smiley22/S22.Imap/blob/master/Examples.md#1
-
-        public static void Recieve()
-        {
-            // Connect on port 993 using SSL.
-            //            using (ImapClient Client = new ImapClient("imap.gmail.com", 993, true))
-            using (ImapClient Client = new ImapClient("imap.gmx.net", 993,
-                "harmschnakenberg@gmx.de", "Oyterdamm64!", AuthMethod.Login, true))
-            {
-                Console.WriteLine("We are connected!");
-
-                //##########
-                //Download unseen mail messages
-                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
-                IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
-
-                ////##########
-                //// Find messages that were sent from abc@def.com and have
-                //// the string "Hello World" in their subject line.
-                //IEnumerable<uint> uids2 = Client.Search(
-                //    SearchCondition.From("erichschnakenberg@web.de").And(
-                //    SearchCondition.Subject("WG")));
-                //IEnumerable<MailMessage> messages2 = Client.GetMessages(uids2);
-
-                ////##########
-                ////Download mail headers only instead of the entire mail message
-                //// This returns *ALL* messages in the inbox.
-                //IEnumerable<uint> uids3 = Client.Search(SearchCondition.All());
+    //class EmailReciever
+    //{
 
 
-                //// If we're only interested in the subject line or envelope
-                //// information, just downloading the mail headers is alot
-                //// cheaper and alot faster.
-                //IEnumerable<MailMessage> messages3 = Client.GetMessages(uids3, FetchOptions.HeadersOnly);
+    //    //Email empfangen
+    //    //Quelle: https://github.com/smiley22/S22.Imap
+    //    //Beispiele: https://github.com/smiley22/S22.Imap/blob/master/Examples.md#1
 
-                foreach (MailMessage message in messages1)
-                {
-                    Console.WriteLine(message.From + "\t" + message.Subject);
-                }
+    //    public static void Recieve()
+    //    {
+    //        // Connect on port 993 using SSL.
+    //        //            using (ImapClient Client = new ImapClient("imap.gmail.com", 993, true))
+    //        using (ImapClient Client = new ImapClient("imap.gmx.net", 993,
+    //            "harmschnakenberg@gmx.de", "Oyterdamm64!", AuthMethod.Login, true))
+    //        {
+    //            Console.WriteLine("We are connected!");
 
-            }
-        }
+    //            //##########
+    //            //Download unseen mail messages
+    //            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+    //            IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
+
+    //            ////##########
+    //            //// Find messages that were sent from abc@def.com and have
+    //            //// the string "Hello World" in their subject line.
+    //            //IEnumerable<uint> uids2 = Client.Search(
+    //            //    SearchCondition.From("erichschnakenberg@web.de").And(
+    //            //    SearchCondition.Subject("WG")));
+    //            //IEnumerable<MailMessage> messages2 = Client.GetMessages(uids2);
+
+    //            ////##########
+    //            ////Download mail headers only instead of the entire mail message
+    //            //// This returns *ALL* messages in the inbox.
+    //            //IEnumerable<uint> uids3 = Client.Search(SearchCondition.All());
+
+
+    //            //// If we're only interested in the subject line or envelope
+    //            //// information, just downloading the mail headers is alot
+    //            //// cheaper and alot faster.
+    //            //IEnumerable<MailMessage> messages3 = Client.GetMessages(uids3, FetchOptions.HeadersOnly);
+
+    //            foreach (MailMessage message in messages1)
+    //            {
+    //                Console.WriteLine(message.From + "\t" + message.Subject);
+    //            }
+
+    //        }
+    //    }
 
 
 
-        //IDLE-Message (autom. Empfang)
+    //    //IDLE-Message (autom. Empfang)
 
-        public static void SetIdleMessageNotification()
-        {
-            using (ImapClient Client = new ImapClient("imap.gmx.net", 993,
-                "harmschnakenberg@gmx.de", "Oyterdamm64!", AuthMethod.Login, true))
-            {
-                // Should ensure IDLE is actually supported by the server
-                if (Client.Supports("IDLE") == false)
-                {
-                    Console.WriteLine("Email-EMpfang: Server does not support IMAP IDLE");
-                    return;
-                }
+    //    public static void SetIdleMessageNotification()
+    //    {
+    //        using (ImapClient Client = new ImapClient("imap.gmx.net", 993,
+    //            "harmschnakenberg@gmx.de", "Oyterdamm64!", AuthMethod.Login, true))
+    //        {
+    //            // Should ensure IDLE is actually supported by the server
+    //            if (Client.Supports("IDLE") == false)
+    //            {
+    //                Console.WriteLine("Email-EMpfang: Server does not support IMAP IDLE");
+    //                return;
+    //            }
 
-                // We want to be informed when new messages arrive
-                Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
+    //            // We want to be informed when new messages arrive
+    //            Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
 
-                // Put calling thread to sleep. This is just so the example program does
-                // not immediately exit.
-                System.Threading.Thread.Sleep(60000);
-            }
-        }
+    //            // Put calling thread to sleep. This is just so the example program does
+    //            // not immediately exit.
+    //            System.Threading.Thread.Sleep(60000);
+    //        }
+    //    }
 
-        static void OnNewMessage(object sender, IdleMessageEventArgs e)
-        {
-            Console.WriteLine("A new message arrived. Message has UID: " +
-                e.MessageUID);
+    //    static void OnNewMessage(object sender, IdleMessageEventArgs e)
+    //    {
+    //        Console.WriteLine("A new message arrived. Message has UID: " +
+    //            e.MessageUID);
 
-            // Fetch the new message's headers and print the subject line
-            MailMessage m = e.Client.GetMessage(e.MessageUID, FetchOptions.HeadersOnly);
+    //        // Fetch the new message's headers and print the subject line
+    //        MailMessage m = e.Client.GetMessage(e.MessageUID, FetchOptions.HeadersOnly);
 
-            Console.WriteLine("New message's subject: " + m.Subject + m.From);
-        }
-    }
+    //        Console.WriteLine("New message's subject: " + m.Subject + m.From);
+    //    }
+    //}
 
+    /// <summary>
+    /// siehe S22.Imap 
+    /// Quelle: https://github.com/smiley22/S22.Imap copyright © 2012-2014 Torben Könke.
+    /// Free to use in commercial and personal projects (MIT license)
+    /// </summary>
     class EmailListener : IDisposable
     {
         public EmailListener()
         {            
             Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Auto, ImapEnableSSL);
+
+            // We want to be informed when new messages arrive
+            Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
         }
 
         public EmailListener(string imapServer, int imapPort, string imapUserName, string imapPassword, bool imapEnableSSL)
@@ -307,15 +311,34 @@ namespace MelBox2
 
         #endregion
 
+        public void ReadUnseen()
+        {
+            //Download unseen mail messages
+            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+            IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
+
+            foreach (MailMessage m in messages1)
+            {
+                Console.WriteLine($"Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
+                EmailInEvent?.Invoke(this, m);
+            }
+        }
+
+
         /// <summary>
         /// Prüft, ob der Emailserver Benachrichtigungen bei neu empfangenen Emails unterstützt.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true= Server kann benachrichtigen bei neu empfangenen Emails.</returns>
         public bool IsIdleEmailSupported()
         {
             return Client.Supports("IDLE");
         }
 
+        /// <summary>
+        /// Wird aufgerufen, wenn eine neue EMail empfangen wurde.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void OnNewMessage(object sender, IdleMessageEventArgs e)
         {
             //Console.WriteLine("A new message arrived. Message has UID: " +
@@ -323,9 +346,9 @@ namespace MelBox2
 
             // Fetch the new message's headers and print the subject line
             MailMessage m = e.Client.GetMessage(e.MessageUID, FetchOptions.TextOnly);
-#if DEBUG
-            Console.WriteLine($"Neue Email [{e.MessageUID}] {(m.IsBodyHtml ? "<html>" : "<Text>")} von >{m.From}<:\r\n\t{m.Subject}");
-#endif
+//#if DEBUG
+            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Neue Email [{e.MessageUID}] <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
+//#endif
             EmailInEvent?.Invoke(this, m);
         }
 

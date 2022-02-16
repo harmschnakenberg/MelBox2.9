@@ -14,7 +14,8 @@ namespace MelBox2
             Email = 2,
             SmsAndEmail = 3,
             PermanentEmail = 4,
-            PermanentEmailAndSms = 5
+            PermanentEmailAndSms = 5,
+            EmailWhitelist = 8
         }
 
         public static int Level_Admin { get; set; } = 9000; //Benutzerverwaltung u. -Einteilung
@@ -117,6 +118,9 @@ namespace MelBox2
 
             if (payload.TryGetValue("viaAlwaysEmail", out string viaAlwaysEmail) && viaAlwaysEmail.Length > 0)
                 p.Via += (int)Via.PermanentEmail;
+
+            if (payload.TryGetValue("onEmailWhitelist", out string onEmailWhitelist) && onEmailWhitelist.Length > 0)
+                p.Via += (int)Via.EmailWhitelist;
 
             if (payload.TryGetValue("email", out string email))
                 p.Email = email;
@@ -339,7 +343,7 @@ namespace MelBox2
             Dictionary<string, object> args = new Dictionary<string, object>()
             {
                 { "@ID", id },
-                { "@Name", name },
+                { "@Name", name },//not null
                 { "@Level", accesslevel },
                 { "@Company", company?? string.Empty  },
                 { "@Phone", NormalizePhone( phone?? string.Empty ) },
@@ -409,13 +413,42 @@ namespace MelBox2
             Dictionary<string, object> args1 = new Dictionary<string, object>() { { "@ID", p.Id }, { "@CallF", Gsm.CallForwardingNumber } };
             Dictionary<string, object> args2 = new Dictionary<string, object>() { { "@Level", p.Level }, { "@CallF", Gsm.CallForwardingNumber } };
 
-            const string query1 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Email, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE ID = @ID";
-            const string query2 = "SELECT ID, Name, Company AS Firma, Phone AS Telefon, Email, Level, CASE WHEN Phone = @CallF THEN 'y' WHEN (Via >> 2) > 0 THEN 'x' END AS Abo FROM Person WHERE Level <= @Level ORDER BY Name;";
+            const string query1 = "SELECT ID, Name, Company AS Firma, Level, Phone AS Telefon, Email, " +
+                "CASE WHEN (Via & 8) > 0 THEN 'z' WHEN (Via & 8) < 1 THEN '0' END || " +
+                "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
+                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END AS Attribut " +
+                "FROM Person WHERE ID = @ID";
+
+            const string query2 = "SELECT ID, Name, Company AS Firma, Level, Phone AS Telefon, Email, " +
+                "CASE WHEN (Via & 8) > 0 THEN 'z' WHEN (Via & 8) < 1 THEN '0' END || " +
+                "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
+                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END AS Attribut " +
+                "FROM Person WHERE Level <= @Level ORDER BY Name;";
 
             if (p.Level >= Level_Admin)
                 return SelectDataTable(query2, args2);
             else
                 return SelectDataTable(query1, args1);
+        }
+
+        /// <summary>
+        /// Stellt fest, ob 'mailAddress' Emails an dieses Programm senden darf.
+        /// </summary>
+        /// <param name="mailAddress">E-Mail-Adresse eines Absenders, der geprüft werden soll.</param>
+        /// <returns>true = Der Absender malAddress darf Emails an dieses Programm senden.</returns>
+        public static bool IsInWhitelist(System.Net.Mail.MailAddress mailAddress)
+        {
+            string query = "SELECT Count(ID) FROM Person WHERE lower(Email) = @Email AND (Via & @Via) > 0; ";
+
+            Dictionary<string, object> args = new Dictionary<string, object>{
+                { "@Email", mailAddress.Address.ToLower() },
+                { "@Via", (int)Via.EmailWhitelist }
+            };
+
+            if (!int.TryParse(SelectValue(query, args).ToString(), out int result))
+                return false;
+
+            return result > 0;
         }
 
         /// <summary>

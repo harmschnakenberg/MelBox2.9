@@ -384,22 +384,26 @@ namespace MelBox2
                     {
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int via))
                         {
-                            bool phone = 0 != (via & 1);
-                            bool email = 0 != ((via & 2) | (via & 4));
+                            bool phone = 0 != (via & (int)Sql.Via.Sms);
+                            bool email = 0 != ((via & (int)Sql.Via.Email) | (via & (int)Sql.Via.PermanentEmail));
+                            bool whitelist = 0 != (via & (int)Sql.Via.EmailWhitelist);
 
                             html += "<td>";
                             if (phone) html += "<span class='material-icons-outlined'>smartphone</span>";
                             if (email) html += "<span class='material-icons-outlined'>email</span>";
+                            if (whitelist) html += "<span class='material-icons-outlined'>markunread_mailbox</span>";
                             html += "</td>";
                         }
                     }
-                    else if (dt.Columns[j].ColumnName.StartsWith("Abo"))
+                    else if (dt.Columns[j].ColumnName.StartsWith("Attr"))
                     {
                         html += "<td>";
-                        if (dt.Rows[i][j].ToString().StartsWith("y"))
-                            html += "<span class='material-icons-outlined'>call</span>";
-                        else if (dt.Rows[i][j].ToString().StartsWith("x"))
-                            html += "<span class='material-icons-outlined'>loyalty</span>";
+                        if (dt.Rows[i][j].ToString().Contains("z"))
+                            html += "<span class='material-icons-outlined' title='Autorisierter Absender'>markunread_mailbox</span>";
+                        if (dt.Rows[i][j].ToString().Contains("y"))
+                            html += "<span class='material-icons-outlined' title='Rufweiterleitung'>call</span>";
+                        if (dt.Rows[i][j].ToString().Contains("x"))
+                            html += "<span class='material-icons-outlined' title='Dauerempf&auml;nger'>loyalty</span>";
                         html += "</td>";
                     }
                     else if (dt.Columns[j].ColumnName.Contains("Status"))
@@ -610,14 +614,16 @@ namespace MelBox2
 
             sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
 
-            sb.Append($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet. </li>");
-            sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. </li>");
+            sb.Append(" <li><b>Attribute</b></li>");
+            sb.Append(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
+            sb.Append($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet.</li>");
+            sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt.</li>");
 
             if (Sql.PermanentEmailRecievers > 0)
                 sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
-            
-            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
 
+            sb.Append(" <li><hr></li>");
+            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
             sb.Append("</ul></div>");
 
             return sb.ToString();
@@ -785,6 +791,18 @@ namespace MelBox2
             sb.Append("</ul></div>");
             return sb.ToString();
         }
+
+        internal static string InfoWhitelist()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append(" <li>Die hier angezeigten E-Mail-Adressen d&uuml;rfen an dieses Programm senden.</li>");
+            sb.Append(" <li>Absender, die nicht in dieser Liste stehen, werden ignoriert.</li>");
+
+            sb.Append("</ul></div>");
+            return sb.ToString();
+        }
+
 
         internal static string InfoOverdue()
         {

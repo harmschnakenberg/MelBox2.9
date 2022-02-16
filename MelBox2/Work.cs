@@ -57,6 +57,13 @@ namespace MelBox2
 
         private static void ParseNewEmail(System.Net.Mail.MailMessage mail)
         {
+            if (!Sql.IsInWhitelist(mail.From)) //nur bekannte Absender verarbeiten
+            {
+                Log.Warning($"Email von unbekanntem Absender >{mail.From.Address}< wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
+                Sql.InsertLog(2, $"Email von unbekanntem Absender >{mail.From.Address}< wird ignoriert.");
+                return;
+            }
+            
             if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokolliere
             {
                 //TODO Email löschen?
@@ -70,6 +77,8 @@ namespace MelBox2
                 SendSmsToShift( Sql.RemoveHTMLTags(mail.Body) ); //Email ohne HTML an aktuelle Bereitschaft per Sms senden
            
             SendEmailToShift(mail, isWatchTime, isLifeMessage, isMessageBlocked); //Empfangene Email an Bereitschaft/Service Email
+
+            isFirstParseNewSmsAfterStartup = false;
         }
 
         /// <summary>
@@ -178,12 +187,14 @@ namespace MelBox2
 
         private static void SendEmailToShift(System.Net.Mail.MailMessage mail, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
         {
+            string recText = Sql.RemoveHTMLTags(mail.Body);
+
             string body = $"Absender \t>{mail.From.Address}<\r\n" +
-                           $"Text \t\t>{mail.Body}<\r\n" +
+                           $"Text \t\t>{recText}<\r\n" +
                            $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
                            (
                            isFirstParseNewSmsAfterStartup ? "Email bei Neustart MelBox2! Keine Weiterleitung an Bereitschaft." :
-                           isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
+                           isLifeMessage ? $"Keine SMS-Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
                            isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da Nachricht gesperrt." :
                            isWatchTime ? "Weiterleitung an Bereitschaft außerhalb Geschäftszeiten ist erfolgt." :
                            "Keine Weiterleitung an Bereitschaft während der Geschäftszeiten."
@@ -202,9 +213,8 @@ namespace MelBox2
 
             int emailId = new Random().Next(256, 9999);
 
-            Sql.InsertSent(mc[0], mail.Body, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
             Email.Send(mc, body, subject, true, emailId);
-
         }
 
     }
