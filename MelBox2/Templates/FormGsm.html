@@ -1,7 +1,7 @@
 ﻿<div class="w3-container">
     <span>@ModemReinit</span>
 
-    <h2>Status</h2>
+    <h2>GSM-Modem</h2>
     <p>Informationen zum angeschlossenen Modem:</p>
     <ul class="w3-ul w3-card">
         <li>
@@ -39,13 +39,6 @@
             </div>
         </li>
         <li>
-            <label>Sprachanrufe werden weitergeleitet an</label>
-            <div class="w3-light-grey">
-                @ForewardingActive @ForewardingNumber
-            </div>
-        </li>
-
-        <li>
             <label>PIN an SIM-Karte</label>
             <div class="w3-light-grey">
                 @PinStatus
@@ -58,18 +51,42 @@
             </div>
         </li>
     </ul>
-    <br />
 
-    <h2>Anrufweiterleitung bearbeiten</h2>
-    <div class="w3-card w3-padding" style="height:100px">
-        <label>Sprachanrufe dauerhaft weiterleiten an</label>
-        <form action="/gsm/callforward" method="get">
-            <div>
-                @NewForwardingNumber
+    <h3>Anrufweiterleitung bearbeiten</h3>
+    <ul class="w3-card w3-padding">
+        <li>
+            <label>Sprachanrufe werden weitergeleitet an</label>
+            <div class="w3-light-grey">
+                @ForewardingActive @ForewardingNumber
             </div>
-        </form>
-        <div>&nbsp;</div>
-    </div>
+        </li>
+        <li>
+            <label>Sprachanrufe dauerhaft weiterleiten an</label>
+            <form action="/gsm/callforward" method="get">
+                <div>
+                    @NewForwardingNumber
+                </div>
+            </form>
+        </li>
+    </ul>
+
+    <h2>E-Mail Server</h2>
+    <p>Informationen zum SMTP-Server:</p>
+    <ul class="w3-ul w3-card">
+        <li>
+            <label>SMTP-Server Adresse</label>
+            <div class="w3-light-grey w3-round">
+                <div>Hier kommt noch was hin.</div>
+            </div>
+        </li>
+
+        <li>
+            <label>Test-Email versenden an</label>
+            <div class="w3-light-grey w3-round">
+                <div>Hier kommt noch was hin.</div>
+            </div>
+        </li>
+    </ul>
 
     <div class="w3-monospace w3-tiny w3-display-bottomleft w3-padding">
         <span>

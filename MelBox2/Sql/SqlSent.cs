@@ -32,7 +32,7 @@ namespace MelBox2
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Date", date.ToUniversalTime() }
+                { "@Date", date }
             };
 
             const string query = "SELECT Gesendet, An, Inhalt, Via, Sendestatus AS Status FROM View_Sent WHERE date(Gesendet) = date(@Date) ORDER BY Gesendet DESC;";

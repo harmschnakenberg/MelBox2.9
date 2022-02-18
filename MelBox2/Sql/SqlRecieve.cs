@@ -22,11 +22,11 @@ namespace MelBox2
         }
 
 
-        internal static DataTable SelectLastRecieved(System.DateTime date)
+        internal static DataTable SelectRecieved(System.DateTime date)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@Date", date}
+                { "@Date", date }
             };
 
             const string query = "SELECT Nr, datetime(Empfangen, 'localtime') AS Empfangen, Von, Inhalt FROM View_Recieved WHERE date(Empfangen) = date(@Date) ORDER BY Empfangen DESC;";

@@ -118,7 +118,7 @@ namespace MelBox2
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
 
-            await Html.PageAsync(context, "GSM-Modem", html, user);
+            await Html.PageAsync(context, "Sendemedien", html, user);
         }
 
         #endregion
@@ -141,7 +141,7 @@ namespace MelBox2
             if (context.Request.QueryString.HasKeys())
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
 
-            System.Data.DataTable rec = Sql.SelectLastRecieved(date);
+            System.Data.DataTable rec = Sql.SelectRecieved(date);
             
             string table = Html.Modal("Empfangene Nachrichten", Html.InfoRecieved(isAdmin));
             table += rec.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine empfangenen Nachrichten protokolliert.");
@@ -234,13 +234,13 @@ namespace MelBox2
             {
                 html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");
                 html += "<h3>Liste &uuml;berwachter Sender</h3>";
+                html += "<p>Diese Sender werden auf regelm&auml;&szlig;ige Nachrichteneing&auml;nge &uuml;berwacht:</p>";
                 html += Html.FromTable(Sql.SelectWatchedSenders(), false);
             }
             else
             {
                 html = Html.Alert(1, "Zeit&uuml;berschreitung", "Diese Absender haben l&auml;nger keine Nachricht geschickt. Bitte Meldeweg &Uuml;berpr&uuml;fen.");
                 html += Html.FromTable(overdue, false);
-                html += "<hr/><p>Diese Sender werden auf regelm&auml;&szlig;ige Nachrichteneing&auml;nge &uuml;berwacht:</p>";
             }
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
@@ -337,24 +337,6 @@ namespace MelBox2
             await Html.PageAsync(context, "Sperrzeiten aktualisiert", alert + table, user);
         }
 
-        //[RestRoute("Get", "/whitelist")]
-        //public static async Task Whitelist(IHttpContext context)
-        //{
-        //    #region Anfragenden Benutzer identifizieren
-        //    Person user = await Html.GetLogedInUserAsync(context, false);
-
-        //    bool isAdmin = user != null && user.Level >= Server.Level_Admin;
-        //    #endregion
-
-        //    System.Data.DataTable whitelist = Sql.SelectWhitelist();
-        //    string table = Html.FromTable(whitelist, isAdmin, "whitelist");
-        //    string info = Html.Modal("Erlaubte Absender", Html.InfoWhitelist());
-
-        //    await Html.PageAsync(context, "Erlaubte Absender", info + table, user);
-        //}
-
-
-
         #endregion
 
 
@@ -419,11 +401,12 @@ namespace MelBox2
                 { "@UpdateContact", user.Level < Server.Level_Reciever ? string.Empty : "<button class='w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left w3-right' type='submit'>&Auml;ndern</button>"}
             };
 
+            string filter = isAdmin ? Html.AccountFilter("kreu") : string.Empty;
             string form = Html.Page(Server.Html_FormAccount, pairs);            
             string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
             string info = Html.Modal("Benutzerkategorien", Html.InfoAccount());
 
-            await Html.PageAsync(context, "Benutzerkonto", form + info + table, user);            
+            await Html.PageAsync(context, "Benutzerverwaltung", filter + form + info + table, user);            
         }
         
         [RestRoute("Post", "/account/new")]
@@ -651,7 +634,7 @@ namespace MelBox2
             string table = Html.FromShiftTable(user);
             string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
 
-            await Html.PageAsync(context, "Bereitschaft Rufannahme", shiftActive + table, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", shiftActive + table, user);
         }
 
         [RestRoute("Get", "/shift/{shiftId:num}")]
@@ -672,7 +655,7 @@ namespace MelBox2
             {
                 { "@Id", shift.Id.ToString() },
                 { "@ContactOptions", contactOptions },
-                { "@MinDate",  DateTime.UtcNow.Date.ToString("yyyy-MM-dd") },
+                { "@MinDate",  DateTime.UtcNow.Date.AddDays(-7).ToString("yyyy-MM-dd") },
                 { "@StartDate", shift.StartUtc.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@EndDate", shift.EndUtc.ToLocalTime().ToString("yyyy-MM-dd") },
                 { "@StartTime", shift.StartUtc.ToLocalTime().ToShortTimeString() },
@@ -685,7 +668,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaft Rufannahme", table + form, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", table + form, user);
         }
 
         [RestRoute("Get", "/shift/{shiftDate}")]
@@ -721,7 +704,7 @@ namespace MelBox2
 
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Bereitschaft Rufannahme", table + form, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", table + form, user);
         }
 
         [RestRoute("Post", "/shift/new")]
@@ -904,6 +887,126 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Log", html + table, user);
         }
+
+
+        [RestRoute("Get", "/notepad")]
+        [RestRoute("Get", "/notepad/{noteId:num}")]
+        public static async Task SingleNote(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
+            string form = string.Empty;
+
+            if (context.Request.PathParameters.ContainsKey("noteId") && int.TryParse(context.Request.PathParameters["noteId"], out int noteId))
+            {
+                string author = user.Name;
+                string content = string.Empty;
+                string updateButton = string.Empty;
+                int selectedCustomerId = 0;
+
+                System.Data.DataTable note = Sql.SelectNote(noteId);
+
+                if (note.Rows.Count > 0)
+                {
+                    author = note.Rows[0]["Von"].ToString();
+                    content = note.Rows[0]["Notiz"].ToString();
+                    selectedCustomerId = int.Parse(note.Rows[0]["KundeId"]?.ToString());
+
+                    if (note.Rows[0]["VonId"]?.ToString() == user.Id.ToString())
+                        updateButton = "<button class='w3-button w3-cyan w3-padding w3-margin w3-quarter' type='submit' formaction='/notepad/update'>&Auml;ndern</button>";
+                }
+                    
+                string customerOptions = Sql.HtmlOptionCustomers(selectedCustomerId);
+
+                Dictionary<string, string> pairs = new Dictionary<string, string>
+                {
+                    { "@NoteId", noteId.ToString() },
+                    { "@AuthorId", user.Id.ToString() },
+                    { "@Author", author },
+                    { "@CustomerOptions", customerOptions },
+                    { "@Content", content },
+                    { "@UpdateNote", updateButton }
+                };
+
+                form = Html.Page(Server.Html_FormNote, pairs);
+            }
+
+            string table = Html.FromNotesTable(user);
+            string info = Html.Modal("Notizbuch", Html.InfoNotepad());
+
+            await Html.PageAsync(context, "Notizbuch", info + table + form, user);
+        }
+
+
+        [RestRoute("Post", "/notepad/new")]
+        public static async Task NoteCreate(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
+            #region Form auslesen
+            bool success = false;
+            Dictionary<string, string> payload = Html.Payload(context);
+            
+            if (payload.TryGetValue("authorId", out string authorIdStr)
+                && int.TryParse(authorIdStr, out int authorId)
+                && payload.TryGetValue("customerId", out string customerIdStr)
+                && int.TryParse(customerIdStr, out int customerId)
+                && payload.TryGetValue("content", out string content) //Es sind HTML-Markups möglich! Sicherheitsrisiko?
+                )
+                success = Sql.InsertNote(authorId, customerId, content);
+            #endregion
+
+            payload.TryGetValue("author", out string author);
+
+            string alert = string.Empty;
+            if (success)
+                alert += Html.Alert(3, "Notiz erstellt", $"{author} hat eine neue Notiz erstellt.") ;
+            else
+                alert += Html.Alert(1, "Notiz erstellen fehlgeschlagen", $"Es konnte keine neue Notiz erstellt werden.");
+
+            await Html.PageAsync(context, "Notiz erstellt", alert, user);
+        }
+
+        [RestRoute("Post", "/notepad/update")]
+        public static async Task NoteUpdate(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            #endregion
+
+            #region Form auslesen
+            bool success = false;
+            Dictionary<string, string> payload = Html.Payload(context);
+
+            if (payload.TryGetValue("noteId", out string noteIdStr)
+                && int.TryParse(noteIdStr, out int noteId)
+                && payload.TryGetValue("authorId", out string authorIdStr)
+                && int.TryParse(authorIdStr, out int authorId)
+                && payload.TryGetValue("customerId", out string customerIdStr)
+                && int.TryParse(customerIdStr, out int customerId)
+                && payload.TryGetValue("content", out string content) //Es sind HTML-Markups möglich! Sicherheitsrisiko?
+                )
+                success = Sql.UpdateNote(noteId, authorId, customerId, content);
+            #endregion
+
+            payload.TryGetValue("author", out string author);
+
+            string alert = string.Empty;
+            if (success)
+                alert += Html.Alert(3, "Notiz geändert", $"{author} hat eine neue Notiz ge&auml;ndert.");
+            else
+                alert += Html.Alert(1, "Notiz &auml;ndern fehlgeschlagen", $"Die Notiz konnte nicht ge&auml;ndert werden.");
+
+            await Html.PageAsync(context, "Notiz ge&auml;ndert", alert, user);
+        }
+
         #endregion
 
         [RestRoute("Get", "/help")]

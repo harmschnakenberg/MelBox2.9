@@ -1,0 +1,39 @@
+﻿<div id="id01">
+    <div class="w3-modal-content w3-card-4 w3-display-middle" style="position:fixed;max-width:800px">
+
+        <div class="w3-center">
+            <br>
+            <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Fenster schlie&szlig;en">&times;</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>edit_note</i>
+            <h4>Notiz</h4>
+        </div>
+
+        <form id="form3" class="w3-container" action="/notepad/new" method="post">
+            <input class="w3-hide" type="hidden" name="noteId" value="@NoteId">
+            <input class="w3-hide" type="hidden" name="authorId" value="@AuthorId">
+
+            <p>
+                <label class="w3-text-grey">Autor</label>
+                <input class="w3-input w3-border w3-light-grey" type="text" name="author" value="@Author" readonly>
+            </p>
+
+            <p>
+                <label class="w3-text-grey">Kunde</label>
+                <select class="w3-select w3-border" id="customerId" name="customerId">
+                    @CustomerOptions
+                </select>
+            </p>
+
+            <p>
+                <label class="w3-text-grey">Notiz</label>
+                <textarea class="w3-input w3-border" style="resize:vertical; min-height:200px;" name="content">@Content</textarea>
+            </p>
+
+            <p class="w3-row-padding">
+                <button class="w3-button w3-blue w3-padding w3-margin w3-quarter" type='submit'>Neue Notiz</button>
+                @UpdateNote
+                <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-red w3-padding w3-margin w3-quarter">Abbrechen</button>
+            </p>
+        </form>
+    </div>
+</div>

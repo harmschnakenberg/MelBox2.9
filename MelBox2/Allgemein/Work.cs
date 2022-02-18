@@ -11,6 +11,7 @@ namespace MelBox2
        
         public static string[] LifeMessageTrigger { get; set; } = { "MelSysOK", "SgnAlarmOK" };
 
+
         private static bool isFirstParseNewSmsAfterStartup = true; //Dinge, die nur beim ersten Abfragen des SMS-Speichers getan werden sollen
 
         /// <summary>
@@ -148,7 +149,6 @@ namespace MelBox2
 
         /// <summary>
         /// Leitet die empfangene SMS als EMail an die aktuelle Bereitschaft bzw. den Verteiler.
-        /// Erzeugt in Abhänigkeit 
         /// </summary>
         /// <param name="smsIn">Eingegangene SMS</param>
         /// <param name="isWatchTime">zur Zeit soll an Bereitschaft gesendet werden.</param>
@@ -172,19 +172,30 @@ namespace MelBox2
             string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
             //Email An: nur an eingeteilte Bereitschaft
-            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
-                                                        ? Sql.GetCurrentShiftEmailAddresses()
-                                                        : new System.Net.Mail.MailAddressCollection();
+            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup;
+            
+            System.Net.Mail.MailAddressCollection mc = isMsgForShift
+                                                        ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger
+                                                        : Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger
 
-            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft eingeteilt, Email geht an Admin und Dauerempfänger
+            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft und keine Dauerempfänger eingeteilt: Email geht an Admin
 
             int emailId = new Random().Next(256, 9999);
 
-            Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            if (isMsgForShift)
+                Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+
             Email.Send(mc, body, subject, true, emailId);
 
         }
 
+        /// <summary>
+        /// Leitet die empfangene EMail als EMail an die aktuelle Bereitschaft bzw. den Verteiler.
+        /// </summary>
+        /// <param name="mail"></param>
+        /// <param name="isWatchTime"></param>
+        /// <param name="isLifeMessage"></param>
+        /// <param name="isMessageBlocked"></param>
         private static void SendEmailToShift(System.Net.Mail.MailMessage mail, bool isWatchTime, bool isLifeMessage, bool isMessageBlocked)
         {
             string recText = Sql.RemoveHTMLTags(mail.Body);
@@ -193,7 +204,6 @@ namespace MelBox2
                            $"Text \t\t>{recText}<\r\n" +
                            $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
                            (
-                           isFirstParseNewSmsAfterStartup ? "Email bei Neustart MelBox2! Keine Weiterleitung an Bereitschaft." :
                            isLifeMessage ? $"Keine SMS-Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
                            isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da Nachricht gesperrt." :
                            isWatchTime ? "Weiterleitung an Bereitschaft außerhalb Geschäftszeiten ist erfolgt." :
@@ -204,16 +214,20 @@ namespace MelBox2
 
             string subject = $"Email-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
 
-            //Email An: nur an eingeteilte Bereitschaft
-            System.Net.Mail.MailAddressCollection mc = (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
-                                                        ? Sql.GetCurrentShiftEmailAddresses()
-                                                        : new System.Net.Mail.MailAddressCollection();
+            //Email an nur an eingeteilte Bereitschaft, wenn...
+            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked;
 
-            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft eingeteilt, Email geht an Admin und Dauerempfänger
+            System.Net.Mail.MailAddressCollection mc = isMsgForShift
+                                                        ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger
+                                                        : Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger
+
+            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft und keine Dauerempfänger eingeteilt: Email geht an Admin
 
             int emailId = new Random().Next(256, 9999);
 
-            Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            if (isMsgForShift)
+                Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            
             Email.Send(mc, body, subject, true, emailId);
         }
 

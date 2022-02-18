@@ -151,14 +151,14 @@ namespace MelBox2
             return SelectValue(query1, null).ToString();
         }
 
-        internal static MailAddressCollection GetCurrentShiftEmailAddresses(bool permanentRecievers = false)
+        internal static MailAddressCollection GetCurrentEmailRecievers(bool permanentRecieversOnly = true)
         {
-            const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via = 4;"; //Dauerempfänger
-            const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3) )"; //Bereitschaft per Email
+            const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via = 4;"; //nur Dauerempfänger
+            const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3,4) )"; //Bereitschaft per Email + Dauerempfänger
 
-            DataTable dt = SelectDataTable(permanentRecievers ? query1 : query2, null);
+            DataTable dt = SelectDataTable(permanentRecieversOnly ? query1 : query2, null);
 
-            if (permanentRecievers) PermanentEmailRecievers = dt.Rows.Count;
+            if (permanentRecieversOnly) PermanentEmailRecievers = dt.Rows.Count;
 
             MailAddressCollection emailAddresses = new MailAddressCollection();
 

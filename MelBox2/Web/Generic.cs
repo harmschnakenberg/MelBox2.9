@@ -253,7 +253,7 @@ namespace MelBox2
             sb.Append("<div id='help2' class='w3-container w3-center w3-padding '>");
             sb.Append($"  <form id='chooseDate' method='get' action='/{root}'>");
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
-            sb.Append($"   <input name='datum' id='anzeigedatum' type='date' value='{date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onchange='inc(0);'>");
+            sb.Append($"   <input name='datum' id='anzeigedatum' type='date' value='{date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);'>");
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
             sb.Append("   </form>");
             sb.Append("</div>");
@@ -268,13 +268,20 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        internal static string FormLogFilter()
+
+        /// <summary>
+        /// Erzeugt Buttons, um die Benutzerliste zu filtern
+        /// </summary>
+        /// <param name="filter">Teil-String nach dem gefiltert werden soll</param>
+        /// <returns></returns>
+        internal static string AccountFilter(string filter)
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.Append("<table class='w3-table w3-bordered'>");
-            sb.Append("<tr>");
-
+            sb.AppendLine("<b>Filter:</b>");
+            sb.AppendLine($"<a href='/account' class='w3-button' title='Filter zur&uuml;cksetzen'><i class='w3-xlarge material-icons-outlined'>filter_none</i></a>");
+            sb.AppendLine($"<a href='/account?company=-{filter}' class='w3-button' title='Filter Firma enth&auml;lt nicht &quot;{filter}&quot;'><i class='w3-xlarge material-icons-outlined'>filter_1</i></a>");
+            sb.AppendLine($"<a href='/account?company={filter}' class='w3-button' title='Filter Firma enth&auml;lt &quot;{filter}&quot;'><i class='w3-xlarge material-icons-outlined'>filter_2</i></a>");
+            
             return sb.ToString();
         }
 
@@ -317,7 +324,10 @@ namespace MelBox2
 
         internal static string FromTable(System.Data.DataTable dt, bool isAuthorized, string root = "x")
         {
-            string html = "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+            string html = string.Empty;
+            
+            if (dt.Rows.Count > 2) //Filter nur, wenn etwas zum Filtern da ist
+                html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             html += "<table id='table1' class='w3-table-all'>\n";
             //add header row
@@ -364,14 +374,11 @@ namespace MelBox2
                     {
                         html += "<td>" + WeekDayCheckBox(int.Parse(dt.Rows[i][j].ToString())) + "</td>";
                     }
-                    //else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
-                    //{
-                    //    string x = dt.Rows[i][j].ToString(); 
-                    //    //if (DateTime.TryParse(x, out DateTime time))  //Zeitzone richtig?!
-                    //    //    html += $"<td>{time.ToLocalTime()}</td>";
-                    //    //else
-                    //    html += $"<td>{x}</td>";
-                    //}
+                    else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
+                    {
+                        string x = dt.Rows[i][j].ToString();
+                        html += $"<td>{x.Replace("-", "&#8209;").Replace(" ", "&nbsp;")}</td>"; //non-breaking hyphen, non-breaking space
+                    }
                     else if (dt.Columns[j].ColumnName.StartsWith("Via"))
                     {
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int via))
@@ -543,6 +550,50 @@ namespace MelBox2
             return html;
         }
 
+        /// <summary>
+        /// Tabelle, bei der Einträge nur durch den Autor bearebiet werden können.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        internal static string FromNotesTable(Person user)
+        {
+            System.Data.DataTable dt = Sql.SelectLastNotes();
+
+            string html = $"<form><button style='width:20%' class='w3-button w3-block w3-blue w3-padding type='button' formaction='/notepad/0'>Neue Notiz</button></form>\r\n";
+
+            if (dt.Rows.Count > 2) //Filter nur, wenn etwas zum Filtern da ist
+                html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+
+            html += "<table id='table1' class='w3-table-all'>\n";
+            
+            //add header row
+            html += "<tr><th>Edit</th>";
+                    html += $"<th>{dt.Columns["Bearbeitet"].ColumnName}</th>";
+                    html += $"<th>{dt.Columns["Von"].ColumnName}</th>";
+            html += $"<th>{dt.Columns["Kunde"].ColumnName}</th>";
+            html += $"<th>{dt.Columns["Notiz"].ColumnName}</th>";
+            html += "</tr>\n";
+
+            //Inhalt
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+
+                html += "<tr class='item'><td>";
+
+                if (dt.Rows[i]["VonId"].ToString() == user.Id.ToString())                
+                    html += "<a href='/notepad/" + dt.Rows[i][0].ToString() + "'><i class='material-icons-outlined'>edit</i></a>";
+
+                html += "</td><td>" + dt.Rows[i]["Bearbeitet"].ToString().Replace("-", "&#8209;").Replace(" ", "&nbsp;") + "</td>"; //non-breaking hyphen, non-breaking space
+                html += "<td>" + dt.Rows[i]["Von"].ToString() + "</td>";
+                html += "<td>" + dt.Rows[i]["Kunde"].ToString() + "</td>";
+                html += "<td>" + dt.Rows[i]["Notiz"].ToString() + "</td>";
+
+                html += "</tr>\n";
+            }
+
+                html += "</table>\n";
+            return html;
+        }
 
         #endregion
 
@@ -571,8 +622,28 @@ namespace MelBox2
         internal static string InfoAccount()
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append("Hier werden die MelBox2-Benutzer verwaltet. Benutzer sind m&ouml;gliche Sender und Empf&auml;nger.");
 
-            sb.Append("<table class='w3-table w3-bordered'>");
+            sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
+            sb.Append(" <li><hr></li>");
+            sb.Append(" <li><b>Filter</b> - nur bei meheren Eintr&auml;gen vorhanden.</li>");
+            sb.Append(" <li><span class='material-icons-outlined'>filter_none</span> Setzt alle Anzeigefilter zurück.</li>");
+            sb.Append(" <li><span class='material-icons-outlined'>filter_1</span> Filter 1 - Zeigt nur externe Kontakte.</li>");
+            sb.Append(" <li><span class='material-icons-outlined'>filter_2</span> Filter 2 - Zeigt nur interne Kontakte.</li>");
+            sb.Append(" <li><hr></li>");
+            sb.Append(" <li><b>Attribute</b></li>");
+            sb.Append(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
+            sb.Append($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet.</li>");
+            sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt.</li>");
+
+            if (Sql.PermanentEmailRecievers > 0)
+                sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
+
+            sb.Append("</ul></div>");
+
+            sb.Append("</div><table class='w3-table w3-bordered'>");
             sb.Append("<tr>");
             sb.Append("  <th colspan='2'>Level</th>");
             sb.Append("  <th>Rolle</th>");
@@ -603,20 +674,6 @@ namespace MelBox2
             sb.Append("  <td>ohne Zugangsberechtigung, muss durch Admin freigeschaltet werden</td>");
             sb.Append("</tr>");
             sb.Append("</table>");
-
-            sb.Append("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card w3-border'>");
-
-            sb.Append(" <li><b>Attribute</b></li>");
-            sb.Append(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
-            sb.Append($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet.</li>");
-            sb.Append($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt.</li>");
-
-            if (Sql.PermanentEmailRecievers > 0)
-                sb.Append($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
-
-            sb.Append(" <li><hr></li>");
-            sb.Append(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
-            sb.Append("</ul></div>");
 
             return sb.ToString();
         }
@@ -784,18 +841,6 @@ namespace MelBox2
             return sb.ToString();
         }
 
-        //internal static string InfoWhitelist()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
-        //    sb.Append(" <li>Die hier angezeigten E-Mail-Adressen d&uuml;rfen an dieses Programm senden.</li>");
-        //    sb.Append(" <li>Absender, die nicht in dieser Liste stehen, werden ignoriert.</li>");
-
-        //    sb.Append("</ul></div>");
-        //    return sb.ToString();
-        //}
-
-
         internal static string InfoOverdue()
         {
             StringBuilder sb = new StringBuilder();
@@ -862,7 +907,18 @@ namespace MelBox2
                 );
         }
 
+        internal static string InfoNotepad()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
+            sb.Append(" <li>Hier k&ouml;nnen freie Notizen hinterlegt werden.</li>");
+            sb.Append(" <li>Notizen k&ouml;nnen nur vom Verfasser ge&auml;ndert werden.</li>");
+            sb.Append("</ul></div>");
+            return sb.ToString();
+        }
+
         #endregion
-  
+
     }
 }

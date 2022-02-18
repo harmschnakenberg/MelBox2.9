@@ -97,12 +97,12 @@
                     <label class="w3-col w3-half"><b>bis</b></label>
                 </div>
                 <div class="w3-row">
-                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate" onchange="setStartTime()">
-                    <input name="End" id="EndDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate()" onchange="checkEndTime(0)">
+                    <input name="Start" id="StartDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@StartDate" onblur="setStartTime()">
+                    <input name="End" id="EndDate" type="date" class="w3-input w3-half w3-border w3-margin-bottom" min="@MinDate" value="@EndDate" onfocus="minEndDate()" onblure="checkEndTime(0)">
                 </div>
                 <div class="w3-row">
-                    <input name="StartTime" id="StartTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@StartTime" onchange="addTime(this, 'StartDate')">
-                    <input name="EndTime" id="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onchange="addTime(this, 'EndDate')">
+                    <input name="StartTime" id="StartTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@StartTime" onblur="addTime(this, 'StartDate')">
+                    <input name="EndTime" id="EndTime" type="time" class="w3-input w3-half w3-border w3-margin-bottom" value="@EndTime" onblur="addTime(this, 'EndDate')">
                 </div>
                 <div id="timeWarner" class="w3-centered w3-text-red" style="visibility:hidden;">Der gew&auml;hlte Zeitraum ist ung&uuml;ltig.</div>
 

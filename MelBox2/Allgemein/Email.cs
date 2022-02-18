@@ -72,7 +72,7 @@ namespace MelBox2
 
                 if (cc)
                 {
-                    foreach (var CC in Sql.GetCurrentShiftEmailAddresses(true))
+                    foreach (var CC in Sql.GetCurrentEmailRecievers())
                     {
 #if DEBUG           //nur zu mir
                         if (CC.Address.ToLower() != Admin.Address.ToLower())
