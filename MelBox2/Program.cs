@@ -137,9 +137,10 @@ namespace MelBox2
                         foreach (SmsIn sms in list)
                             Console.WriteLine($"[{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
                         break;
-                    //case "email read":
-                    //    EmailListener.;
-                    //    break;
+                    case "email read":
+                        EmailListener listener = new EmailListener("imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
+                        listener.ReadUnseen();
+                        break;
                     case "debug":
                         Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");
                         Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.AnswerGsm}\tAntwort von Modem");
@@ -221,7 +222,7 @@ namespace MelBox2
             sb.AppendLine("Restart".PadRight(32) + "beendet das Programm und startet es nach 5 Sek. neu.");
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS (wird ggf. an Bereitschaft weitergeleitet).");
-            //sb.AppendLine("Email Read".PadRight(32) + "Liest die auf dem Mailserver vorhandenen EMailse");
+            sb.AppendLine("Email Read".PadRight(32) + "Liest auf dem Mailserver vorhandenen neue (ungelesen) E-Mails.");
 
             sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
             sb.AppendLine("### HILFE ENDE ###");

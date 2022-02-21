@@ -29,7 +29,7 @@ namespace MelBox2
                 { "@Date", date }
             };
 
-            const string query = "SELECT Nr, datetime(Empfangen, 'localtime') AS Empfangen, Von, Inhalt FROM View_Recieved WHERE date(Empfangen) = date(@Date) ORDER BY Empfangen DESC;";
+            const string query = "SELECT Nr, Empfangen, Von, Inhalt FROM View_Recieved WHERE date(Empfangen) = date(@Date) ORDER BY Empfangen DESC;";
 
             return SelectDataTable(query, args);
         }
@@ -72,10 +72,13 @@ namespace MelBox2
             
             Person sender = SelectOrCreatePerson(email.From);
             Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
-            
+            DateTime emailDate; 
+            if (! DateTime.TryParse(email.Headers["Date"], out emailDate))
+                emailDate = DateTime.UtcNow;
+
             Dictionary<string, object> args = new Dictionary<string, object>
                 {
-                    { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                    { "@Time", emailDate.ToString("yyyy-MM-dd HH:mm:ss")},
                     { "@SenderId", sender.Id},
                     { "@ContentId", msg.Id }
                 };

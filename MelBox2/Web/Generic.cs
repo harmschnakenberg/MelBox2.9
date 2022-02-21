@@ -350,7 +350,7 @@ namespace MelBox2
             else
             {
                 for (int i = 0; i < dt.Columns.Count; i++)
-                    html += $"<th class='w3-hover-sand' onclick=\"w3.sortHTML('#table1', '.item', 'td:nth-child({ i + 1 })')\" title='Klicken zum sortieren'>&#8645;&nbsp;" +
+                    html += $"<th class='w3-hover-sand' onclick=\"w3.sortHTML('#table1', '.item', 'td:nth-child({ i + 2 })')\" title='Klicken zum sortieren'>&#8645;&nbsp;" +
                             $"{dt.Columns[i].ColumnName.Replace('_', ' ')}" +
                             $"</th>";
             }
