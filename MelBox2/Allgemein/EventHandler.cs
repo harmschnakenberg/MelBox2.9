@@ -181,6 +181,7 @@ namespace MelBox2
         private static void ReliableSerialPort_SerialPortUnavailableEvent(object sender, int e)
         {
             //Neustart 
+            //Console.WriteLine("Die Anwendung wird in 10 Sekunden neu gestartet.");
             ProcessStartInfo Info = new ProcessStartInfo
             {
                 Arguments = "/C ping 127.0.0.1 -n 10 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"",

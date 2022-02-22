@@ -192,12 +192,12 @@ namespace MelBox2
         internal static bool UpdateMessage(int id, int blockDays, int blockStart, int blockEnd) //ungetestet
         {
             Dictionary<string, object> args = new Dictionary<string, object>
-{
-    { "@ID", id},
-    { "@BlockDays", blockDays},
-    { "@BlockStart", blockStart},
-    { "@BlockEnd", blockEnd},
-};
+            {
+                { "@ID", id},
+                { "@BlockDays", blockDays},
+                { "@BlockStart", blockStart},
+                { "@BlockEnd", blockEnd},
+            };
 
             const string query = "UPDATE Message SET BlockDays = @BlockDays, BlockStart = @BlockStart, BlockEnd = @BlockEnd WHERE ID = @ID; ";
 
@@ -206,15 +206,10 @@ namespace MelBox2
 
         public static string RemoveHTMLTags(string html)
         {
-            //Regex regex = new Regex("\\<[^\\>]*\\>");
-            ////<[a-zA-Z/].*?> includes attributes
-            //sring plainText = regex.Replace(html, string.Empty);
-            //return plainText;
+            //Log.Info("orig. EMail-Text:\r\n" + html, 22222); //nur zum Testen
+            string result = Regex.Replace(html.Replace(Environment.NewLine, " "), @"<.*?>|&.*?;|\t|{.*?}", string.Empty); //Entfernt HTML <p>, HTML-Entities &nbsp, Tabstop; Skripte { if()..}
 
-            return Regex.Replace(html, "<.*?>", String.Empty)
-                .Replace("&nbsp;",string.Empty)
-                .Replace(Environment.NewLine, " ")
-                .Trim();
+            return Regex.Replace(result, "[ ]+", " "); //Mehrfach-Leerzeichen entfernen
         }
     }
 

@@ -3,6 +3,7 @@ using System.Net.Mail;
 using System.Collections.Generic;
 using S22.Imap;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MelBox2
 {
@@ -182,6 +183,14 @@ namespace MelBox2
             return targetEncoding.GetString(isoBytes);
         }
 
+
+        public static bool IsValidEmail(this string email)
+        {
+            string pattern = @"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|" + @"([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)" + @"@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$";
+            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
+            return regex.IsMatch(email);
+        }
+
     }
 
     /// <summary>
@@ -209,6 +218,15 @@ namespace MelBox2
 
             Client = new ImapClient(imapServer, imapPort, imapUserName, imapPassword, AuthMethod.Login, imapEnableSSL);
             Client.IdleError += Client_IdleError;
+
+            foreach (var item in Client.ListMailboxes())
+            {
+                Console.WriteLine(">" + item);
+            }
+
+            Client.DefaultMailbox = "Kreualarm"; // Nur zum testen
+            Console.WriteLine("Default is " + Client.DefaultMailbox);
+
 
             // We want to be informed when new messages arrive
             Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
@@ -253,14 +271,14 @@ namespace MelBox2
         #endregion
 
         public void ReadUnseen()
-        {
+        {           
             //Download unseen mail messages
-            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen()); 
             IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
 
             foreach (MailMessage m in messages1)
             {
-                Console.WriteLine($"Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
+                Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
                 EmailInEvent?.Invoke(this, m);
             }
         }

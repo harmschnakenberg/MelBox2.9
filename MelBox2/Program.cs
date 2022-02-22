@@ -139,7 +139,11 @@ namespace MelBox2
                         break;
                     case "email read":
                         EmailListener listener = new EmailListener("imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
+                        listener.EmailInEvent += EmailListener_EmailInEvent;
                         listener.ReadUnseen();
+                        System.Threading.Thread.Sleep(2000);
+                        listener.EmailInEvent -= EmailListener_EmailInEvent;
+                        listener.Dispose();
                         break;
                     case "debug":
                         Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");

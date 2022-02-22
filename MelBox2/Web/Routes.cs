@@ -80,6 +80,55 @@ namespace MelBox2
             await Html.PageAsync(context, "Zwangsweise Rufweiterleitung zurücksetzen", html);
         }
 
+        [RestRoute("Post", "/gsm/sendsms")]
+        public static async Task ModemSendTestSms(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            //bool isAdmin = user.Level >= Server.Level_Admin;
+            #endregion
+
+            Dictionary<string, string> payload = Html.Payload(context);
+            if (payload.TryGetValue("phone", out string phoneStr))
+               phoneStr = Sql.NormalizePhone(phoneStr);
+
+            string html;
+            if (phoneStr.Length < 8)
+                 html = Html.Alert(1, "Nummer ungültig", $"Die übergebene Telefonnummer >{phoneStr}< ist ungültig.");
+            else
+            {
+                Gsm.SmsSend(phoneStr , "Dies ist ein Test von MelBox2.");
+                html = Html.Alert(4, "SMS versendet", $"Eine Test-SMS wurde an Telefonnummer >{phoneStr}< gesendet.");
+            }
+
+            await Html.PageAsync(context, "Test-SMS versenden", html, user);
+        }
+
+        [RestRoute("Post", "/gsm/sendemail")]
+        public static async Task ModemSendTestEmail(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            //bool isAdmin = user.Level >= Server.Level_Admin;
+            #endregion
+
+            Dictionary<string, string> payload = Html.Payload(context);
+            _ = payload.TryGetValue("email", out string email);
+
+            string html;
+            if (!Email.IsValidEmail(email))
+                html = Html.Alert(1, "E-Mail-Adresse ungültig", $"Die übergebene E-Mail-Adresse  >{email}< ist ungültig.");
+            else
+            {
+                Email.Send(new System.Net.Mail.MailAddress(email), "Dies ist ein Test von MelBox2.");
+                html = Html.Alert(4, "E-Mail versendet", $"Eine Test-E-Mail wurde an >{email}< gesendet.");
+            }
+
+            await Html.PageAsync(context, "Test-E-Mail versenden", html, user);
+        }
+
         [RestRoute("Get", "/gsm")]
         public static async Task ModemShow(IHttpContext context)
         {
@@ -109,11 +158,12 @@ namespace MelBox2
                 { "@ForewardingNumber" ,  (Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-") + callforward2 },
                 { "@ForewardingActive", callforward1 },
                 { "@NewForwardingNumber", Html.ManualUpdateCallworwardNumber(user)},
-
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
+                { "@SmtpServer", Email.SmtpHost + ":" + Email.SmtpPort },
                 { "@AdminPhone", Gsm.AdminPhone},
-                { "@AdminEmail", Email.Admin.Address }
+                { "@AdminEmail", Email.Admin.Address },
+                { "@HourSelect", Html.SelectHourOfDay(Program.HourOfDailyTasks) }
             };
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
@@ -970,7 +1020,9 @@ namespace MelBox2
             else
                 alert += Html.Alert(1, "Notiz erstellen fehlgeschlagen", $"Es konnte keine neue Notiz erstellt werden.");
 
-            await Html.PageAsync(context, "Notiz erstellt", alert, user);
+            string table = Html.FromNotesTable(user);
+
+            await Html.PageAsync(context, "Notiz erstellt", alert + table, user);
         }
 
         [RestRoute("Post", "/notepad/update")]
@@ -1004,7 +1056,9 @@ namespace MelBox2
             else
                 alert += Html.Alert(1, "Notiz &auml;ndern fehlgeschlagen", $"Die Notiz konnte nicht ge&auml;ndert werden.");
 
-            await Html.PageAsync(context, "Notiz ge&auml;ndert", alert, user);
+            string table = Html.FromNotesTable(user);
+
+            await Html.PageAsync(context, "Notiz ge&auml;ndert", alert + table, user);
         }
 
         #endregion

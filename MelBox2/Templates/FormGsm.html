@@ -52,23 +52,31 @@
         </li>
     </ul>
 
-    <h3>Anrufweiterleitung bearbeiten</h3>
-    <ul class="w3-card w3-padding">
+    <form action="/gsm/sendsms" method="post" class="w3-padding">
+        <label>Test-SMS versenden an</label>
+        <div>
+            <input class="w3-input w3-pale-yellow w3-half w3-center" type="tel" name="phone" pattern="\d{8,}" tite="Telefonummer Test-SMS" placeholder="0151 123 456 789">
+            <input class="w3-button w3-blue w3-quarter" type="submit">
+        </div>
+    </form>
+    <p>&nbsp;</p>
+
+    <ul class="w3-ul w3-card">
         <li>
             <label>Sprachanrufe werden weitergeleitet an</label>
             <div class="w3-light-grey">
                 @ForewardingActive @ForewardingNumber
             </div>
         </li>
-        <li>
-            <label>Sprachanrufe dauerhaft weiterleiten an</label>
-            <form action="/gsm/callforward" method="get">
-                <div>
-                    @NewForwardingNumber
-                </div>
-            </form>
-        </li>
     </ul>
+
+    <form action="/gsm/callforward" method="get" class="w3-padding">
+        <label>Sprachanrufe dauerhaft weiterleiten an</label>
+        <div>
+            @NewForwardingNumber
+        </div>
+    </form>
+    <p>&nbsp;</p>
 
     <h2>E-Mail Server</h2>
     <p>Informationen zum SMTP-Server:</p>
@@ -76,21 +84,37 @@
         <li>
             <label>SMTP-Server Adresse</label>
             <div class="w3-light-grey w3-round">
-                <div>Hier kommt noch was hin.</div>
-            </div>
-        </li>
-
-        <li>
-            <label>Test-Email versenden an</label>
-            <div class="w3-light-grey w3-round">
-                <div>Hier kommt noch was hin.</div>
+                <div>@SmtpServer</div>
             </div>
         </li>
     </ul>
 
-    <div class="w3-monospace w3-tiny w3-display-bottomleft w3-padding">
-        <span>
-            MelBox2 Tech-Administrator: @AdminPhone - @AdminEmail
-        </span>
-    </div>
+    <form action="/gsm/sendemail" method="post" class="w3-padding">
+        <label>Test-Email versenden an</label>
+        <div>
+            <input class="w3-input w3-pale-yellow w3-half w3-center" type="email" name="email" tite="E-Mail-Empf&auml;nger" placeholder="vorname.nachname@firma.de">
+            <input class="w3-button w3-blue w3-quarter" type="submit">
+        </div>
+    </form>
+    <p>&nbsp;</p>
+
+
+    <h2>MelBox2 Tech-Administrator</h2>
+    <p>Der Tech-Administrator empfängt St&ouml;rungen und Routinemeldungen zur Programm&uuml;berwachung von MelBox2:</p>
+    <ul class="w3-ul w3-card">
+        <li>
+            <label>aktiver Tech-Administrator</label>
+            <div class="w3-light-grey w3-round">
+                <div>@AdminPhone - @AdminEmail</div><!--hier ein Select-Feld mit allen Admins? Besser Übernahme-Button.-->
+            </div>
+        </li>
+        <li>
+            <label>Uhrzeit Routinemeldung</label><!--hier muss ein Form hin-->
+            <div class="w3-light-grey w3-round">
+                @HourSelect
+            </div>
+            <span>Zu dieser Uhrzeit bekommt der Tech-Administrator t&auml;glich eine Nachricht von jedem Sendemedium. Damit wird die Funktion der Meldewege &uuml;berpr&uuml;ft.</span>
+        </li>
+    </ul>
+
 </div>
