@@ -251,19 +251,29 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
 
             sb.Append("<div id='help2' class='w3-container w3-center w3-padding '>");
-            sb.Append($"  <form id='chooseDate' method='get' action='/{root}'>");
+            sb.Append($"  <form id='chooseDate' method='get' action='/{root}' onsubmit='filter2();'>");
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
             sb.Append($"   <input name='datum' id='anzeigedatum' type='date' value='{date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);'>"); //onblur='inc(0);'
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
+            sb.Append("    <input type='hidden' id='submitfilter' name='filter' value='Metro'>");
             sb.Append("   </form>");
             sb.Append("</div>");
 
-            sb.Append("<script>");
-            sb.Append(" function inc(x) {");
-            sb.Append("   if (x != 0) {document.getElementById('anzeigedatum').stepUp(x);}");
-            sb.Append("   document.getElementById('chooseDate').submit();");
-            sb.Append(" }");
-            sb.Append("</script>");
+            sb.AppendLine("<script>");
+            sb.AppendLine(" function inc(x) {");
+            sb.AppendLine("   if (x !== 0) {");
+            sb.AppendLine("     document.getElementById('anzeigedatum').stepUp(x);");
+            sb.AppendLine("   }");
+            sb.AppendLine("   var input = document.getElementById('submitfilter');");
+            sb.AppendLine("   let filtertxt = document.getElementById('tablefilter').value;");
+            sb.AppendLine("   if (filtertxt.length < 3) { ");
+            sb.AppendLine("     input.disabled = true; ");
+            sb.AppendLine("   } else {");
+            sb.AppendLine("     input.value = filtertxt;");
+            sb.AppendLine("   }");
+            sb.AppendLine("   document.getElementById('chooseDate').submit();");
+            sb.AppendLine(" }");
+            sb.AppendLine("</script>");
 
             return sb.ToString();
         }
@@ -271,7 +281,7 @@ namespace MelBox2
         internal static string SelectHourOfDay(int selected)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("<select class='w3-select w3-sand w3-quarter' name='hour'>");
+            sb.AppendLine("<select class='w3-select w3-pale-yellow' name='hour'>");
             for (int i = 0; i < 24; i++)            
                 sb.AppendLine($"<option value='{i}' {(i == selected ? "selected" : string.Empty)}>{i} Uhr</option>");
             
@@ -337,7 +347,7 @@ namespace MelBox2
             string html = string.Empty;
             
             if (dt.Rows.Count > 2) //Filter nur, wenn etwas zum Filtern da ist
-                html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+                html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' id='tablefilter' placeholder='Suche nach..'></p>\r\n";
 
             html += "<table id='table1' class='w3-table-all'>\n";
             //add header row
@@ -348,7 +358,7 @@ namespace MelBox2
                 html += "<th>Edit</th>";
             }
 
-            if (dt.Rows.Count > 200) // Große Tabellen nicht sortierbar machen, da zu rechenintensiv!  
+            if (dt.Rows.Count > 100) // Große Tabellen nicht sortierbar machen, da zu rechenintensiv im Browser!  
             {
                 for (int i = 0; i < dt.Columns.Count; i++)
                     html += $"<th>" +

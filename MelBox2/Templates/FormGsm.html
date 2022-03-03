@@ -98,9 +98,9 @@
     </form>
     <p>&nbsp;</p>
 
-
     <h2>MelBox2 Tech-Administrator</h2>
     <p>Der Tech-Administrator empfängt St&ouml;rungen und Routinemeldungen zur Programm&uuml;berwachung von MelBox2:</p>
+
     <ul class="w3-ul w3-card">
         <li>
             <label>aktiver Tech-Administrator</label>
@@ -108,13 +108,25 @@
                 <div>@AdminPhone - @AdminEmail</div><!--hier ein Select-Feld mit allen Admins? Besser Übernahme-Button.-->
             </div>
         </li>
-        <li>
-            <label>Uhrzeit Routinemeldung</label><!--hier muss ein Form hin-->
-            <div class="w3-light-grey w3-round">
-                @HourSelect
-            </div>
-            <span>Zu dieser Uhrzeit bekommt der Tech-Administrator t&auml;glich eine Nachricht von jedem Sendemedium. Damit wird die Funktion der Meldewege &uuml;berpr&uuml;ft.</span>
-        </li>
     </ul>
+
+    <form action="/gsm/techadmin" method="post" class="w3-card w3-padding">
+        <label>Uhrzeit Routinemeldung</label>
+        <div class="w3-light-grey w3-round">
+            @HourSelect
+        </div>
+        <div>
+            Zu dieser Uhrzeit bekommt der Tech-Administrator t&auml;glich eine Nachricht von jedem Sendemedium.<br />
+            Damit wird die Funktion der Meldewege &uuml;berpr&uuml;ft.
+        </div>
+        <div>
+            <input class="w3-button w3-red" type="submit" value="Speichern und Tech-Administrator werden" @TechAdminDisabled>
+        </div>
+        <div>
+            Mit diesem Button l&ouml;st der angemeldete Benutzer den aktuellen Tech-Administrotor mit allen Aufgaben und Pflichten ab.<br />
+            Berechtigt sind Administratoren mit Freigabe für Telefon- und Emailempfang.
+        </div>
+
+    </form>
 
 </div>

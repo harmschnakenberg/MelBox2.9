@@ -9,169 +9,7 @@ namespace MelBox2
     [RestResource]
     class Routes
     {
-        #region Modem
 
-        [RestRoute("Get", "/gsm/new")]
-        public static async Task ModemReinit(IHttpContext context)
-        {
-            #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null || user.Level < Server.Level_Admin) return;
-            #endregion
-
-            Gsm.SetupModem();
-
-            string html = Html.Alert(2, "GSM-Modem reinitialisiert", "Die Startprozedur für das GSM-Modem wurde ausgeführt.");
-
-            await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
-        }
-
-        [RestRoute("Get", "/gsm/callforward")]
-        public static async Task ModemCallforward(IHttpContext context)
-        {
-            #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null || user.Level < Server.Level_Reciever) return;
-            #endregion
-
-            var phoneStr = context.Request.QueryString.Get("phone");
-            phoneStr = Sql.NormalizePhone(phoneStr);
-
-            string html = string.Empty;
-
-            if (phoneStr == null || (user.Level < Server.Level_Admin && phoneStr != user.Phone)) //Benutzer dürfen nur ihre eigene Nummer einsetzen
-                html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist nicht zulässig.");
-            else
-            {
-                Program.OverideCallForwardingNumber = phoneStr;
-                Gsm.SetCallForewarding(phoneStr);
-                System.Threading.Thread.Sleep(3000);
-                html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden bis auf weiteres an die Nummer '{phoneStr}' weitergeleitet . Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
-                string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] bis auf weiteres umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
-
-                Sql.InsertLog(2, txt);
-                Log.Warning(txt, 736);
-            }
-
-            await Html.PageAsync(context, "Rufweiterleitung ändern", html);
-        }
-
-        [RestRoute("Get", "/gsm/callforward/off")]
-        public static async Task ModemCallforwardOff(IHttpContext context)
-        {
-            #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null || user.Level < Server.Level_Reciever) return;
-            #endregion
-
-            string oldPhone = Gsm.CallForwardingNumber;
-            string html;
-
-            if (user.Level < Server.Level_Admin && user.Phone != oldPhone)
-                html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren ist fehlgeschlagen", $"Die Rufweiterleitung an '{oldPhone}' konnte nicht deaktiviert werden. Sie haben keine Berechtigung diese Nummer zu &auml;ndern.");
-            else
-            {
-                Program.OverideCallForwardingNumber = string.Empty;
-                Program.CheckCallForwardingNumber(null, null);
-
-                html = Html.Alert(4, "Zwangsweise Rufweiterleitung deaktiviert", $"Die erzwungene Rufweiterleitung an {oldPhone} wird deaktiviert. Sprachanrufe werden an die aktuelle Bereitschaft {Gsm.CallForwardingNumber} geleitet.");
-            }
-
-            await Html.PageAsync(context, "Zwangsweise Rufweiterleitung zurücksetzen", html);
-        }
-
-        [RestRoute("Post", "/gsm/sendsms")]
-        public static async Task ModemSendTestSms(IHttpContext context)
-        {
-            #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null) return;
-            //bool isAdmin = user.Level >= Server.Level_Admin;
-            #endregion
-
-            Dictionary<string, string> payload = Html.Payload(context);
-            if (payload.TryGetValue("phone", out string phoneStr))
-               phoneStr = Sql.NormalizePhone(phoneStr);
-
-            string html;
-            if (phoneStr.Length < 8)
-                 html = Html.Alert(1, "Nummer ungültig", $"Die übergebene Telefonnummer >{phoneStr}< ist ungültig.");
-            else
-            {
-                Gsm.SmsSend(phoneStr , "Dies ist ein Test von MelBox2.");
-                html = Html.Alert(4, "SMS versendet", $"Eine Test-SMS wurde an Telefonnummer >{phoneStr}< gesendet.");
-            }
-
-            await Html.PageAsync(context, "Test-SMS versenden", html, user);
-        }
-
-        [RestRoute("Post", "/gsm/sendemail")]
-        public static async Task ModemSendTestEmail(IHttpContext context)
-        {
-            #region Anfragenden Benutzer identifizieren
-            Person user = await Html.GetLogedInUserAsync(context);
-            if (user == null) return;
-            //bool isAdmin = user.Level >= Server.Level_Admin;
-            #endregion
-
-            Dictionary<string, string> payload = Html.Payload(context);
-            _ = payload.TryGetValue("email", out string email);
-
-            string html;
-            if (!Email.IsValidEmail(email))
-                html = Html.Alert(1, "E-Mail-Adresse ungültig", $"Die übergebene E-Mail-Adresse  >{email}< ist ungültig.");
-            else
-            {
-                Email.Send(new System.Net.Mail.MailAddress(email), "Dies ist ein Test von MelBox2.");
-                html = Html.Alert(4, "E-Mail versendet", $"Eine Test-E-Mail wurde an >{email}< gesendet.");
-            }
-
-            await Html.PageAsync(context, "Test-E-Mail versenden", html, user);
-        }
-
-        [RestRoute("Get", "/gsm")]
-        public static async Task ModemShow(IHttpContext context)
-        {
-            Person user = await Html.GetLogedInUserAsync(context);
-            bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
-
-            string info = Html.InfoGsm(isAdmin);
-
-            string callforward1 = Gsm.CallForwardingActive ? 
-                "<i class='material-icons-outlined w3-text-green' title='Rufweiterleitung aktiv'>phone_forwarded</i>" : 
-                "<i class='material-icons-outlined w3-text-red' title='keine Rufweiterleitung'>phone_disabled</i>";
-
-            string callforward2 = Gsm.CallForwardingNumber == Program.OverideCallForwardingNumber ? 
-                "<i class='material-icons-outlined w3-text-red' title='Nummer fest hinterlegt'>phone_locked</i>" : 
-                string.Empty;
-
-            Dictionary<string, string> pairs = new Dictionary<string, string>
-            {
-                { "@ModemReinit", info },
-                { "@Quality" , Gsm.SignalQuality.ToString()},
-                { "@Registered" , Gsm.NetworkRegistration.RegToString()},
-                { "@ModemType", Gsm.ModemType},
-                { "@OwnName", Gsm.OwnName},
-                { "@OwnNumber", Gsm.OwnNumber},
-                { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
-                { "@ProviderName" , Gsm.ProviderName},
-                { "@ForewardingNumber" ,  (Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-") + callforward2 },
-                { "@ForewardingActive", callforward1 },
-                { "@NewForwardingNumber", Html.ManualUpdateCallworwardNumber(user)},
-                { "@PinStatus" , Gsm.SimPinStatus},
-                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
-                { "@SmtpServer", Email.SmtpHost + ":" + Email.SmtpPort },
-                { "@AdminPhone", Gsm.AdminPhone},
-                { "@AdminEmail", Email.Admin.Address },
-                { "@HourSelect", Html.SelectHourOfDay(Program.HourOfDailyTasks) }
-            };
-
-            string html = Html.Page(Server.Html_FormGsm, pairs);
-
-            await Html.PageAsync(context, "Sendemedien", html, user);
-        }
-
-        #endregion
 
 
         #region Nachrichten
@@ -187,9 +25,13 @@ namespace MelBox2
             #endregion
 
             DateTime date = DateTime.Now.Date;
+            string filter = string.Empty;
 
             if (context.Request.QueryString.HasKeys())
+            {
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
+                filter = context.Request.QueryString.Get("filter");
+            }
 
             System.Data.DataTable rec = Sql.SelectRecieved(date);
             
@@ -197,9 +39,18 @@ namespace MelBox2
             table += rec.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine empfangenen Nachrichten protokolliert.");
             table += Html.ChooseDate("in", date);
             table += Html.FromTable(rec, isAdmin, "in");
-           
 
-            await Html.PageAsync(context, "Empfangene Nachrichten", table, user);
+            //TESTEN!
+            string refreshScript =  "<p><div class='w3-light-grey w3-padding'><i>Die Seite wird alle 5 Minuten automatisch aktualisiert:</i>&nbsp;<span>aus</span>" +
+                                    "<button class='w3-button' onclick='this.firstChild.innerHTML=\"toggle_off\";';this.classList.add(\"w3-disabled\")clearTimeout(myVar)' title='Die Seite wird alle 5 Min. neu geladen.'>" +
+                                    "<span class='material-icons-outlined'>toggle_on</span></button><span>ein</span></div></p>" +
+                                    "<script>setTimeout(myFunction, 300000); function myFunction() { location.reload(); }";
+
+            if (filter?.Length > 2) refreshScript += $"w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';";
+
+            refreshScript += "</script>\r\n";
+
+            await Html.PageAsync(context, "Empfangene Nachrichten", table + refreshScript, user);
         }
 
         [RestRoute("Get", "/in/{recId:num}")]
@@ -1059,6 +910,210 @@ namespace MelBox2
             string table = Html.FromNotesTable(user);
 
             await Html.PageAsync(context, "Notiz ge&auml;ndert", alert + table, user);
+        }
+
+        #endregion
+
+        #region Modem & Sendemedien
+
+        [RestRoute("Get", "/gsm/new")]
+        public static async Task ModemReinit(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Admin) return;
+            #endregion
+
+            Gsm.SetupModem();
+
+            string html = Html.Alert(2, "GSM-Modem reinitialisiert", "Die Startprozedur für das GSM-Modem wurde ausgeführt.");
+
+            await Html.PageAsync(context, "GSM-Modem reinitialisiert", html);
+        }
+
+        [RestRoute("Get", "/gsm/callforward")]
+        public static async Task ModemCallforward(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Reciever) return;
+            #endregion
+
+            var phoneStr = context.Request.QueryString.Get("phone");
+            phoneStr = Sql.NormalizePhone(phoneStr);
+
+            string html = string.Empty;
+
+            if (phoneStr == null || (user.Level < Server.Level_Admin && phoneStr != user.Phone)) //Benutzer dürfen nur ihre eigene Nummer einsetzen
+                html += Html.Alert(1, "Rufweiterleitung ändern fehlgeschlagen", $"Die übergebene Nummer '{phoneStr}' ist nicht zulässig.");
+            else
+            {
+                Program.OverideCallForwardingNumber = phoneStr;
+                Gsm.SetCallForewarding(phoneStr);
+                System.Threading.Thread.Sleep(3000);
+                html += Html.Alert(4, "Rufweiterleitung ändern", $"Sprachanrufe werden bis auf weiteres an die Nummer '{phoneStr}' weitergeleitet . Die Umstellung kann einige Sekunden dauern. <a href='/gsm'>&uuml;berpr&uuml;fen</a>");
+                string txt = $"Die Rufumleitung wurde von {user.Name} [{user.Level}] bis auf weiteres umgestellt auf die Nummer '{Gsm.CallForwardingNumber}'.";
+
+                Sql.InsertLog(2, txt);
+                Log.Warning(txt, 736);
+            }
+
+            await Html.PageAsync(context, "Rufweiterleitung ändern", html);
+        }
+
+        [RestRoute("Get", "/gsm/callforward/off")]
+        public static async Task ModemCallforwardOff(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Reciever) return;
+            #endregion
+
+            string oldPhone = Gsm.CallForwardingNumber;
+            string html;
+
+            if (user.Level < Server.Level_Admin && user.Phone != oldPhone)
+                html = Html.Alert(2, "Zwangsweise Rufweiterleitung deaktivieren ist fehlgeschlagen", $"Die Rufweiterleitung an '{oldPhone}' konnte nicht deaktiviert werden. Sie haben keine Berechtigung diese Nummer zu &auml;ndern.");
+            else
+            {
+                Program.OverideCallForwardingNumber = string.Empty;
+                Program.CheckCallForwardingNumber(null, null);
+
+                html = Html.Alert(4, "Zwangsweise Rufweiterleitung deaktiviert", $"Die erzwungene Rufweiterleitung an {oldPhone} wird deaktiviert. Sprachanrufe werden an die aktuelle Bereitschaft {Gsm.CallForwardingNumber} geleitet.");
+            }
+
+            await Html.PageAsync(context, "Zwangsweise Rufweiterleitung zurücksetzen", html);
+        }
+
+        [RestRoute("Post", "/gsm/sendsms")]
+        public static async Task ModemSendTestSms(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            //bool isAdmin = user.Level >= Server.Level_Admin;
+            #endregion
+
+            Dictionary<string, string> payload = Html.Payload(context);
+            if (payload.TryGetValue("phone", out string phoneStr))
+                phoneStr = Sql.NormalizePhone(phoneStr);
+
+            string html;
+            if (phoneStr.Length < 8)
+                html = Html.Alert(1, "Nummer ungültig", $"Die übergebene Telefonnummer >{phoneStr}< ist ungültig.");
+            else
+            {
+                Gsm.SmsSend(phoneStr, "Dies ist ein Test von MelBox2.");
+                html = Html.Alert(4, "SMS versendet", $"Eine Test-SMS wurde an Telefonnummer >{phoneStr}< gesendet.");
+            }
+
+            await Html.PageAsync(context, "Test-SMS versenden", html, user);
+        }
+
+        [RestRoute("Post", "/gsm/sendemail")]
+        public static async Task ModemSendTestEmail(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            //bool isAdmin = user.Level >= Server.Level_Admin;
+            #endregion
+
+            Dictionary<string, string> payload = Html.Payload(context);
+            _ = payload.TryGetValue("email", out string email);
+
+            string html;
+            if (!Email.IsValidEmail(email))
+                html = Html.Alert(1, "E-Mail-Adresse ungültig", $"Die übergebene E-Mail-Adresse  >{email}< ist ungültig.");
+            else
+            {
+                Email.Send(new System.Net.Mail.MailAddress(email), "Dies ist ein Test von MelBox2.");
+                html = Html.Alert(4, "E-Mail versendet", $"Eine Test-E-Mail wurde an >{email}< gesendet.");
+            }
+
+            await Html.PageAsync(context, "Test-E-Mail versenden", html, user);
+        }
+
+        [RestRoute("Post", "/gsm/techadmin")]
+        public static async Task SetTechAdmin(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null) return;
+            bool isAdmin = user.Level >= Server.Level_Admin;
+            #endregion
+
+            string html;
+            Dictionary<string, string> payload = Html.Payload(context);
+            if (!isAdmin)
+                html = Html.Alert(1, "Anfrage ung&uuml;ltig", $"Sie besitzen nicht die erforderliche Berechtigung.");
+            else if (payload.TryGetValue("hour", out string hourStr)
+                && int.TryParse(hourStr, out int hour)
+                && hour >= 0 && hour < 24
+                && ((int)user.Via & (int)Sql.Via.Email) > 0
+                && user.Email.Length > 10
+                && ((int)user.Via & (int)Sql.Via.Sms) > 0
+                && user.Phone.Length > 10)
+            {
+                Program.HourOfDailyTasks = hour;
+                Email.Admin = new System.Net.Mail.MailAddress(user.Email, user.Name + " (MelBox2-Admin)");
+                Gsm.AdminPhone = user.Phone;
+
+                string txt = $"{user.Name} ist nun verantwortlicher Tech-Administrator von MelBox2.\r\n" +
+                    $"Tägliche Routinemeldungen werden um {Program.HourOfDailyTasks} Uhr an {Gsm.AdminPhone} und {Email.Admin} versendet.";
+
+                Email.Send(Email.Admin, txt);
+                Log.Warning(txt, 42563);
+                html = Html.Alert(4, "Tech-Administrator erfolgreich aktualisiert", txt.Replace(Environment.NewLine, "<br/>"));
+            }
+            else
+                html = Html.Alert(1, "Anfrage ung&uuml;ltig", $"Die übergebene Anfrage ist ungültig oder Sie sind nicht berechtigt.<br/>Um Tech-Administrator werden zu können muss der Empfang von Telefon und Email freigeschaltet sein.");
+
+
+            await Html.PageAsync(context, "Tech-Administrator aktualisieren", html, user);
+        }
+
+        [RestRoute("Get", "/gsm")]
+        public static async Task ModemShow(IHttpContext context)
+        {
+            Person user = await Html.GetLogedInUserAsync(context);
+            bool isAdmin = (user != null && user.Level >= Server.Level_Admin);
+
+            string info = Html.InfoGsm(isAdmin);
+
+            string callforward1 = Gsm.CallForwardingActive ?
+                "<i class='material-icons-outlined w3-text-green' title='Rufweiterleitung aktiv'>phone_forwarded</i>" :
+                "<i class='material-icons-outlined w3-text-red' title='keine Rufweiterleitung'>phone_disabled</i>";
+
+            string callforward2 = Gsm.CallForwardingNumber == Program.OverideCallForwardingNumber ?
+                "<i class='material-icons-outlined w3-text-red' title='Nummer fest hinterlegt'>phone_locked</i>" :
+                string.Empty;
+
+            Dictionary<string, string> pairs = new Dictionary<string, string>
+            {
+                { "@ModemReinit", info },
+                { "@Quality" , Gsm.SignalQuality.ToString()},
+                { "@Registered" , Gsm.NetworkRegistration.RegToString()},
+                { "@ModemType", Gsm.ModemType},
+                { "@OwnName", Gsm.OwnName},
+                { "@OwnNumber", Gsm.OwnNumber},
+                { "@ServiceCenter", Gsm.SmsServiceCenterAddress},
+                { "@ProviderName" , Gsm.ProviderName},
+                { "@ForewardingNumber" ,  (Gsm.CallForwardingNumber.Length > 0 ? Gsm.CallForwardingNumber : "-unbekannt-") + callforward2 },
+                { "@ForewardingActive", callforward1 },
+                { "@NewForwardingNumber", Html.ManualUpdateCallworwardNumber(user)},
+                { "@PinStatus" , Gsm.SimPinStatus},
+                { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
+                { "@SmtpServer", Email.SmtpHost + ":" + Email.SmtpPort },
+                { "@AdminPhone", Gsm.AdminPhone},
+                { "@AdminEmail", Email.Admin.Address },
+                { "@HourSelect", Html.SelectHourOfDay(Program.HourOfDailyTasks) },
+                { "@TechAdminDisabled", (isAdmin && (user.Via == Sql.Via.SmsAndEmail || user.Via == Sql.Via.PermanentEmailAndSms) ? string.Empty : "disabled") }
+            };
+
+            string html = Html.Page(Server.Html_FormGsm, pairs);
+
+            await Html.PageAsync(context, "Sendemedien", html, user);
         }
 
         #endregion
