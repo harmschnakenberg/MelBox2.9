@@ -411,22 +411,22 @@ namespace MelBox2
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="p">Person Objekt des anfragenden (Berechtigung)</param>
+        /// <param name="user">Person Objekt des anfragenden (Berechtigung)</param>
         /// <param name="company">Filter nach Firmennamen. erstes zeichen '-' = Ausschließender Filter</param>
         /// <returns></returns>
-        internal static DataTable SelectViewablePersons(Person p, string company = "")
+        internal static DataTable SelectViewablePersons(Person user, string company = "")
         {
             company = (company == null) ? string.Empty : company.ToLower();
 
             Dictionary<string, object> args1 = new Dictionary<string, object>()
             {
-                { "@ID", p.Id },
+                { "@ID", user.Id },
                 { "@CallF", Gsm.CallForwardingNumber }
             };
 
             Dictionary<string, object> args2 = new Dictionary<string, object>()
             {
-                { "@Level", p.Level },
+                { "@Level", user.Level },
                 { "@CallF", Gsm.CallForwardingNumber },
                 { "@Company",  "%" + company.TrimStart('-') + "%" }
             };
@@ -434,22 +434,28 @@ namespace MelBox2
             const string query1 = "SELECT ID, Name, Company AS Firma, Level, Phone AS Telefon, Email, " +
                 "CASE WHEN (Via & 8) > 0 THEN 'z' WHEN (Via & 8) < 1 THEN '0' END || " +
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
-                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END AS Attribut " +
+                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE ID = @ID;";
 
             const string query2 = "SELECT ID, Name, Company AS Firma, Level, Phone AS Telefon, Email, " +
                 "CASE WHEN (Via & 8) > 0 THEN 'z' WHEN (Via & 8) < 1 THEN '0' END || " +
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
-                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END AS Attribut " +
+                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE Level <= @Level AND lower(Company) LIKE @Company ORDER BY Name;";
 
             const string query3 = "SELECT ID, Name, Company AS Firma, Level, Phone AS Telefon, Email, " +
                 "CASE WHEN (Via & 8) > 0 THEN 'z' WHEN (Via & 8) < 1 THEN '0' END || " +
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
-                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END AS Attribut " +
+                "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE Level <= @Level AND lower(Company) NOT LIKE @Company ORDER BY Name;";
 
-            if (p.Level >= Level_Admin)
+            if (user.Level >= Level_Admin)
                 if (company.StartsWith("-"))
                     return SelectDataTable(query3, args2);
                 else
@@ -633,5 +639,5 @@ namespace MelBox2
                     "KeyWord TEXT, " +
                     "MaxInactive INTEGER, " +
         */
+        }
     }
-}

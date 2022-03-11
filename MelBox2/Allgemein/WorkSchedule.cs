@@ -24,6 +24,7 @@ namespace MelBox2
 #endif
             Timer execute = new Timer(span.TotalMilliseconds);
 
+            execute.Elapsed += Execute_Elapsed;
             execute.Elapsed += new ElapsedEventHandler(CheckCallForwardingNumber);
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
@@ -33,6 +34,16 @@ namespace MelBox2
             
             execute.AutoReset = false;
             execute.Start();
+        }
+
+        private static void Execute_Elapsed(object sender, ElapsedEventArgs e)
+        {
+#if DEBUG
+            Console.WriteLine("> E-Mail-Abruf zur vollen Stunde.");
+#endif
+            EmailListener emailListener = new EmailListener();
+            emailListener.ReadUnseen();
+            emailListener.Dispose();
         }
 
         private static void SenderTimeoutCheck(object sender, ElapsedEventArgs e)

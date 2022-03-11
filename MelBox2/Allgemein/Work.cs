@@ -60,10 +60,13 @@ namespace MelBox2
         {
             if (!Sql.IsInWhitelist(mail.From)) //nur bekannte Absender verarbeiten
             {
-                Log.Warning($"Email von unbekanntem Absender >{mail.From.Address}< wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
-                Sql.InsertLog(2, $"Email von unbekanntem Absender >{mail.From.Address}< wird ignoriert.");
+                Log.Warning($"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
+                Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert.");
                 return;
             }
+            
+            if (mail.From.Address.Contains("elreha")) //Sonderbehandlung für Emails von Elreha Kühlstellenreglern            
+                mail.Body = Email.ParseElrehaEmail(mail.Body);
             
             if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokolliere
             {

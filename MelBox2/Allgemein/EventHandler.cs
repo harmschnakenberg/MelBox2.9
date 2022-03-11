@@ -165,7 +165,7 @@ namespace MelBox2
         /// <param name="e">SMS, die hätte gesendet werden sollen</param>
         private static void Gsm_FailedSmsCommission(object sender, SmsOut e)
         {
-            Sql.InsertLog(1, $"Sendebefehl von Modem nicht quittiert: SMS an >{e.Phone}< >{e.Message}< wurde nicht versandt.");
+            Sql.InsertLog(1, $"Sendebefehl von Modem nicht quittiert: SMS an '{e.Phone}': '{e.Message}' wurde nicht versandt.");
         }
 
         /// <summary>

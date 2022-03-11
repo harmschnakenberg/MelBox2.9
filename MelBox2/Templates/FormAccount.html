@@ -1,5 +1,5 @@
 ﻿<script>
-    function setCheckBox(obj) {        
+    function setCheckBox(obj) {
         if (obj.checked == true) {
             var c = document.getElementsByClassName("radioCheck");
             for (let i = 0; i < c.length; i++) {
@@ -13,15 +13,12 @@
         document.getElementById("form3").noValidate = bool;
     }
 
-    function showMe(className) {
-        var xy = document.getElementsByClassName(className);
-
-        for (let x of xy) {
-            if (x.className.indexOf("w3-show") == -1) {
-                x.className += " w3-show";
-            } else {
-                x.className = x.className.replace(" w3-show", "");
-            }
+    function showId(id) {
+        var x = document.getElementById(id);
+        if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+        } else {
+            x.className = x.className.replace(" w3-show", "");
         }
     }
 </script>
@@ -32,84 +29,78 @@
         <div class="w3-center">
             <br>
             <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Fenster schlie&szlig;en">&times;</span>
-            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined' >assignment_ind</i>
-            <span onclick="showMe('w3-hide')" class="w3-button w3-xlarge w3-hover-blue w3-display-topleft material-icons-outlined" title="Erweiterte Einstellungen ein-/ausblenden">manage_accounts</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>assignment_ind</i>
+            <span onclick="showId('advanced')" class="w3-button w3-xlarge w3-hover-blue w3-display-topleft material-icons-outlined" title="Erweiterte Einstellungen ein-/ausblenden">manage_accounts</span>
         </div>
 
         <form id="form3" class="w3-container" action="/account/update" method="post">
             <div class="w3-section">
                 <input name="Id" type="hidden" value="@Id" />
 
-                <label><b>Benutzername</b> <span class="w3-opacity">- erforderlich</span></label>
+                <label title="Der Anmelde- und Anzeigename"><b>Benutzername</b></label>
                 <div class="w3-row">
                     <div class="w3-col w3-right" style="width:110px">
-                        <input class="w3-input w3-border" value="@UserRole" disabled>
+                        <input class="w3-input w3-border" title="Benutzerrolle" value="@UserRole" disabled>
                     </div>
                     <div class="w3-rest">
                         <input name="name" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="Benutzernamen eingeben" value="@Name" @disabled2>
                     </div>
                 </div>
 
-                <label><b>Passwort</b> <span class="w3-opacity">- leer lassen = keine &Auml;nderung</span></label>
+                <label title="Passwort für Anmeldung"><b>Passwort</b></label>
                 <div class="w3-row">
                     <div class="w3-col w3-right" style="width:110px">
-                        <input name="Accesslevel" type="number" class="w3-input w3-border" value="@Accesslevel" max="@UserAccesslevel" @readonly1 />
+                        <input name="Accesslevel" type="number" class="w3-input w3-border" title="Benutzerlevel" value="@Accesslevel" max="@UserAccesslevel" @readonly1 />
                     </div>
                     <div class="w3-rest">
-                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen" pattern='.{0}.{4,}' title="Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password" @disabled2>
+                        <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Passwort, mind. 4 Zeichen (leer = keine &Auml;nderung)" pattern='.{0}.{4,}' title="Anmeldepasswort wird verschlüsselt. Mind. 4 Zeichen, Leer = keine &Auml;nderung" name="password" @disabled2>
                     </div>
                 </div>
 
-                <label><b>Firma</b> <span class="w3-opacity">- optinonal f&uuml;r bessere Zuordnung</span></label>
+                <label title="Firmenname optinonal f&uuml;r bessere Zuordnung"><b>Firma</b></label>
                 <div class="w3-row">
                     <div class="w3-rest w3-margin-bottom">
                         <input name="company" type="text" class="w3-input w3-border" placeholder="Firmennamen und -Ort eingeben" value="@Company" @disabled2>
                     </div>
                 </div>
 
-                <label><b>Mobiltelefon</b> <span class="w3-opacity">wird nur verwendet, wenn angehakt</span></label>
+                <label title="Telefonnummer in der Form '+49...' für Empfang (SMS, Sprachanrufe), wenn daneben der Haken gesetzt ist. Ansonsten als Identifikation des Senders (K&auml;lteanlage)"><b>Mobiltelefon</b> <span id="iphone" class="w3-opacity w3-hide">Telefonnummer in der Form '+49...' für Empfang (SMS, Sprachanrufe), wenn daneben der Haken gesetzt ist. Ansonsten als Identifikation des Senders (K&auml;lteanlage).</span></label>
                 <div class="w3-row">
-                    <div class="w3-col" style="width:40px">
-                        <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone @disabled2/>
-                    </div>
-                    <div class="w3-rest">
-                        <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone" @disabled2>
-                    </div>
+                    <input name="phone" type="tel" class="w3-input w3-border" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone" @disabled2>
+                </div>
+                <div class="w3-row w3-margin-bottom">
+                    <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone @disabled2 />
+                    <label class="w3-padding" title="SMS und Sprachanrufe gehen nur an diese Nummer, wenn der Haken gesetzt ist">Informiere mich bei Rufbereitschaft per SMS</label>
                 </div>
 
-                <div class="w3-hide">
-                    <label><b>Email</b> <span class="w3-opacity">- wird nur verwendet, wenn angehakt</span></label>
+                <div id="advanced" class="w3-hide">
+                    <label title="Identifikation des Absenders (Anlage) oder als Empfangsmedium (Bereitschaft/Service)"><b>E-Mail</b></label>
                     <div class="w3-row">
-                        <div class="w3-col" style="width:40px">
-                            <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail @disabled2>
-                        </div>
-                        <div class="w3-rest">
-                            <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+" @disabled2>
-                        </div>
+                        <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+" @disabled2>
                     </div>
                     <div class="w3-row">
-                        <div class="w3-col w3-margin-bottom" style="width:40px">
-                            <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled1>
-                        </div>
-                        <div class="w3-rest">
-                            <label><b>Abo</b> - Immer bei eingehenden Meldungen benachrichtigen</label>
-                        </div>
+                        <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail @disabled2>
+                        <label class="w3-padding">Informiere mich bei Rufbereitschaft per E-Mail</label>
                     </div>
-
                     <div class="w3-row">
-                        <div class="w3-col w3-margin-bottom" style="width:40px">
-                            <input id="onEmailWhitelist" name="onEmailWhitelist" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @onEmailWhitelist @disabled1>
-                        </div>
-                        <div class="w3-rest">
-                            <label><b>Auf Whitelist</b> - Darf EMails an MelBox2 versenden.</label>
-                        </div>
+                        <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled1>
+                        <label class="w3-padding" title="Immer per E-Mail informiert werden" >Informiere mich bei allen eingehenden Nachrichten per E-Mail</label>
+                    </div>
+                    <div class="w3-row w3-margin-bottom">
+                        <input id="onEmailWhitelist" name="onEmailWhitelist" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @onEmailWhitelist @disabled1>
+                        <label class="w3-padding" title="Empfang von dieser Adresse wird nicht als Spam ignoriert.">
+                            Diese E-Mail wird als Absender (z.B. Kälteanlage) zugelassen.
+                        </label>
                     </div>
 
-                    <label><b>Schlüsselwort</b> <span class="w3-opacity">wird automatisch vergeben</span></label>
+                    <label title="Nicht &auml;nderbar. Wird automatisch vergeben, falls die Senderdresse nicht eindeutig ist.">
+                        <b>Schlüsselwort</b>
+                    </label>
                     <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly1 />
 
-
-                    <label><b>Senderüberwachung</b> <span class="w3-opacity">Maximale Zeit zwischen Meldungen</span></label>
+                    <label title="Maximale Zeit, die zwischen Meldungen vergehen darf, bevor eine St&ouml;rung des Meldewegs unterstellt wird.">
+                        <b>Senderüberwachung</b>
+                    </label>
                     <div class="w3-row">
                         <div class="w3-col" style="width:75px">
                             <input name="MaxInactiveHours" type="number" class="w3-input w3-border" min="0" step="4" value="@MaxInactiveHours" @disabled1 />
@@ -119,7 +110,9 @@
 
                     <div class="w3-row">
                         <div class="w3-col" style="width:400px">
-                            <label><b>Querprüfung beim Absenden</b></label>
+                            <label title="Soll der Inhalt des Formulars beim Abschicken auf Plausibilit&auml;t geprüft werden?">
+                                <b>Querprüfung beim Absenden</b>
+                            </label>
                         </div>
                         <div class="w3-right w3-margin-right">
                             <label>Ein</label>
@@ -129,14 +122,13 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="w3-row">
-                    <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Abbrechen</button>
-                    @NewContact
-                    @DeleteContact
-                    @UpdateContact                    
-                </div>
             </div>
+            <div class="w3-row">
+                <button onclick="document.getElementById('id01').style.display='none'" type="button" class="w3-button w3-block w3-red w3-section w3-padding w3-col w3-quarter w3-margin-right">Abbrechen</button>
+                @NewContact
+                @DeleteContact
+                @UpdateContact
+            </div>    
         </form>
     </div>
 </div>

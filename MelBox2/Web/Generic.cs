@@ -255,7 +255,7 @@ namespace MelBox2
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
             sb.Append($"   <input name='datum' id='anzeigedatum' type='date' value='{date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);'>"); //onblur='inc(0);'
             sb.Append("    <button class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
-            sb.Append("    <input type='hidden' id='submitfilter' name='filter' value='Metro'>");
+            sb.Append("    <input type='hidden' id='submitfilter' name='filter' disabled>");
             sb.Append("   </form>");
             sb.Append("</div>");
 
@@ -266,9 +266,8 @@ namespace MelBox2
             sb.AppendLine("   }");
             sb.AppendLine("   var input = document.getElementById('submitfilter');");
             sb.AppendLine("   let filtertxt = document.getElementById('tablefilter').value;");
-            sb.AppendLine("   if (filtertxt.length < 3) { ");
-            sb.AppendLine("     input.disabled = true; ");
-            sb.AppendLine("   } else {");
+            sb.AppendLine("   if (filtertxt.length > 2) { ");
+            sb.AppendLine("     input.disabled = false; ");
             sb.AppendLine("     input.value = filtertxt;");
             sb.AppendLine("   }");
             sb.AppendLine("   document.getElementById('chooseDate').submit();");
@@ -421,6 +420,10 @@ namespace MelBox2
                             html += "<span class='material-icons-outlined' title='Rufweiterleitung'>call</span>";
                         if (dt.Rows[i][j].ToString().Contains("x"))
                             html += "<span class='material-icons-outlined' title='Dauerempf&auml;nger'>loyalty</span>";
+                        if (dt.Rows[i][j].ToString().Contains("w"))
+                            html += "<span class='material-icons-outlined' title='Empf&auml;ngt Telefon'>smartphone</span>";
+                        if (dt.Rows[i][j].ToString().Contains("v"))
+                            html += "<span class='material-icons-outlined' title='Empf&auml;ngt E-Mail'>email</span>";
                         html += "</td>";
                     }
                     else if (dt.Columns[j].ColumnName.Contains("Status"))

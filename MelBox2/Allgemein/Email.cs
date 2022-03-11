@@ -191,6 +191,22 @@ namespace MelBox2
             return regex.IsMatch(email);
         }
 
+        /// <summary>
+        /// Elreha Kühlstellenregeler geben eine html-Email aus, die hiermit auf die wesentliche Nachricht reduziert wird:
+        /// </summary>
+        /// <param name="body">Email-Body von Elrehe Kühlstellenregler</param>
+        /// <returns>relavanten Teil der Email zwischen 'Fehler' und 'Regleradresse'</returns>
+        public static string ParseElrehaEmail(string body)
+        {
+            string txt = Sql.RemoveHTMLTags(body).Replace(Environment.NewLine, " ").Replace('\t', ' ');
+           
+            string pattern = @"Anlage:(.*)Datum(?:.*)Fehler(.*)Regleradresse";
+            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            Match m =  regex.Match(txt);
+            return (m.Groups[1].Value + ", " + m.Groups[2].Value).Trim();
+        }
+
     }
 
     /// <summary>
@@ -218,15 +234,14 @@ namespace MelBox2
 
             Client = new ImapClient(imapServer, imapPort, imapUserName, imapPassword, AuthMethod.Login, imapEnableSSL);
             Client.IdleError += Client_IdleError;
-
+#if DEBUG
             foreach (var item in Client.ListMailboxes())
             {
                 Console.WriteLine(">" + item);
             }
-
+#endif
             Client.DefaultMailbox = "Kreualarm"; // Nur zum testen
-            Console.WriteLine("Default is " + Client.DefaultMailbox);
-
+            Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
 
             // We want to be informed when new messages arrive
             Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
@@ -242,16 +257,16 @@ namespace MelBox2
             Client.Login(ImapUserName, ImapPassword, AuthMethod.Login);
         }
 
-        #region Fields
+#region Fields
         private readonly ImapClient Client;
 
         /// <summary>
         /// Wird ausgelöst, wenn eine Email empfangen wurde.
         /// </summary>
         public event EventHandler<MailMessage> EmailInEvent;
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         public static string ImapServer { get; set; }
 
@@ -268,7 +283,7 @@ namespace MelBox2
             Client.Dispose();            
         }
 
-        #endregion
+#endregion
 
         public void ReadUnseen()
         {           
@@ -278,7 +293,7 @@ namespace MelBox2
 
             foreach (MailMessage m in messages1)
             {
-                Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
+                Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Body.Substring(0,Math.Min(m.Body.Length,160))}");
                 EmailInEvent?.Invoke(this, m);
             }
         }
@@ -305,9 +320,9 @@ namespace MelBox2
 
             // Fetch the new message's headers and print the subject line
             MailMessage m = e.Client.GetMessage(e.MessageUID, FetchOptions.TextOnly);
-//#if DEBUG
-            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Neue Email [{e.MessageUID}] <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Subject}");
-//#endif
+#if DEBUG
+            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Neue Email [{e.MessageUID}] <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
+#endif
             EmailInEvent?.Invoke(this, m);
         }
 

@@ -40,13 +40,13 @@ namespace MelBox2
             table += Html.ChooseDate("in", date);
             table += Html.FromTable(rec, isAdmin, "in");
 
-            //TESTEN!
             string refreshScript =  "<p><div class='w3-light-grey w3-padding'><i>Die Seite wird alle 5 Minuten automatisch aktualisiert:</i>&nbsp;<span>aus</span>" +
-                                    "<button class='w3-button' onclick='this.firstChild.innerHTML=\"toggle_off\";';this.classList.add(\"w3-disabled\")clearTimeout(myVar)' title='Die Seite wird alle 5 Min. neu geladen.'>" +
+                                    "<button class='w3-button' onclick=\"this.firstChild.innerHTML='toggle_off';\" this.firstChild.classList.add('w3-disabled'); clearTimeout(myVar);\" title='Die Seite wird alle 5 Min. neu geladen.'>" +
                                     "<span class='material-icons-outlined'>toggle_on</span></button><span>ein</span></div></p>" +
                                     "<script>setTimeout(myFunction, 300000); function myFunction() { location.reload(); }";
 
-            if (filter?.Length > 2) refreshScript += $"w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';";
+            if (filter?.Length > 2)  //Filter beim blättern beibehalten
+                refreshScript += $"w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';";
 
             refreshScript += "</script>\r\n";
 
@@ -106,9 +106,13 @@ namespace MelBox2
             #endregion
 
             DateTime date = DateTime.Now.Date;
+            string filter = string.Empty;
 
             if (context.Request.QueryString.HasKeys())
+            {
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
+                filter = context.Request.QueryString.Get("filter");
+            }
 
             System.Data.DataTable sent = Sql.SelectSent(date);
             
@@ -116,6 +120,10 @@ namespace MelBox2
             table += sent.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine gesendeten Nachrichten protokolliert.");
             table += Html.ChooseDate("out", date);
             table += Html.FromTable(sent, false);
+
+            if (filter?.Length > 2) //Filter beim blättern beibehalten
+                table +=  $"<script>w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';</script>";
+
 
             await Html.PageAsync(context, "Gesendete Nachrichten", table);
         }
@@ -336,7 +344,7 @@ namespace MelBox2
             else if (Sql.InsertPerson(p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, p.Via, p.MaxInactive))
             {
                 alert = Html.Alert(3, "Neuen Kontakt gespeichert", "Der Kontakt " + p.Name + " wurde erfolgreich neu erstellt.");
-                Sql.InsertLog(2, "Der Kontakt >" + p.Name + "< wurde neu erstellt durch >" + user.Name + "< [" + user.Level + "]");
+                Sql.InsertLog(2, "Der Kontakt " + p.Name + " wurde neu erstellt durch " + user.Name + " [" + user.Level + "]");
             }
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt " + p.Name + " konnte nicht in der Datenbank gespeichert werden.");
@@ -368,7 +376,7 @@ namespace MelBox2
             if (success)
             {
                 alert = Html.Alert(3, "Kontakt gespeichert", "Der Kontakt [" + p.Id + "] " + p.Name + " wurde erfolgreich geändert.");
-                Sql.InsertLog(2, "Der Kontakt [" + p.Id + "] >" + p.Name + "< wurde geändert durch >" + user.Name + "< [" + user.Level + "]");
+                Sql.InsertLog(2, "Der Kontakt [" + p.Id + "] " + p.Name + " wurde geändert durch " + user.Name + " [" + user.Level + "]");
             }
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
@@ -411,7 +419,7 @@ namespace MelBox2
                     }
                     else
                     {
-                        string text = $"Der Benutzer [{deleteId}] >{dP.Name}< >{dP.Company}< wurde durch [{user.Id}] >{user.Name}< mit Berechtigung >{user.Level}< aus der Datenbank gelöscht.";
+                        string text = $"Der Benutzer [{deleteId}] {dP.Name} ({dP.Company}) wurde durch [{user.Id}] {user.Name} mit Berechtigung {user.Level} aus der Datenbank gelöscht.";
                         html = Html.Alert(1, "Benuter gelöscht", text);
                         Sql.InsertLog(2, text);
                     }
@@ -465,7 +473,7 @@ namespace MelBox2
             if (success)
             {
                 alert = Html.Alert(3, $"Erfolgreich registriert", $"Willkommen {p_new.Name}!<br/> Die Registrierung muss noch durch einen Administrator bestätigt werden, bevor Sie sich einloggen können. Informieren Sie einen Administrator.");
-                Sql.InsertLog(2, $"Neuer Benutzer >{p_new.Name}< im Web-Portal registriert.");
+                Sql.InsertLog(2, $"Neuer Benutzer {p_new.Name} im Web-Portal registriert.");
             }
             else
                 alert = Html.Alert(1, "Registrierung fehlgeschlagen", "Es ist ein Fehler bei der Registrierung aufgetreten. Wenden Sie sich an den Administrator.");
@@ -505,7 +513,7 @@ namespace MelBox2
                 }
 
                 text = $"Willkommen {level} {name}";
-                Sql.InsertLog(3, $"Login {level} [{user.Id}] >{user.Name}<");
+                Sql.InsertLog(3, $"Login {level} {user.Name} [{user.Id}]");
             }
 
             string alert = Html.Alert(prio, titel, text);
@@ -673,7 +681,7 @@ namespace MelBox2
                 if (success)
                 {
                     alert = Html.Alert(3, "Bereitschaft geändert", $"Die Bereitschaft Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde erfolgreich geändert.");
-                    Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für >{shiftName}< wurde geändert durch >{user.Name}<");
+                    Sql.InsertLog(3, $"Bereitschaft [{shift.Id}] von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} wurde geändert durch {user.Name}");
                 }
                 else
                     alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Es wurden ungültige Parameter übergeben.");
