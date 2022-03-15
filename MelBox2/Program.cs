@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-
+using System.Timers;
 
 namespace MelBox2
 {
@@ -13,6 +13,7 @@ namespace MelBox2
       
         static void Main()
         {
+            #region nur eine Instanz des Progamms zulassen
             if (Process.GetProcessesByName(AppName).Length > 1)
             {
                 //if (Args.Length == 0)
@@ -22,6 +23,8 @@ namespace MelBox2
                 return;
             }
 
+            #endregion
+            #region COM-Port vorhanden?
             if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
             {
                 string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
@@ -31,31 +34,42 @@ namespace MelBox2
                 System.Threading.Thread.Sleep(5000);
                 return;
             }
+            #endregion
 
             Console.Title = "MelBox2";
-   
+
+            #region Aufräumen beim Beenden sicherstellen
             MelBoxGsm.CleanClose.CloseConsoleHandler += new CleanClose.EventHandler(CleanClose.Handler); //erzwungenes Beenden (X am Konsolenfenster)
             CleanClose.SetConsoleCtrlHandler(CleanClose.CloseConsoleHandler, true);
             Console.CancelKeyPress += Console_CancelKeyPress;
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit; //Normales Beenden 
-      
+            #endregion
+
+            GetIniValues();
+
+            #region Programmstart protokollieren
 #if DEBUG
             string startUpMsg = System.Reflection.Assembly.GetExecutingAssembly().Location + " [Debug-Kompilat] gestartet.";
 #else
             string startUpMsg = System.Reflection.Assembly.GetExecutingAssembly().Location + " gestartet.";
 #endif
-            GetIniValues();
-
             Log.Info(startUpMsg, 121);
             Sql.InsertLog(3, AppName + " gestartet.");
             Console.WriteLine(startUpMsg);
+            #endregion
+
+            #region Startsequenz
+            startUpTimer.Start();
+            startUpTimer.Elapsed += StartUpTimer_Elapsed;
 
             Server.Start();
             Sql.CheckDbFile();
             Sql.DbBackup();
+            #endregion
 
             ShowHelp();
 
+            #region Ereignisse abonieren
             ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
             ReliableSerialPort.SerialPortUnavailableEvent += ReliableSerialPort_SerialPortUnavailableEvent;
             Gsm.NewErrorEvent += Gsm_NewErrorEvent;
@@ -66,7 +80,8 @@ namespace MelBox2
             Gsm.FailedSmsCommission += Gsm_FailedSmsCommission;
             Gsm.SmsReportEvent += Gsm_SmsReportEvent;
             Gsm.NewCallRecieved += Gsm_NewCallRecieved;
-           
+            #endregion
+
             CheckCallForwardingNumber(null, null);
 
             Gsm.SetupModem();
@@ -75,7 +90,7 @@ namespace MelBox2
             
             Scheduler.CeckOrCreateWatchDog();
 
-            EmailListener emailListener = new EmailListener("imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
+            EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
             Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
             emailListener.EmailInEvent += EmailListener_EmailInEvent;
             emailListener.ReadUnseen();
@@ -138,7 +153,7 @@ namespace MelBox2
                             Console.WriteLine($"[{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
                         break;
                     case "email read":
-                        EmailListener listener = new EmailListener("imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
+                        EmailListener listener = new EmailListener();
                         listener.EmailInEvent += EmailListener_EmailInEvent;
                         listener.ReadUnseen();
                         System.Threading.Thread.Sleep(2000);
@@ -178,6 +193,8 @@ namespace MelBox2
             Console.ReadKey();
 #endif
         }
+
+
 
         private static void SmsRead_Sim()
         {

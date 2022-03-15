@@ -205,5 +205,16 @@ namespace MelBox2
             ParseNewEmail(e);
         }
 
+        /// <summary>
+        /// Zeitintervall nach Start abgelaufen, in dem keine SMS an die Bereitschaft gesendet werden (SMS-Bombe verhinern)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void StartUpTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            isStartupTimeStartup = false;
+            startUpTimer.Dispose();
+        }
+
     }
 }

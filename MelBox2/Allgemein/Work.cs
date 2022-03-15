@@ -1,6 +1,7 @@
 ﻿using MelBoxGsm;
 using System;
 using System.Collections.Generic;
+using System.Timers;
 using static MelBoxGsm.Gsm;
 
 namespace MelBox2
@@ -11,8 +12,17 @@ namespace MelBox2
        
         public static string[] LifeMessageTrigger { get; set; } = { "MelSysOK", "SgnAlarmOK" };
 
+        private static bool isStartupTimeStartup = true; //Zeitraum nach Programmneustart aktiv 
 
-        private static bool isFirstParseNewSmsAfterStartup = true; //Dinge, die nur beim ersten Abfragen des SMS-Speichers getan werden sollen
+        /// <summary>
+        /// Zeitintervall nach dem Programmstart, in dem keine SMS an die Bereitschaft versendet werden.
+        /// </summary>
+        static readonly Timer startUpTimer = new Timer
+        {
+            Interval = 30000,
+            AutoReset = false,
+            Enabled = true
+        };
 
         /// <summary>
         /// Bearbeitet die vom Modem eingelesenen, eingegangenen SMS-Nachrichten: 
@@ -47,13 +57,11 @@ namespace MelBox2
                 bool isLifeMessage = IsLifeMessage(smsIn); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
                 bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
                
-                if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
+                if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup)
                     SendSmsToShift(smsIn);
 
                 SendEmailToShift(smsIn, isWatchTime, isLifeMessage, isMessageBlocked);
             }
-
-            isFirstParseNewSmsAfterStartup = false; 
         }
 
         private static void ParseNewEmail(System.Net.Mail.MailMessage mail)
@@ -70,19 +78,17 @@ namespace MelBox2
             
             if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokolliere
             {
-                //TODO Email löschen?
+                //TODO Email im Posteingang löschen?
             }
 
             bool isLifeMessage = Program.IsLifeMessage(mail); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
             bool isMessageBlocked = Sql.IsMessageBlockedNow(Sql.RemoveHTMLTags(mail.Body));
             bool isWatchTime = Sql.IsWatchTime();
 
-            if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup)
+            if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup)
                 SendSmsToShift( Sql.RemoveHTMLTags(mail.Body) ); //Email ohne HTML an aktuelle Bereitschaft per Sms senden
            
             SendEmailToShift(mail, isWatchTime, isLifeMessage, isMessageBlocked); //Empfangene Email an Bereitschaft/Service Email
-
-            isFirstParseNewSmsAfterStartup = false;
         }
 
         /// <summary>
@@ -163,7 +169,7 @@ namespace MelBox2
                            $"Text \t\t>{smsIn.Message}<\r\n" +
                            $"Sendezeit \t>{DateTime.Now:G}<\r\n\r\n" +
                            (
-                           isFirstParseNewSmsAfterStartup ? "SMS bei Neustart GSM - Modem ! Keine Weiterleitung an Bereitschaft." :
+                           isStartupTimeStartup ? "SMS bei Neustart GSM - Modem ! Keine Weiterleitung an Bereitschaft." :
                            isLifeMessage ? $"Keine Weiterleitung an Bereitschaftshandy bei Schlüsselworten >{string.Join(", ", LifeMessageTrigger)}<." :
                            isMessageBlocked ? "Keine Weiterleitung an Bereitschaftshandy da SMS gesperrt." :
                            isWatchTime ? "Weiterleitung an Bereitschaftshandy außerhalb Geschäftszeiten ist erfolgt." :
@@ -175,7 +181,7 @@ namespace MelBox2
             string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
             //Email An: nur an eingeteilte Bereitschaft
-            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked && !isFirstParseNewSmsAfterStartup;
+            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup;
             
             System.Net.Mail.MailAddressCollection mc = isMsgForShift
                                                         ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger

@@ -216,12 +216,30 @@ namespace MelBox2
     /// </summary>
     class EmailListener : IDisposable
     {
+        #region Constructor
         public EmailListener()
-        {            
-            Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Auto, ImapEnableSSL);
+        {                   
+            try
+            {
+                Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
+                Client.IdleError += Client_IdleError;
 
-            // We want to be informed when new messages arrive
-            Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
+                //Console.WriteLine("ImapServer:" + ImapServer + ":" + ImapPort);
+
+                if (!Client.Authed)
+                    Console.WriteLine("Der Imap-Server konnte nicht angemeldet werden.");
+
+                Client.DefaultMailbox = "Kreualarm"; // Nur zum testen
+                Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
+
+                Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
+            }
+            catch (S22.Imap.InvalidCredentialsException invalid_auth)
+            {
+                string txt = "E-Mails können nicht empfangen werden. Fehler bei der Anmeldung: " + invalid_auth;
+                Console.WriteLine(txt);
+                Sql.InsertLog(1, txt);
+            }
         }
 
         public EmailListener(string imapServer, int imapPort, string imapUserName, string imapPassword, bool imapEnableSSL)
@@ -232,7 +250,7 @@ namespace MelBox2
             ImapPassword = imapPassword;
             ImapEnableSSL = imapEnableSSL;
 
-            Client = new ImapClient(imapServer, imapPort, imapUserName, imapPassword, AuthMethod.Login, imapEnableSSL);
+            Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);            
             Client.IdleError += Client_IdleError;
 #if DEBUG
             foreach (var item in Client.ListMailboxes())
@@ -247,6 +265,8 @@ namespace MelBox2
             Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
         }
 
+        #endregion 
+
         private void Client_IdleError(object sender, IdleErrorEventArgs e)
         {
             string txt = "Es ist ein Verbindungsproblem mit dem SMTP-Server aufgetreten. Verbindung wird erneuert.";
@@ -257,33 +277,34 @@ namespace MelBox2
             Client.Login(ImapUserName, ImapPassword, AuthMethod.Login);
         }
 
-#region Fields
+        #region Fields
         private readonly ImapClient Client;
 
         /// <summary>
         /// Wird ausgelöst, wenn eine Email empfangen wurde.
         /// </summary>
         public event EventHandler<MailMessage> EmailInEvent;
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
-        public static string ImapServer { get; set; }
+        public static string ImapServer { get; set; } = "imap.gmx.net";
 
         public static int ImapPort { get; set; } = 993;
 
-        public static string ImapUserName { get; set; }
+        public static string ImapUserName { get; set; } = "harmschnakenberg@gmx.de"; //"kreubereit@gmx.de";
 
-        public static string ImapPassword { get; set; }
+        public static string ImapPassword { get; set; } = "Oyterdamm64!"; //"Bernd&Co";
 
         public static bool ImapEnableSSL { get; set; } = true;
 
+        #endregion
+
+        #region Methods
         public void Dispose()
         {
             Client.Dispose();            
         }
-
-#endregion
 
         public void ReadUnseen()
         {           
@@ -326,6 +347,7 @@ namespace MelBox2
             EmailInEvent?.Invoke(this, m);
         }
 
+        #endregion
     }
 
 }

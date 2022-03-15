@@ -63,10 +63,15 @@
 
     <ul class="w3-ul w3-card">
         <li>
-            <label>Sprachanrufe werden weitergeleitet an</label>
+            <label>Sprachanrufe an @OwnNumber werden weitergeleitet an</label>
             <div class="w3-light-grey">
                 @ForewardingActive @ForewardingNumber
             </div>
+        </li>
+        <li>
+            Sprachanrufe werden -auch während der Geschäftszeiten- an die aktuelle Bereitschaft weitergeleitet.<br/>
+            Ist keine Telefonnummer hinterlegt, erfolgt die Weiterleitung an das Bereitschaftshandy.<br/>
+            Die Empfangsnummer für Sprachanrufe kann hier auch fest vergeben werden:  
         </li>
     </ul>
 
@@ -82,9 +87,15 @@
     <p>Informationen zum SMTP-Server:</p>
     <ul class="w3-ul w3-card">
         <li>
-            <label>SMTP-Server Adresse</label>
+            <label>SMTP-Server Adresse (Senden)</label>
             <div class="w3-light-grey w3-round">
                 <div>@SmtpServer</div>
+            </div>
+        </li>
+        <li>
+            <label>IMAP-Server Adresse (Empfangen)</label>
+            <div class="w3-light-grey w3-round">
+                <div>@ImapServer</div>
             </div>
         </li>
     </ul>

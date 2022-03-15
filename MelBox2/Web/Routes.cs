@@ -922,6 +922,7 @@ namespace MelBox2
 
         #endregion
 
+
         #region Modem & Sendemedien
 
         [RestRoute("Get", "/gsm/new")]
@@ -1113,6 +1114,7 @@ namespace MelBox2
                 { "@PinStatus" , Gsm.SimPinStatus},
                 { "@ModemError", Gsm.LastError == null ? "-kein Fehler-" : $"{Gsm.LastError.Item1}: {Gsm.LastError.Item2}" },
                 { "@SmtpServer", Email.SmtpHost + ":" + Email.SmtpPort },
+                { "@ImapServer", EmailListener.ImapServer + ":" + EmailListener.ImapPort },
                 { "@AdminPhone", Gsm.AdminPhone},
                 { "@AdminEmail", Email.Admin.Address },
                 { "@HourSelect", Html.SelectHourOfDay(Program.HourOfDailyTasks) },
@@ -1125,6 +1127,7 @@ namespace MelBox2
         }
 
         #endregion
+
 
         [RestRoute("Get", "/help")]
         public static async Task HelpMeShow(IHttpContext context)

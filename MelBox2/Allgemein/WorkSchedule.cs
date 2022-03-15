@@ -24,7 +24,7 @@ namespace MelBox2
 #endif
             Timer execute = new Timer(span.TotalMilliseconds);
 
-            execute.Elapsed += Execute_Elapsed;
+            execute.Elapsed += new ElapsedEventHandler(CheckEmailInBox);
             execute.Elapsed += new ElapsedEventHandler(CheckCallForwardingNumber);
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
@@ -36,7 +36,7 @@ namespace MelBox2
             execute.Start();
         }
 
-        private static void Execute_Elapsed(object sender, ElapsedEventArgs e)
+        private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
 #if DEBUG
             Console.WriteLine("> E-Mail-Abruf zur vollen Stunde.");
@@ -92,9 +92,10 @@ namespace MelBox2
                 long memory = proc.PrivateMemorySize64 / (1 << 20); // (1024 * 1024);
                 int cpu = (int)perfCpuCount.NextValue();
 
-                string msg = $"Vom Programm zurzeit belegter Arbeitsspeicher: {memory} MB, CPU bei {cpu}%";                
+                string msg = $"Vom Programm zurzeit belegter Arbeitsspeicher: {memory} MB, CPU bei {cpu}%";
+#if DEBUG
                 Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: {msg}");
-#if !DEBUG
+#else
                 if (memory > 100 || cpu > 50)
 #endif
                     Log.Info(msg, 88);
@@ -121,8 +122,11 @@ namespace MelBox2
                 else
                     Sql.InsertLog(1, $"Sprachanrufe werden zur Zeit nicht weitergeleitet.");
             }
-            
-            Console.WriteLine($"Die aktuelle Rufumleitung ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}, soll an {phone} und geht an {Gsm.CallForwardingNumber}");
+
+            if (phone != Gsm.CallForwardingNumber)
+                Console.WriteLine($"Die aktuelle Rufumleitung soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
+
+                Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
         }
 
 

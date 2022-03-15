@@ -143,9 +143,9 @@ namespace MelBox2
             const string query1 = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via)  " +
                                   @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +
                                   "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); " +
-                                  "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3) " +
-                                  "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS " +
-                                  "(SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3)) " +
+                                  "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) " +  //AND Via IN (1,3,5) " + Via weglassen damit Rufumleitung immer zur aktuellen Bereitschaft geht
+                                  "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' " +
+                                 // "AND NOT EXISTS (SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5)) " + // unnötig ?
                                   "LIMIT 1; ";
 
             return SelectValue(query1, null).ToString();
