@@ -83,7 +83,7 @@ namespace MelBox2
         internal static async Task PageAsync(IHttpContext context, string titel, string body, Person user = null )
         {
 
-            string connectIcon = Gsm.NetworkRegistration != Gsm.Registration.Registered ? "signal_cellular_off" :
+            string connectIcon = Gsm.NetworkRegistration != Gsm.Registration.Registered ? "signal_cellular_connected_no_internet_0_bar" :
                 Gsm.SignalQuality > 50 ? "signal_cellular_4_bar" :
                 Gsm.SignalQuality > 20 ? "network_cell" :
                 "signal_cellular_0_bar";
@@ -933,15 +933,17 @@ namespace MelBox2
 
         internal static string InfoGsm(bool isAdmin)
         {
-            return Html.Modal("GSM-Modem",
-                "<div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>" +
+            return Html.Modal("Sendemedien",
+                "<h3>GSM-Modem</h3><div class='w3-margin'>Hier werden wichtige Parameter zum GSM-Modem angezeigt.<br/>Das GSM-Modem empf&auml;ngt und versendet SMS und sorgt f&uuml;r die Rufweiterleitung.</div>" +
                 Html.Alert(4, "Reinitialisieren", "Wenn das GSM-Modem nicht richtig funktioniert, kann eine Reinitialisierung helfen.<br/>Nur Administratoren können das Modem reinitialisieren.")
                 + (isAdmin ?
                 "<form class='w3-margin'>" +
                 Html.ButtonNew("gsm", "Reinitialisieren") +
                 "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty) +
                 "<br/><div class='w3-margin'>Sprachanrufe können an eine fest vergebene Nummer oder an die aktuelle Rufbereitschaft weitergelietet werden. " +
-                "Die Umschaltung bei Wechsel der Rufbereitschaft erfolgt immer zur vollen Stunde.</div>"
+                "Die Umschaltung bei Wechsel der Rufbereitschaft erfolgt immer zur vollen Stunde.</div>" +
+                "<h3>E-Mail Server</h3><div class='w3-margin'>Hier werden Informationen zu E-Mail-Empfang und -Versand angezeigt.</div>" +
+                "<h3>MelBox2</h3><div class='w3-margin'>Der hier hinterlegte Kontakt ist für die technische Betreuung von MelBox2 verantwortlich.</div>"
                 );
         }
 

@@ -55,7 +55,7 @@ namespace MelBox2
 #endif
             Log.Info(startUpMsg, 121);
             Sql.InsertLog(3, AppName + " gestartet.");
-            Console.WriteLine(startUpMsg);
+            Console.WriteLine(DateTime.Now.ToShortTimeString() + " - " + startUpMsg);
             #endregion
 
             #region Startsequenz

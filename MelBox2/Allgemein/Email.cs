@@ -292,9 +292,9 @@ namespace MelBox2
 
         public static int ImapPort { get; set; } = 993;
 
-        public static string ImapUserName { get; set; } = "harmschnakenberg@gmx.de"; //"kreubereit@gmx.de";
+        public static string ImapUserName { get; set; } = "kreubereit@gmx.de";
 
-        public static string ImapPassword { get; set; } = "Oyterdamm64!"; //"Bernd&Co";
+        public static string ImapPassword { get; set; } = "Bernd&Co";
 
         public static bool ImapEnableSSL { get; set; } = true;
 
@@ -307,16 +307,18 @@ namespace MelBox2
         }
 
         public void ReadUnseen()
-        {           
-            //Download unseen mail messages
-            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen()); 
-            IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
+        {
+            if (Client is null || !Client.Authed) return;
+            
+                //Download unseen mail messages
+                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+                IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
 
-            foreach (MailMessage m in messages1)
-            {
-                Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Body.Substring(0,Math.Min(m.Body.Length,160))}");
-                EmailInEvent?.Invoke(this, m);
-            }
+                foreach (MailMessage m in messages1)
+                {
+                    Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
+                    EmailInEvent?.Invoke(this, m);
+                }            
         }
 
 

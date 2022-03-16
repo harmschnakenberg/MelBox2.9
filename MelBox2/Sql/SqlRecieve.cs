@@ -72,12 +72,12 @@ namespace MelBox2
             
             Person sender = SelectOrCreatePerson(email.From);
             Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
-            if (!DateTime.TryParse(email.Headers["Date"], out DateTime emailDate))
-                emailDate = DateTime.Now;
+            if (!DateTime.TryParse(email.Headers["Date"], out DateTime emailDate)) // Format UTC?!?
+                emailDate = DateTime.UtcNow;
 
             Dictionary<string, object> args = new Dictionary<string, object>
                 {
-                    { "@Time", emailDate.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")},
+                    { "@Time", emailDate.ToString("yyyy-MM-dd HH:mm:ss")},
                     { "@SenderId", sender.Id},
                     { "@ContentId", msg.Id }
                 };
