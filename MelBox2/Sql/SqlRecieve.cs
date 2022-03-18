@@ -72,12 +72,19 @@ namespace MelBox2
             
             Person sender = SelectOrCreatePerson(email.From);
             Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
-            if (!DateTime.TryParse(email.Headers["Date"], out DateTime emailDate)) // Format UTC?!?
-                emailDate = DateTime.UtcNow;
 
+            //Sendezeit aus E-Mail-Header lesen. Bei unplausiblen Werten aktuelle Zeit nehmen
+            if (!DateTime.TryParse(email.Headers["Date"], out DateTime emailDate) || emailDate.CompareTo(DateTime.Now) > 0)
+                emailDate = DateTime.Now;
+#if DEBUG
+            Console.WriteLine($"E-Mail empfangen von {email.From.Address}:\r\n\t" +
+                $"Übermittelte Zeit: {email.Headers["Date"]}\r\n\t" +
+                $"Ermittelte Sendezeit {emailDate}\r\n\t" +
+                $"Datenbankeintrag {emailDate.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}");
+#endif
             Dictionary<string, object> args = new Dictionary<string, object>
                 {
-                    { "@Time", emailDate.ToString("yyyy-MM-dd HH:mm:ss")},
+                    { "@Time", emailDate.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")},
                     { "@SenderId", sender.Id},
                     { "@ContentId", msg.Id }
                 };
