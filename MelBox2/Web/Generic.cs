@@ -391,16 +391,17 @@ namespace MelBox2
 
                 for (int j = 0; j < dt.Columns.Count; j++)
                 {
-                    if (dt.Columns[j].ColumnName.StartsWith("Gesperrt"))
+                    string colName = dt.Columns[j].ColumnName;
+                    if (colName.StartsWith("Gesperrt"))
                     {
                         html += "<td>" + WeekDayCheckBox(int.Parse(dt.Rows[i][j].ToString())) + "</td>";
                     }
-                    else if (dt.Columns[j].ColumnName == "Empfangen" || dt.Columns[j].ColumnName == "Gesendet")
+                    else if (colName == "Empfangen" || colName == "Gesendet" || colName == "Zeit")
                     {
                         string x = dt.Rows[i][j].ToString();
                         html += $"<td>{x.Replace("-", "&#8209;").Replace(" ", "&nbsp;")}</td>"; //non-breaking hyphen, non-breaking space
                     }
-                    else if (dt.Columns[j].ColumnName.StartsWith("Via"))
+                    else if (colName.StartsWith("Via"))
                     {
                         if (int.TryParse(dt.Rows[i][j].ToString(), out int via))
                         {
@@ -415,7 +416,7 @@ namespace MelBox2
                             html += "</td>";
                         }
                     }
-                    else if (dt.Columns[j].ColumnName.StartsWith("Attr"))
+                    else if (colName.StartsWith("Attr"))
                     {
                         html += "<td>";
                         if (dt.Rows[i][j].ToString().Contains("z"))
@@ -430,7 +431,7 @@ namespace MelBox2
                             html += "<span class='material-icons-outlined' title='Empf&auml;ngt E-Mail'>email</span>";
                         html += "</td>";
                     }
-                    else if (dt.Columns[j].ColumnName.Contains("Status"))
+                    else if (colName.Contains("Status"))
                     {
                         string val = dt.Rows[i][j].ToString();
                         string deliveryStatus = "-unbekannt-";
@@ -671,7 +672,7 @@ namespace MelBox2
             sb.AppendLine(" <li><span class='material-icons-outlined'>filter_2</span> Filter 2 - Zeigt nur interne Kontakte.</li>");
             sb.AppendLine(" <li><hr></li>");
             sb.AppendLine(" <li><b>Attribute</b></li>");
-            sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
+            //sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt.</li>");
 

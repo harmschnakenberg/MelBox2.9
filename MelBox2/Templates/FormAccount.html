@@ -1,5 +1,4 @@
-﻿
-<style>
+﻿<style>
     .sender {
         display: none;
     }
@@ -73,14 +72,14 @@
                         <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled1>
                         <label class="w3-padding" title="Immer per E-Mail informiert werden">Informiere mich bei allen eingehenden Nachrichten per E-Mail</label>
                     </div>
-                    <div class="sender w3-row w3-margin-bottom">
+                    <div class="w3-hide w3-row"><!-- TEST; wieder einblenden? löschen?-->
                         <input id="onEmailWhitelist" name="onEmailWhitelist" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @onEmailWhitelist @disabled1>
                         <label class="w3-padding" title="Empfang von dieser Adresse wird nicht als Spam ignoriert.">
                             Diese E-Mail wird als Absender (z.B. Kälteanlage) zugelassen.
                         </label>
                     </div>
 
-                    <div class="sender">
+                    <div class="sender w3-margin-top">
                         <label title="Nicht &auml;nderbar. Wird automatisch vergeben, falls die Senderdresse nicht eindeutig ist.">
                             <b>Schlüsselwort</b>
                         </label>

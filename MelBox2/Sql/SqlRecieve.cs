@@ -50,7 +50,7 @@ namespace MelBox2
         }
 
 
-        internal static bool InsertRecieved(SmsIn sms) //ungetestet
+        internal static bool InsertRecieved(SmsIn sms) 
         {
             Person sender = SelectOrCreatePerson(sms);
             Message msg = SelectOrCreateMessage(sms.Message);
@@ -67,7 +67,7 @@ namespace MelBox2
            return NonQuery(query, args);
         }
 
-        internal static bool InsertRecieved(System.Net.Mail.MailMessage email) //ungetestet
+        internal static bool InsertRecieved(System.Net.Mail.MailMessage email) 
         {
             
             Person sender = SelectOrCreatePerson(email.From);

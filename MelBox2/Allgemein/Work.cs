@@ -66,7 +66,7 @@ namespace MelBox2
 
         private static void ParseNewEmail(System.Net.Mail.MailMessage mail)
         {
-            if (!Sql.IsInWhitelist(mail.From)) //nur bekannte Absender verarbeiten
+            if (!Sql.IsKnownAddress(mail.From)) //nur bekannte Absender verarbeiten
             {
                 Log.Warning($"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
                 Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert.");
@@ -76,7 +76,7 @@ namespace MelBox2
             if (mail.From.Address.Contains("elreha")) //Sonderbehandlung für Emails von Elreha Kühlstellenreglern            
                 mail.Body = Email.ParseElrehaEmail(mail.Body);
             
-            if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokolliere
+            if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokollieren
             {
                 //TODO Email im Posteingang löschen?
             }

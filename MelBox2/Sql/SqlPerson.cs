@@ -469,13 +469,14 @@ namespace MelBox2
         /// </summary>
         /// <param name="mailAddress">E-Mail-Adresse eines Absenders, der geprüft werden soll.</param>
         /// <returns>true = Der Absender malAddress darf Emails an dieses Programm senden.</returns>
-        public static bool IsInWhitelist(System.Net.Mail.MailAddress mailAddress)
+        public static bool IsKnownAddress(System.Net.Mail.MailAddress mailAddress)
         {
-            string query = "SELECT Count(ID) FROM Person WHERE lower(Email) = @Email AND (Via & @Via) > 0; ";
+            //nur bekannte E-Mail-Adressen zulassen
+            string query = "SELECT Count(ID) FROM Person WHERE lower(Email) = @Email;"; // AND (Via & @Via) > 0; ";
 
             Dictionary<string, object> args = new Dictionary<string, object>{
-                { "@Email", mailAddress.Address.ToLower() },
-                { "@Via", (int)Via.EmailWhitelist }
+                { "@Email", mailAddress.Address.ToLower() }
+                //{ "@Via", (int)Via.EmailWhitelist }
             };
 
             if (!int.TryParse(SelectValue(query, args).ToString(), out int result))
