@@ -1,27 +1,9 @@
-﻿<script>
-    function setCheckBox(obj) {
-        if (obj.checked == true) {
-            var c = document.getElementsByClassName("radioCheck");
-            for (let i = 0; i < c.length; i++) {
-                if (c[i] != obj)
-                    c[i].checked = false;
-            }
-        }
+﻿
+<style>
+    .sender {
+        display: none;
     }
-
-    function disableFormValidation(bool) {
-        document.getElementById("form3").noValidate = bool;
-    }
-
-    function showId(id) {
-        var x = document.getElementById(id);
-        if (x.className.indexOf("w3-show") == -1) {
-            x.className += " w3-show";
-        } else {
-            x.className = x.className.replace(" w3-show", "");
-        }
-    }
-</script>
+</style>
 
 <div id="id01">
     <div class="w3-modal-content w3-card-4 w3-display-middle" style="position:fixed;max-width:600px">
@@ -29,13 +11,18 @@
         <div class="w3-center">
             <br>
             <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Fenster schlie&szlig;en">&times;</span>
-            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>assignment_ind</i>
-            <span onclick="showId('advanced')" class="w3-button w3-xlarge w3-hover-blue w3-display-topleft material-icons-outlined" title="Erweiterte Einstellungen ein-/ausblenden">manage_accounts</span>
+            <i class='w3-circle w3-margin-top w3-jumbo material-icons-outlined'>assignment_ind</i>            
         </div>
 
         <form id="form3" class="w3-container" action="/account/update" method="post">
             <div class="w3-section">
                 <input name="Id" type="hidden" value="@Id" />
+                <div class="w3-margin-bottom">
+                    <input class="w3-radio" type="radio" name="category" onclick="w3.hide('.sender');w3.show('.rec');" checked>
+                    <label>Empf&auml;nger</label>
+                    <input class="w3-radio" type="radio" name="category" id="radioSender" onclick="w3.show('.sender');w3.hide('.rec');">
+                    <label>Sender</label>
+                </div>
 
                 <label title="Der Anmelde- und Anzeigename"><b>Benutzername</b></label>
                 <div class="w3-row">
@@ -66,49 +53,51 @@
 
                 <label title="Telefonnummer in der Form '+49...'"><b>Mobiltelefon</b></label>
                 <div class="w3-row">
-                    <input name="phone" type="tel" class="w3-input w3-border" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone" @disabled2>
+                    <input name="phone" type="tel" class="w3-input w3-border w3-margin-bottom" placeholder="+49 421 123-456789" pattern="\+[0-9,\s]+" value="@Phone" @disabled2>
                 </div>
-                <div class="w3-row w3-margin-bottom">
+                <div class="rec w3-row w3-margin-bottom">
                     <input name="viaPhone" type="checkbox" class="w3-check" @viaPhone @disabled2 />
                     <label class="w3-padding" title="SMS gehen nur an diese Nummer, wenn der Haken gesetzt ist">Informiere mich bei Rufbereitschaft per SMS</label>
                 </div>
 
-                <div id="advanced" class="w3-hide">
+                <div>
                     <label title="Identifikation des Absenders (Anlage) oder als Empfangsmedium (Bereitschaft/Service)"><b>E-Mail</b></label>
                     <div class="w3-row">
                         <input name="email" type="email" class="w3-input w3-border " placeholder="Emailadresse" value="@Email" pattern="[^@\s]+@[^@\s]+" @disabled2>
                     </div>
-                    <div class="w3-row">
+                    <div class="rec w3-row">
                         <input id="viaEmail" name="viaEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaEmail @disabled2>
                         <label class="w3-padding">Informiere mich bei Rufbereitschaft per E-Mail</label>
                     </div>
-                    <div class="w3-row">
+                    <div class="rec w3-row">
                         <input id="viaAlwaysEmail" name="viaAlwaysEmail" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @viaAlwaysEmail @disabled1>
-                        <label class="w3-padding" title="Immer per E-Mail informiert werden" >Informiere mich bei allen eingehenden Nachrichten per E-Mail</label>
+                        <label class="w3-padding" title="Immer per E-Mail informiert werden">Informiere mich bei allen eingehenden Nachrichten per E-Mail</label>
                     </div>
-                    <div class="w3-row w3-margin-bottom">
+                    <div class="sender w3-row w3-margin-bottom">
                         <input id="onEmailWhitelist" name="onEmailWhitelist" type="checkbox" class="w3-check radioCheck" onClick="setCheckBox(this);" @onEmailWhitelist @disabled1>
                         <label class="w3-padding" title="Empfang von dieser Adresse wird nicht als Spam ignoriert.">
                             Diese E-Mail wird als Absender (z.B. Kälteanlage) zugelassen.
                         </label>
                     </div>
 
-                    <label title="Nicht &auml;nderbar. Wird automatisch vergeben, falls die Senderdresse nicht eindeutig ist.">
-                        <b>Schlüsselwort</b>
-                    </label>
-                    <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly1 />
+                    <div class="sender">
+                        <label title="Nicht &auml;nderbar. Wird automatisch vergeben, falls die Senderdresse nicht eindeutig ist.">
+                            <b>Schlüsselwort</b>
+                        </label>
+                        <input name="keyWord" type="text" class="w3-input w3-border w3-margin-bottom" placeholder="-leer-" value="@KeyWord" @readonly1 />
 
-                    <label title="Maximale Zeit, die zwischen Meldungen vergehen darf, bevor eine St&ouml;rung des Meldewegs unterstellt wird.">
-                        <b>Senderüberwachung</b>
-                    </label>
-                    <div class="w3-row">
-                        <div class="w3-col" style="width:75px">
-                            <input name="MaxInactiveHours" type="number" class="w3-input w3-border" min="0" step="4" value="@MaxInactiveHours" @disabled1 />
+                        <label title="Maximale Zeit, die zwischen Meldungen vergehen darf, bevor eine St&ouml;rung des Meldewegs unterstellt wird.">
+                            <b>Senderüberwachung</b>
+                        </label>
+                        <div class="w3-row">
+                            <div class="w3-col" style="width:75px">
+                                <input name="MaxInactiveHours" type="number" class="w3-input w3-border" min="0" step="4" value="@MaxInactiveHours" @disabled1 />
+                            </div>
+                            <div class="w3-rest w3-container w3-panel">Stunden <span class="w3-opacity">(0 = keine &Uuml;berwachung)</span></div>
                         </div>
-                        <div class="w3-rest w3-container w3-panel">Stunden <span class="w3-opacity">(0 = keine &Uuml;berwachung)</span></div>
                     </div>
 
-                    <div class="w3-row">
+                    <div class="w3-row w3-margin-top">
                         <div class="w3-col" style="width:400px">
                             <label title="Soll der Inhalt des Formulars beim Abschicken auf Plausibilit&auml;t geprüft werden?">
                                 <b>Querprüfung beim Absenden</b>
@@ -133,3 +122,24 @@
     </div>
 </div>
 
+<script>
+    if (document.forms["form3"]["company"].value.substr(0, 4) !== "Kreu") {
+        document.getElementById("radioSender").checked = true;
+        w3.show('.sender');
+        w3.hide('.rec');
+    }
+
+    function setCheckBox(obj) {
+        if (obj.checked == true) {
+            var c = document.getElementsByClassName("radioCheck");
+            for (let i = 0; i < c.length; i++) {
+                if (c[i] != obj)
+                    c[i].checked = false;
+            }
+        }
+    }
+
+    function disableFormValidation(bool) {
+        document.getElementById("form3").noValidate = bool;
+    }
+</script>

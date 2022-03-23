@@ -316,7 +316,11 @@ namespace MelBox2
 
                 foreach (MailMessage m in messages1)
                 {
-                    Console.WriteLine($"{m.Headers["Date"]}: Neue Email <{(m.IsBodyHtml ? "html" : "Text")}> <{m.BodyEncoding}> von {m.From.Address}<: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
+#if DEBUG
+                Console.WriteLine($"{DateTime.Now.ToShortTimeString()} - Neue Email; gesendet {m.Headers["Date"]}; " +
+                        $"<{(m.IsBodyHtml ? "html" : "Text")}>; BodyEncoding <{m.BodyEncoding}>; " +
+                        $"von {m.From.Address}<"); //: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
+#endif
                     EmailInEvent?.Invoke(this, m);
                 }            
         }
@@ -349,7 +353,7 @@ namespace MelBox2
             EmailInEvent?.Invoke(this, m);
         }
 
-        #endregion
+#endregion
     }
 
 }

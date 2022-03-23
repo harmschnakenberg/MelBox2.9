@@ -250,8 +250,8 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("<div class='w3-container w3-center w3-padding '>"); //id='help2' 
-            sb.AppendLine($"  <form id='chooseDate' method='get' action='/{root}' >"); //onsubmit='filter2();'
+            sb.AppendLine("<div class='w3-container w3-center w3-padding '>");
+            sb.AppendLine($"  <form id='chooseDate' method='get' action='/{root}' >"); 
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
             sb.AppendLine($"   <input name='datum' id='anzeigedatum' type='date' title='Anzeigedatum' placeholder='{date:yyyy-MM-dd}' value='{date:yyyy-MM-dd}' min='{DateTime.Now.AddYears(-10).Date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);' onkeyup='onEnter();'>"); //onblur='inc(0);'
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
@@ -264,11 +264,11 @@ namespace MelBox2
             sb.AppendLine("   if (x != 0) {");
             sb.AppendLine("     document.getElementById('anzeigedatum').stepUp(x);");
             sb.AppendLine("   }");
-            sb.AppendLine("   var input = document.getElementById('submitfilter');");
-            sb.AppendLine("   let filtertxt = document.getElementById('tablefilter').value;");
-            sb.AppendLine("   if (filtertxt.length > 2) { ");
+            sb.AppendLine("   const input = document.getElementById('submitfilter');");
+            sb.AppendLine("   const f = document.getElementById('tablefilter');");
+            sb.AppendLine("   if (typeof f !== 'undefined' && f !== null && f.value.length > 2) { ");
             sb.AppendLine("     input.disabled = false; ");
-            sb.AppendLine("     input.value = filtertxt;");
+            sb.AppendLine("     input.value = f;");
             sb.AppendLine("   }");
             //sb.AppendLine("   if (document.getElementById('anzeigedatum').value.length > 8) {");
             sb.AppendLine("   document.getElementById('chooseDate').submit(); ");
@@ -464,7 +464,8 @@ namespace MelBox2
 
             System.Data.DataTable dt = Sql.SelectShiftsCalendar();
 
-            string html = Modal("Bereitschaft", InfoShift()); // "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
+            string html = Modal("Bereitschaft", InfoShift()); 
+            html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             //Quelle: https://css-tricks.com/stripes-css/
             html += "<style>"; //gestreifter hintergund w3-amber / w3-pale-green
@@ -847,10 +848,9 @@ namespace MelBox2
             sb.AppendLine("<li>Es lassen sich individuelle Zeiten einrichten. Sind mehre Empf&auml;nger in einer Kalenderwoche eingerichtet, wird der Eintrag 'KW' farblich hervorgehoben.</li>");
             sb.AppendLine("<li>Andere zeitliche L&uuml;cken oder &Uuml;berschneidungen werden <b>nicht</b> gesondert hervorgehoben. Alle &Auml;nderungen liegen in der Verantwortung des jeweiligen Benutzers.</li>");
             sb.AppendLine("<li>Benutzer k&ouml;nnen eine neue Kalenderwoche einrichten oder eigene Zeiten bearbeiten.<br/>Administratoren k&ouml;nnen auch Zeiten anderer Benutzer &auml;ndern.</li>");
-            sb.AppendLine("<li>Hinweis zu &Auml;nderungen: Eintr&auml;ge mit einer Dauer von weniger als 1 Std. sind ung&uuml;ltig und werden abgelehnt.</li>");
-            sb.AppendLine("<li>Hinweis zum L&ouml;schen: Eintr&auml;ge k&ouml;nnen nur von Administratoren gel&ouml;scht werden.</li>");
+            sb.AppendLine("<li>Hinweis zu &Auml;nderungen: Eintr&auml;ge mit einer Dauer von weniger als 1 Std. sind ung&uuml;ltig und werden abgelehnt.<br/>Eintr&auml;ge k&ouml;nnen nur von Administratoren gel&ouml;scht werden.</li>");
+            sb.AppendLine("<li>Die Weiterleitung von Sprachanrufen wird nur zur vollen Stunde gewechselt.</li>");
             
-
           sb.AppendLine("</ul></div>");
 
             return sb.ToString();

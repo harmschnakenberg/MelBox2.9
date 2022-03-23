@@ -55,8 +55,32 @@
     <form action="/gsm/sendsms" method="post" class="w3-padding">
         <label>Test-SMS versenden an</label>
         <div>
-            <input class="w3-input w3-pale-yellow w3-half w3-center" type="tel" name="phone" pattern="\d{8,}" tite="Telefonummer Test-SMS" placeholder="0151 123 456 789">
-            <input class="w3-button w3-blue w3-quarter" type="submit">
+            <input class="w3-input w3-pale-yellow w3-half w3-center" type="tel" name="phone" pattern="\d{8,}" tite="Telefonummer Test-SMS, nur Zahlen erlaubt" placeholder="z.B. 0150123456789">
+            <input class="w3-button w3-light-blue w3-quarter" type="submit">
+        </div>
+    </form>
+    <p>&nbsp;</p>
+
+    <h3>Sprachanrufe</h3>
+    <ul class="w3-ul w3-card">
+        <li>
+            Sprachanrufe werden -auch während der Geschäftszeiten- an die aktuelle Bereitschaft weitergeleitet.            
+        </li>
+        <li>
+            Ist keine Bereitschaft namentlich zugewiesen bzw. keine feste Telefonnummer hinterlegt, erfolgt die Weiterleitung an das Bereitschaftshandy.
+        </li>
+        <li>
+            Zu jeder vollen Stunde wird die eingerichtete Weiterleitung &uuml;berpr&uuml;ft und ggf. aktualisiert.
+        </li>
+        <li>
+            Die Empfangsnummer für Sprachanrufe kann hier auch fest vergeben werden:
+        </li>
+    </ul>
+
+    <form action="/gsm/callforward/check" method="get" class="w3-padding">
+        <label>Weiterleitung Sprachanrufe &uuml;berpr&uuml;fen</label>
+        <div>
+            <button type="submit" class="w3-button w3-light-blue w3-half">Weiterleitung &uuml;berpr&uuml;fen.</button>
         </div>
     </form>
     <p>&nbsp;</p>
@@ -67,11 +91,6 @@
             <div class="w3-light-grey">
                 @ForewardingActive @ForewardingNumber
             </div>
-        </li>
-        <li>
-            Sprachanrufe werden -auch während der Geschäftszeiten- an die aktuelle Bereitschaft weitergeleitet.<br/>
-            Ist keine Telefonnummer hinterlegt, erfolgt die Weiterleitung an das Bereitschaftshandy.<br/>
-            Die Empfangsnummer für Sprachanrufe kann hier auch fest vergeben werden:  
         </li>
     </ul>
 
@@ -104,37 +123,37 @@
         <label>Test-Email versenden an</label>
         <div>
             <input class="w3-input w3-pale-yellow w3-half w3-center" type="email" name="email" tite="E-Mail-Empf&auml;nger" placeholder="vorname.nachname@firma.de">
-            <input class="w3-button w3-blue w3-quarter" type="submit">
+            <input class="w3-button w3-light-blue w3-quarter" type="submit">
         </div>
     </form>
     <p>&nbsp;</p>
 
-    <h2>MelBox2 Tech-Administrator</h2>
-    <p>Der Tech-Administrator empfängt St&ouml;rungen und Routinemeldungen zur Programm&uuml;berwachung von MelBox2:</p>
+    <h2>MelBox2 Systemadministrator</h2>
+    <p>Der Systemadministrator empfängt St&ouml;rungen und Routinemeldungen zur Programm&uuml;berwachung von MelBox2:</p>
 
     <ul class="w3-ul w3-card">
         <li>
-            <label>aktiver Tech-Administrator</label>
+            <label>Aktiver Systemadministrator</label>
             <div class="w3-light-grey w3-round">
                 <div>@AdminPhone - @AdminEmail</div><!--hier ein Select-Feld mit allen Admins? Besser Übernahme-Button.-->
             </div>
         </li>
     </ul>
 
-    <form action="/gsm/techadmin" method="post" class="w3-card w3-padding">
+    <form action="/gsm/sysadmin" method="post" class="w3-card w3-padding">
         <label>Uhrzeit Routinemeldung</label>
         <div class="w3-light-grey w3-round">
             @HourSelect
         </div>
         <div>
-            Zu dieser Uhrzeit bekommt der Tech-Administrator t&auml;glich eine Nachricht von jedem Sendemedium.<br />
+            Zu dieser Uhrzeit bekommt der Systemadministrator t&auml;glich eine Nachricht von jedem Sendemedium.<br />
             Damit wird die Funktion der Meldewege &uuml;berpr&uuml;ft.
         </div>
         <div>
-            <input class="w3-button w3-red" type="submit" value="Speichern und Tech-Administrator werden" @TechAdminDisabled>
+            <input class="w3-button w3-red" type="submit" value="Speichern und Systemadministrator werden" @SysAdminDisabled>
         </div>
         <div>
-            Mit diesem Button l&ouml;st der angemeldete Benutzer den aktuellen Tech-Administrotor mit allen Aufgaben und Pflichten ab.<br />
+            Mit diesem Button l&ouml;st der angemeldete Benutzer den aktuellen Systemadministrator mit allen Aufgaben und Pflichten ab.<br />
             Berechtigt sind Administratoren mit Freigabe für Telefon- und Emailempfang.
         </div>
 

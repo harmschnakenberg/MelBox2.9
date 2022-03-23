@@ -70,7 +70,10 @@ namespace MelBox2
             if (DateTime.Now.Hour != HourOfDailyTasks) return;
 
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
-            Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");        
+            Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");
+
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
+            Email.Send(Email.Admin, "Routinemeldung. E-Mail versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
         }
 
         private static void DailyBackup(object sender, ElapsedEventArgs e)

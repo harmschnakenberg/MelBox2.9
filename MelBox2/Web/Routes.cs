@@ -30,6 +30,8 @@ namespace MelBox2
             if (context.Request.QueryString.HasKeys())
             {
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
+                if (date.CompareTo(DateTime.Now.AddYears(-10)) < 0) date = DateTime.Now.Date; //Älter als 10 Jahre = ungültig
+
                 filter = context.Request.QueryString.Get("filter");
             }
 
@@ -994,6 +996,23 @@ namespace MelBox2
             await Html.PageAsync(context, "Zwangsweise Rufweiterleitung zurücksetzen", html);
         }
 
+        [RestRoute("Get", "/gsm/callforward/check")]
+        public static async Task ModemCallforwardCheck(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context);
+            if (user == null || user.Level < Server.Level_Reciever) return;
+            #endregion
+
+            Program.CheckCallForwardingNumber(null, null);
+            System.Threading.Thread.Sleep(2000);
+
+            string html = Html.Alert(4, "Aktuelle Rufweiterleitung geprüft", $"Sprachanrufe werden aktuell an {(Gsm.CallForwardingNumber.Length > 8 ? Gsm.CallForwardingNumber : "-unbekannt-")} weitergeleitet.");
+            
+            await Html.PageAsync(context, "Rufweiterleitung geprüft", html);
+        }
+
+
         [RestRoute("Post", "/gsm/sendsms")]
         public static async Task ModemSendTestSms(IHttpContext context)
         {
@@ -1019,6 +1038,7 @@ namespace MelBox2
             await Html.PageAsync(context, "Test-SMS versenden", html, user);
         }
 
+
         [RestRoute("Post", "/gsm/sendemail")]
         public static async Task ModemSendTestEmail(IHttpContext context)
         {
@@ -1043,8 +1063,9 @@ namespace MelBox2
             await Html.PageAsync(context, "Test-E-Mail versenden", html, user);
         }
 
-        [RestRoute("Post", "/gsm/techadmin")]
-        public static async Task SetTechAdmin(IHttpContext context)
+
+        [RestRoute("Post", "/gsm/sysadmin")]
+        public static async Task SetSysAdmin(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context);
@@ -1068,19 +1089,20 @@ namespace MelBox2
                 Email.Admin = new System.Net.Mail.MailAddress(user.Email, user.Name + " (MelBox2-Admin)");
                 Gsm.AdminPhone = user.Phone;
 
-                string txt = $"{user.Name} ist nun verantwortlicher Tech-Administrator von MelBox2.\r\n" +
+                string txt = $"{user.Name} ist nun verantwortlicher Systemadministrator von MelBox2.\r\n" +
                     $"Tägliche Routinemeldungen werden um {Program.HourOfDailyTasks} Uhr an {Gsm.AdminPhone} und {Email.Admin} versendet.";
 
                 Email.Send(Email.Admin, txt);
                 Log.Warning(txt, 42563);
-                html = Html.Alert(4, "Tech-Administrator erfolgreich aktualisiert", txt.Replace(Environment.NewLine, "<br/>"));
+                html = Html.Alert(4, "Systemadministrator erfolgreich aktualisiert", txt.Replace(Environment.NewLine, "<br/>"));
             }
             else
-                html = Html.Alert(1, "Anfrage ung&uuml;ltig", $"Die übergebene Anfrage ist ungültig oder Sie sind nicht berechtigt.<br/>Um Tech-Administrator werden zu können muss der Empfang von Telefon und Email freigeschaltet sein.");
+                html = Html.Alert(1, "Anfrage ung&uuml;ltig", $"Die übergebene Anfrage ist ungültig oder Sie sind nicht berechtigt.<br/>Um Systemadministrator werden zu können muss der Empfang von Telefon und Email freigeschaltet sein.");
 
 
-            await Html.PageAsync(context, "Tech-Administrator aktualisieren", html, user);
+            await Html.PageAsync(context, "Systemadministrator aktualisieren", html, user);
         }
+
 
         [RestRoute("Get", "/gsm")]
         public static async Task ModemShow(IHttpContext context)
@@ -1118,7 +1140,7 @@ namespace MelBox2
                 { "@AdminPhone", Gsm.AdminPhone},
                 { "@AdminEmail", Email.Admin.Address },
                 { "@HourSelect", Html.SelectHourOfDay(Program.HourOfDailyTasks) },
-                { "@TechAdminDisabled", (isAdmin && (user.Via == Sql.Via.SmsAndEmail || user.Via == Sql.Via.PermanentEmailAndSms) ? string.Empty : "disabled") }
+                { "@SysAdminDisabled", (isAdmin && (user.Via == Sql.Via.SmsAndEmail || user.Via == Sql.Via.PermanentEmailAndSms) ? string.Empty : "disabled") }
             };
 
             string html = Html.Page(Server.Html_FormGsm, pairs);
