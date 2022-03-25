@@ -320,7 +320,7 @@ namespace MelBox2
             string html;
 
             if (isAdmin) // frei einstellbar
-                html = "<input class='w3-button w3-pale-yellow w3-half' name='phone' pattern='\\d{8,}' tite='Telefonummer für Weiterleitung der Sprachanrufe\\r\\n min. 8 Zahlen, keine weiteren Zeichen' placeholder='z.B. 0150123456789'>" +
+                html = "<input class='w3-button w3-pale-yellow w3-half' name='phone' pattern='\\+?[\\d\\s-/]{8,}' tite='Telefonummer für Weiterleitung der Sprachanrufe' placeholder='Mobilnummer z.B. 0150 123456789'>" +
                         "<input type='submit' value='Nummer zwangsweise &auml;ndern' class='w3-button w3-blue w3-quarter'>";
             else if (user.Phone.Length > 9 && ulong.TryParse(user.Phone.TrimStart('+'), out ulong _)) //nur eigene Nummer
             {
@@ -672,16 +672,14 @@ namespace MelBox2
             sb.AppendLine(" <li><span class='material-icons-outlined'>filter_2</span> Filter 2 - Zeigt nur interne Kontakte.</li>");
             sb.AppendLine(" <li><hr></li>");
             sb.AppendLine(" <li><b>Attribute</b></li>");
+            sb.AppendLine($" <li><span class='material-icons-outlined'>smartphone</span>Versand von SMS an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
+            sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");            
             //sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
-            sb.AppendLine($" <li><span class='material-icons-outlined'>call</span>  Sprachanrufe werden an diesen Empf&auml;nger weitergeleitet.</li>");
-            sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>  Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt.</li>");
-
-            if (Sql.PermanentEmailRecievers > 0)
-                sb.AppendLine($" <li>Zurzeit gibt es >{Sql.PermanentEmailRecievers}< abonenten.</li>");
-
+            sb.AppendLine($" <li><span class='material-icons-outlined'>call</span>Sprachanrufe werden aktuell an diesen Empf&auml;nger weitergeleitet.</li>");
+            sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. Zurzeit gibt es {Sql.PermanentEmailRecievers} Abonnenten.</li>");
             sb.AppendLine("</ul></div>");
 
-            sb.AppendLine("</div><table class='w3-table'>");
+            sb.AppendLine("</div><table class='w3-table w3-margin'>");
             sb.AppendLine("<tr>");
             sb.AppendLine("  <th colspan='2'>Level</th>");
             sb.AppendLine("  <th>Rolle</th>");
@@ -959,6 +957,7 @@ namespace MelBox2
             sb.AppendLine("<div class='w3-container'><ul class='w3-ul 3-card'>");
             sb.AppendLine(" <li>Hier k&ouml;nnen freie Notizen hinterlegt werden.</li>");
             sb.AppendLine(" <li>Notizen k&ouml;nnen nur vom Verfasser ge&auml;ndert werden.</li>");
+            sb.AppendLine(" <li>Die Notiz muss einer Anlage bzw. einem Kunden zugeordnet werden.</li>");
             sb.AppendLine(" <li>Die Notiz muss einer Anlage bzw. einem Kunden zugeordnet werden.</li>");
 
             sb.AppendLine("</ul></div>");

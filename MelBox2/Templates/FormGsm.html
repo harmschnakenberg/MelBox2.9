@@ -55,7 +55,7 @@
     <form action="/gsm/sendsms" method="post" class="w3-padding">
         <label>Test-SMS versenden an</label>
         <div>
-            <input class="w3-input w3-pale-yellow w3-half w3-center" type="tel" name="phone" pattern="\d{8,}" tite="Telefonummer Test-SMS, nur Zahlen erlaubt" placeholder="z.B. 0150123456789">
+            <input class="w3-input w3-pale-yellow w3-half w3-center" type="tel" name="phone" pattern="\+?[\d\s-/]{8,}" tite="Telefonummer Test-SMS, nur Zahlen erlaubt" placeholder="Mobilnummer z.B. 0150 123456789">
             <input class="w3-button w3-light-blue w3-quarter" type="submit">
         </div>
     </form>

@@ -9,19 +9,36 @@ namespace MelBox2
 {
     partial class Sql
     {
+        /// <summary>
+        /// Fügt eine Notiz in die Datenbank ein. Entfernt HTML-Markups.
+        /// </summary>
+        /// <param name="authorId"></param>
+        /// <param name="customerId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
         internal static bool InsertNote(int authorId, int customerId, string content)
         {
+
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@AuthorId", authorId },
                 { "@CustomerId", customerId },
-                { "@Content", content }
+                { "@Content", content
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")} //HTML-Markups entfernen
             };
 
             return NonQuery($"INSERT INTO Notepad (AuthorId, CustomerId, Content) VALUES (@AuthorId, @CustomerId, @Content);", args);
         }
 
-
+        /// <summary>
+        /// Ändert eine Notiz. Entfernt html-Markups
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="authorId"></param>
+        /// <param name="customerId"></param>
+        /// <param name="content"></param>
+        /// <returns></returns>
         internal static bool UpdateNote(int id, int authorId, int customerId, string content)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -30,7 +47,9 @@ namespace MelBox2
                 { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@AuthorId", authorId},
                 { "@CustomerId", customerId},
-                { "@Content", content}
+                { "@Content", content                
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")} //HTML-Markups entfernen                
             };
 
             const string query = "UPDATE Notepad SET Time = @Time, AuthorId = @AuthorId, CustomerId = @CustomerId, Content = @Content WHERE ID = @ID; ";

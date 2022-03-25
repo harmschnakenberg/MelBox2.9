@@ -26,7 +26,9 @@
 
             <p>
                 <label class="w3-text-grey">Notiz</label>
-                <textarea class="w3-input w3-border" style="resize:vertical; min-height:200px;" name="content">@Content</textarea>
+                <textarea class="w3-input w3-border" style="resize:vertical; min-height:200px;" id="content" name="content">@Content</textarea>
+                <!--<button type="button" onclick="CarReturn();"><span style='font-size: 20px; border-style: solid;'>&crarr;</span></button>
+                <button type="button"><span style='font-size: 20px; border-style: solid;'><b>B</b></span></button>-->
             </p>
 
             <p class="w3-row-padding">
@@ -37,3 +39,20 @@
         </form>
     </div>
 </div>
+<!--<script>
+    function CarReturn(){
+        let x = document.getElementById("content");
+        var start = x.selectionStart;
+        var end = x.selectionEnd;
+        var val = x.value;
+
+
+        // Check if you've selected text
+        if (startPosition == endPosition) {
+            alert("The position of the cursor is (" + start + "/" + val.length + ")");
+        } else {
+            alert("Selected text from (" + start + " to " + end + " of " + val.length + ")");
+        }
+    }
+
+</script>-->

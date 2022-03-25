@@ -868,7 +868,7 @@ namespace MelBox2
                 && int.TryParse(authorIdStr, out int authorId)
                 && payload.TryGetValue("customerId", out string customerIdStr)
                 && int.TryParse(customerIdStr, out int customerId)
-                && payload.TryGetValue("content", out string content) //Es sind HTML-Markups möglich! Sicherheitsrisiko?
+                && payload.TryGetValue("content", out string content) 
                 )
                 success = Sql.InsertNote(authorId, customerId, content);
             #endregion
@@ -904,7 +904,7 @@ namespace MelBox2
                 && int.TryParse(authorIdStr, out int authorId)
                 && payload.TryGetValue("customerId", out string customerIdStr)
                 && int.TryParse(customerIdStr, out int customerId)
-                && payload.TryGetValue("content", out string content) //Es sind HTML-Markups möglich! Sicherheitsrisiko?
+                && payload.TryGetValue("content", out string content) 
                 )
                 success = Sql.UpdateNote(noteId, authorId, customerId, content);
             #endregion
