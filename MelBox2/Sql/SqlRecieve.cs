@@ -9,14 +9,14 @@ namespace MelBox2
     partial class Sql
     {
         
-        internal static DataTable SelectLastRecieved(int count = 1000)
+        internal static DataTable SelectLastRecieved(string sender)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
             {
-                { "@LIMIT", count}
+                { "@Sender", sender}
             };
 
-            const string query = "SELECT Nr, Empfangen, Von, Inhalt FROM View_Recieved ORDER BY Empfangen DESC LIMIT @LIMIT;";
+            const string query = "SELECT Nr, Empfangen, Von, Inhalt FROM View_Recieved WHERE Von LIKE '%' || @Sender || '%' ORDER BY Empfangen DESC LIMIT 1000;";
 
             return SelectDataTable(query, args);
         }
@@ -81,6 +81,8 @@ namespace MelBox2
                 $"Übermittelte Zeit: {email.Headers["Date"]}\r\n\t" +
                 $"Ermittelte Sendezeit {emailDate}\r\n\t" +
                 $"Datenbankeintrag {emailDate.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}");
+#else
+            Console.WriteLine($"{emailDate.ToShortTimeString()}: E-Mail empfangen von {email.From.Address}");
 #endif
             Dictionary<string, object> args = new Dictionary<string, object>
                 {

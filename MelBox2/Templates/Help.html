@@ -1,152 +1,167 @@
 ﻿<div class="w3-container">
-    <h3>MelBox2 - Funktionen:</h3>
-    <ul class="w3-ul w3-card">
-        <li>&bull; empf&auml;ngt SMS-Nachrichten und E-Mails und leitet sie an die Bereitschaft weiter</li>
-        <li>&bull; listet die empfangenen und versendeten Nachrichten auf</li>
-        <li>&bull; verwaltet Nachrichten, die nicht an die Bereitschaft gesendet werden sollen</li>
-        <li>&bull; &uuml;berwacht Sender auf Aktivit&auml;t (Meldelinien&uuml;berwachung)</li>
-        <li>&bull; verwaltet die Weiterleitung von Sprachanrufen auf das aktuelle St&ouml;rdiensthandy</li>
-        <li>&bull; verwaltet Bereitschaftszeiten der Rufannahme</li>
-        <li>&bull; verwaltet Sender und Empf&auml;ngerdaten z.B. Telefonnummern und Email-Adressen</li>
-    </ul>
+    <h3 onclick="accordeon('block1')" class="w3-button w3-block w3-left-align w3-light-grey">MelBox2 - Funktionen</h3>
+    <div id="block1" class=" w3-hide">
+        <ul class="w3-ul w3-card">
+            <li>&bull; empf&auml;ngt SMS-Nachrichten und E-Mails und leitet sie an die Bereitschaft weiter</li>
+            <li>&bull; listet die empfangenen und versendeten Nachrichten auf</li>
+            <li>&bull; verwaltet Nachrichten, die nicht an die Bereitschaft gesendet werden sollen</li>
+            <li>&bull; &uuml;berwacht Sender auf Aktivit&auml;t (Meldelinien&uuml;berwachung)</li>
+            <li>&bull; verwaltet die Weiterleitung von Sprachanrufen auf das aktuelle St&ouml;rdiensthandy</li>
+            <li>&bull; verwaltet Bereitschaftszeiten der Rufannahme</li>
+            <li>&bull; verwaltet Sender und Empf&auml;ngerdaten z.B. Telefonnummern und Email-Adressen</li>
+        </ul>
+    </div>
 
-    <h3>Symbolverwendung:</h3>
-    <table class="w3-table w3-card w3-bordered">
-        <tr>
-            <td>&nbsp;</td>
-            <td>Tooltip</td>
-            <td>Zu vielen Symbolen werden Erkl&auml;rungen eingeblendet, wenn man mit dem Mauszeiger dar&uuml;ber stehen bleibt.</td>
-        </tr>
-        <tr>&nbsp;</tr>
-        <tr>
-            <td><i class='material-icons-outlined'>info</i></td>
-            <td>Info-Symbol</td>
-            <td> Ein Klick auf das Info-Symbol blendet Erl&auml;uterungen f&uuml;r die aktuell angezeigte Seite ein.<br />Das Info-Symbol wird h&auml;ufig in der rechten oberen Ecke der Seite angezeigt.</td>
-        </tr>
-        <tr>
-            <td><i class='material-icons-outlined'>edit</i></td>
-            <td>Bearbeiten</td>
-            <td>&Ouml;ffnet einen Datensatz zur Bearbeitung.<br />Wird nur bei vorhandener Berechtigung angezeigt.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>password</i></td>
-            <td>Login</td>
-            <td>
-                &Auml;nderungen d&uuml;rfen nur von eingeloggten Benutzern mit entsprechender Berechtigung vorgenommen. Wichtige &Auml;nderungen werden im Logbuch protokolliert.<br />
-                Nur registrierte Benutzer k&ouml;nnen sich einloggen. Der Registrierungsvorgang muss von einem Administrator best&auml;tigt werden, bevor der Login freigeschaltet wird.
-            </td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>move_to_inbox</i></td>
-            <td>Eingegangene Nachrichten</td>
-            <td>Liste der (von Anlagen) empfangenen Nachrichten. </td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>outbox</i></td>
-            <td>Gesendete Nachrichten</td>
-            <td>Liste der (an die Bereitschaft) versendeten Nachrichten. </td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>notifications_off</i></td>
-            <td>Gesperrte Nachrichten</td>
-            <td>Liste der Nachrichten, die (zu bestimmten Zeiten) nicht an die Bereitschaft weitergeleitet werden.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>pending_actions</i></td>
-            <td>Sender&uuml;berwachung</td>
-            <td>Liste der Sender (Anlagen), die regelm&auml;ßig Nachrichten als 'Lebenszeichen' senden.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>event_note</i></td>
-            <td>Bereitschaftskalender</td>
-            <td>&Uuml;bersicht und Planung der Rufannahme.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>assignment_ind</i></td>
-            <td>Benutzerkonto</td>
-            <td>Verwaltung der Sender und Empf&auml;nger (Telefon, Email, Passwort, Benutzerberechtigung, Sender&uuml;berwachung).</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>assignment</i></td>
-            <td>Logbuch</td>
-            <td>Ereignisprotokoll dieser Anwendung.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>note_alt</i></td>
-            <td>Notizbuch</td>
-            <td>Freie Notizen.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>router</i></td>
-            <td>Sendemedien</td>
-            <td>Status des angeschlossenen GSM-Modems (Empfangsqualit&auml;t, SIM, SMS, Rufumleitung, Fehlermeldungen). Einstellungen für E-Mail.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>help_outline</i></td>
-            <td>Hilfe</td>
-            <td>Diese Hilfe.</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_connected_no_internet_0_bar</i></td>
-            <td>Keine Verbindung</td>
-            <td rowspan="4">Mobilfunknetzverbindung</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_0_bar</i></td>
-            <td>Netzqualität < 20%</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>network_cell</i></td>
-            <td>Netzqualität < 50%</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_4_bar</i></td>
-            <td>Netzqualität optimal</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>phone_forwarded</i></td>
-            <td>Aktiviert</td>
-            <td rowspan="2">Weiterleitung Sprachanrufe</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>phone_disabled</i></td>
-            <td>Deaktiviert</td>
-        </tr>
-        <tr>
-            <td><i class='w3-xlarge material-icons-outlined'>phone_locked</i></td>
-            <td>Nummer fest</td>
-            <td>Sprachanrufe werden an eine fest hinterlegte Telefonnumer weitergeleitet.</td>
-        </tr>
-    </table>
+    <h3 onclick="accordeon('block2')" class="w3-button w3-block w3-left-align w3-light-grey">Symbolverwendung</h3>
+    <div id="block2" class="w3-hide">
+        <table class="w3-table w3-card w3-bordered">
+            <tr>
+                <td>&nbsp;</td>
+                <td>Tooltip</td>
+                <td>Zu vielen Symbolen werden Erkl&auml;rungen eingeblendet, wenn man mit dem Mauszeiger dar&uuml;ber stehen bleibt.</td>
+            </tr>
+            <tr>&nbsp;</tr>
+            <tr>
+                <td><i class='material-icons-outlined'>info</i></td>
+                <td>Info-Symbol</td>
+                <td> Ein Klick auf das Info-Symbol blendet Erl&auml;uterungen f&uuml;r die aktuell angezeigte Seite ein.<br />Das Info-Symbol wird h&auml;ufig in der rechten oberen Ecke der Seite angezeigt.</td>
+            </tr>
+            <tr>
+                <td><i class='material-icons-outlined'>edit</i></td>
+                <td>Bearbeiten</td>
+                <td>&Ouml;ffnet einen Datensatz zur Bearbeitung.<br />Wird nur bei vorhandener Berechtigung angezeigt.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>password</i></td>
+                <td>Login</td>
+                <td>
+                    &Auml;nderungen d&uuml;rfen nur von eingeloggten Benutzern mit entsprechender Berechtigung vorgenommen. Wichtige &Auml;nderungen werden im Logbuch protokolliert.<br />
+                    Nur registrierte Benutzer k&ouml;nnen sich einloggen. Der Registrierungsvorgang muss von einem Administrator best&auml;tigt werden, bevor der Login freigeschaltet wird.
+                </td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>move_to_inbox</i></td>
+                <td>Eingegangene Nachrichten</td>
+                <td>Liste der (von Anlagen) empfangenen Nachrichten. </td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>outbox</i></td>
+                <td>Gesendete Nachrichten</td>
+                <td>Liste der (an die Bereitschaft) versendeten Nachrichten. </td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>notifications_off</i></td>
+                <td>Gesperrte Nachrichten</td>
+                <td>Liste der Nachrichten, die (zu bestimmten Zeiten) nicht an die Bereitschaft weitergeleitet werden.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>pending_actions</i></td>
+                <td>Sender&uuml;berwachung</td>
+                <td>Liste der Sender (Anlagen), die regelm&auml;ßig Nachrichten als 'Lebenszeichen' senden.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>event_note</i></td>
+                <td>Bereitschaftskalender</td>
+                <td>&Uuml;bersicht und Planung der Rufannahme.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>assignment_ind</i></td>
+                <td>Benutzerkonto</td>
+                <td>Verwaltung der Sender und Empf&auml;nger (Telefon, Email, Passwort, Benutzerberechtigung, Sender&uuml;berwachung).</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>assignment</i></td>
+                <td>Logbuch</td>
+                <td>Ereignisprotokoll dieser Anwendung.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>note_alt</i></td>
+                <td>Notizbuch</td>
+                <td>Freie Notizen.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>router</i></td>
+                <td>Sendemedien</td>
+                <td>Status des angeschlossenen GSM-Modems (Empfangsqualit&auml;t, SIM, SMS, Rufumleitung, Fehlermeldungen). Einstellungen für E-Mail.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>help_outline</i></td>
+                <td>Hilfe</td>
+                <td>Diese Hilfe.</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_connected_no_internet_0_bar</i></td>
+                <td>Keine Verbindung</td>
+                <td rowspan="4">Mobilfunknetzverbindung</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_0_bar</i></td>
+                <td>Netzqualität < 20%</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>network_cell</i></td>
+                <td>Netzqualität < 50%</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>signal_cellular_4_bar</i></td>
+                <td>Netzqualität optimal</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>phone_forwarded</i></td>
+                <td>Aktiviert</td>
+                <td rowspan="2">Weiterleitung Sprachanrufe</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>phone_disabled</i></td>
+                <td>Deaktiviert</td>
+            </tr>
+            <tr>
+                <td><i class='w3-xlarge material-icons-outlined'>phone_locked</i></td>
+                <td>Nummer fest</td>
+                <td>Sprachanrufe werden an eine fest hinterlegte Telefonnumer weitergeleitet.</td>
+            </tr>
+        </table>
+    </div>
 
-    <h3>Rollen:</h3>
-    <table class="w3-table w3-card w3-bordered">
-        <tr>
-            <th>Rolle</th>
-            <th>Berechtigung</th>
-        </tr>
-        <tr>
-            <td>Systemadministrator</td>
-            <td>Betreut die Programmfunktionen von MelBox2. Empfängt die technischen Fehler- und Routinemeldungen aus dem Programm.</td>
-        </tr>
-        <tr>
-            <td>Administrator</td>
-            <td>Betreut die Benutzerverwaltung. Kann Rufbereitschaft einteilen. Kann Nachrichten zur Weiterleitung sperren.</td>
-        </tr>
-        <tr>
-            <td>Benutzer</td>
-            <td>Kann eigene Benutzerdaten und eigene Rufbereitschaft verwalten.</td>
-        </tr>
-        <tr>
-            <td>Beobachter</td>
-            <td>Kann alle Bereiche lesen.</td>
-        </tr>
-        <tr>
-            <td>Aspirant</td>
-            <td>Kein Login möglich. Muss durch einen Administrator freigeschaltet werden. Sieht nur eingegangene Nachrichten und den Bereitschaftskalender.</td>
-        </tr>
-    </table>
+    <h3 onclick="accordeon('block3')" class="w3-button w3-block w3-left-align w3-light-grey">Rollen</h3>
+    <div id="block3" class="w3-hide">
+        <table class="w3-table w3-card w3-bordered">
+            <tr>
+                <th>Rolle</th>
+                <th>Berechtigung</th>
+            </tr>
+            <tr>
+                <td>Systemadministrator</td>
+                <td>Betreut die Programmfunktionen von MelBox2. Empfängt die technischen Fehler- und Routinemeldungen aus dem Programm.</td>
+            </tr>
+            <tr>
+                <td>Administrator</td>
+                <td>Betreut die Benutzerverwaltung. Kann Rufbereitschaft einteilen. Kann Nachrichten zur Weiterleitung sperren.</td>
+            </tr>
+            <tr>
+                <td>Benutzer</td>
+                <td>Kann eigene Benutzerdaten und eigene Rufbereitschaft verwalten.</td>
+            </tr>
+            <tr>
+                <td>Beobachter</td>
+                <td>Kann alle Bereiche lesen.</td>
+            </tr>
+            <tr>
+                <td>Aspirant</td>
+                <td>Kein Login möglich. Muss durch einen Administrator freigeschaltet werden. Sieht nur eingegangene Nachrichten und den Bereitschaftskalender.</td>
+            </tr>
+        </table>
+    </div>
 </div>
 
-
+    <script>
+        function accordeon(id) {
+            var x = document.getElementById(id);
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+    </script>
 

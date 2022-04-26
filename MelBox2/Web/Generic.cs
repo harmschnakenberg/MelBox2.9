@@ -340,6 +340,12 @@ namespace MelBox2
             return html;
         }
 
+        internal const string SearchBySenderForm = "<form id='senderForm' action='/in/special' class='w3-margin-top w3-row w3-light-grey'>\r\n" +
+            "<div class='w3-container w3-quarter'>nur einen Sender anzeigen:</div>\r\n" +
+            "<input class='w3-container w3-input w3-border w3-half' name='sender' type='text'>\r\n" +
+            "<input class='w3-container w3-button w3-light-blue' type='submit' value='Anzeigen'>\r\n" +
+            "</form>";
+
         #endregion
 
 

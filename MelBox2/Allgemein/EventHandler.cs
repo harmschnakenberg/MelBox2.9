@@ -184,7 +184,7 @@ namespace MelBox2
             //Console.WriteLine("Die Anwendung wird in 10 Sekunden neu gestartet.");
             ProcessStartInfo Info = new ProcessStartInfo
             {
-                Arguments = "/C ping 127.0.0.1 -n 10 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"",
+                Arguments = "/C ping 127.0.0.1 -n 20 && \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"",
                 WindowStyle = ProcessWindowStyle.Normal,
                 CreateNoWindow = true,
                 FileName = "cmd.exe"

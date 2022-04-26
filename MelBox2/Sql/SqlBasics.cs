@@ -113,6 +113,7 @@ namespace MelBox2
 
                     var command = connection.CreateCommand();
                     command.CommandText = query;
+                    
                   
                     if (args != null && args.Count > 0)
                     {
@@ -125,7 +126,7 @@ namespace MelBox2
                     try
                     {                        
                         using (var reader = command.ExecuteReader())
-                        {
+                        {                           
                             //Mit Schema einlesen
                             myTable.Load(reader);
                         }
@@ -135,9 +136,9 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch
                     {
-//#if DEBUG
-//                        Console.WriteLine("SelectDataTable: Hinweis: Abfrage hat Schema nicht eingehalten."); //Debug-Info
-//#endif
+#if DEBUG
+                       Console.WriteLine("SelectDataTable: Hinweis: Abfrage hat Schema nicht eingehalten."); //Debug-Info
+#endif
                         myTable = new DataTable();
 
                         //Wenn Schema aus DB nicht eingehalten wird (z.B. UNIQUE Constrain in SELECT Abfragen); dann neue DataTable, alle Spalten <string>

@@ -20,13 +20,13 @@ namespace MelBox2
         {
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context, false);
-            
+
             bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
             DateTime date = DateTime.Now.Date;
             string filter = string.Empty;
-
+            
             if (context.Request.QueryString.HasKeys())
             {
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
@@ -36,14 +36,14 @@ namespace MelBox2
             }
 
             System.Data.DataTable rec = Sql.SelectRecieved(date);
-            
             string table = Html.Modal("Empfangene Nachrichten", Html.InfoRecieved(isAdmin));
+
             table += rec.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine empfangenen Nachrichten protokolliert.");
             table += Html.ChooseDate("in", date);
             table += Html.FromTable(rec, isAdmin, "in");
 
-            string refreshScript =  "<p><div class='w3-light-grey w3-padding'><i>Die Seite wird alle 5 Minuten automatisch aktualisiert:</i>&nbsp;<span>aus</span>" +
-                                    "<button class='w3-button' onclick=\"this.firstChild.innerHTML='toggle_off';\" this.firstChild.classList.add('w3-disabled'); clearTimeout(myVar);\" title='Die Seite wird alle 5 Min. neu geladen.'>" +
+            string refreshScript = "<p><div class='w3-light-grey w3-padding'><i>Die Seite wird alle 5 Minuten automatisch aktualisiert:</i>&nbsp;<span>aus</span>" +
+                                    "<button class='w3-button' onclick=\"this.firstChild.innerHTML='toggle_off';\" this.classList.add('w3-disabled'); clearTimeout(myVar);\" title='Die Seite wird alle 5 Min. neu geladen.'>" +
                                     "<span class='material-icons-outlined'>toggle_on</span></button><span>ein</span></div></p>" +
                                     "<script>setTimeout(myFunction, 300000); function myFunction() { location.reload(); }";
 
@@ -52,7 +52,40 @@ namespace MelBox2
 
             refreshScript += "</script>\r\n";
 
-            await Html.PageAsync(context, "Empfangene Nachrichten", table + refreshScript, user);
+
+            await Html.PageAsync(context, "Empfangene Nachrichten", table + refreshScript + Html.SearchBySenderForm, user);
+        }
+
+        [RestRoute("Get", "/in/special")]
+        public static async Task InBoxSpecial(IHttpContext context)
+        {
+            #region Anfragenden Benutzer identifizieren
+            Person user = await Html.GetLogedInUserAsync(context, false);
+
+            bool isAdmin = user != null && user.Level >= Server.Level_Admin;
+            #endregion
+
+            string filter = string.Empty;
+            string senderFilter = string.Empty;
+            string table = Html.Modal("Empfangene Nachrichten", Html.InfoRecieved(isAdmin));
+
+            if (context.Request.QueryString.HasKeys())
+            {
+                senderFilter = context.Request.QueryString.Get("sender");
+                filter = context.Request.QueryString.Get("filter");
+            }
+
+            if (senderFilter?.Length > 0)
+            {
+                System.Data.DataTable rec = Sql.SelectLastRecieved(senderFilter);
+                table += "<h3>Sender enthält '" + senderFilter + "'</h3>";
+               table += Html.FromTable(rec, isAdmin, "in");
+            }
+
+            if (filter?.Length > 2)  //Filter beim blättern beibehalten
+                table += $"<script>w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';</script>";
+
+            await Html.PageAsync(context, "Empfangene Nachrichten", table + Html.SearchBySenderForm, user);
         }
 
         [RestRoute("Get", "/in/{recId:num}")]
@@ -96,6 +129,7 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Eingang", info + form, user);
         }
+
 
 
 
