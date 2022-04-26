@@ -99,6 +99,11 @@ namespace MelBox2
 
         internal static Person NewPerson(Dictionary<string, string> payload)
         {
+            foreach (var key in payload.Keys)
+            {
+                payload[key] = payload[key].Replace("<", "&lt;").Replace(">", "&gt;"); //HTML-Markups entfernen
+            }
+
             Person p = new Person();
 
             if (payload.TryGetValue("Id", out string strId))

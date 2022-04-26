@@ -72,6 +72,7 @@ namespace MelBox2
             if (context.Request.QueryString.HasKeys())
             {
                 senderFilter = context.Request.QueryString.Get("sender");
+                senderFilter = senderFilter.Replace("<", "&lt;").Replace(">", "&gt;"); //HTML-Markups entfernen
                 filter = context.Request.QueryString.Get("filter");
             }
 
@@ -300,8 +301,11 @@ namespace MelBox2
             int showId = user.Id;
             string companyFilter = string.Empty;
 
-            if (context.Request.QueryString.HasKeys())                            
+            if (context.Request.QueryString.HasKeys())
+            {
                 companyFilter = context.Request.QueryString.Get("company");
+                companyFilter = companyFilter.Replace("<", "&lt;").Replace(">", "&gt;"); //HTML-Markups entfernen
+            }
 
             if (context.Request.PathParameters.TryGetValue("id", out string idStr))
             {
@@ -474,8 +478,8 @@ namespace MelBox2
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
-                { "@Name", name },
-                { "@Password", password },
+                { "@Name", name.Replace("<", "&lt;").Replace(">", "&gt;") },              
+                { "@Password", password.Replace("<", "&lt;").Replace(">", "&gt;") },
                 { "@Company", "Kreutzträger Kältetechnik, Bremen" }
             };
 
@@ -522,8 +526,8 @@ namespace MelBox2
         public static async Task Login(IHttpContext context)
         {
             Dictionary<string, string> payload = Html.Payload(context);
-            string name = payload["name"];
-            string password = payload["password"];
+            string name = payload["name"].Replace("<", "&lt;").Replace(">", "&gt;"); //HTML unschädlcih machen
+            string password = payload["password"].Replace("<", "&lt;").Replace(">", "&gt;");
             string guid = Sql.CheckCredentials(name, password);
 
             Person user = new Person() { Name = name };            
