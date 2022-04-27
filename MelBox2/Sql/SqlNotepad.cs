@@ -47,7 +47,7 @@ namespace MelBox2
                 { "@Time", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
                 { "@AuthorId", authorId},
                 { "@CustomerId", customerId},
-                { "@Content", content                
+                { "@Content", content
                 .Replace("<", "&lt;")
                 .Replace(">", "&gt;")} //HTML-Markups entfernen                
             };

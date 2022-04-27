@@ -26,9 +26,12 @@
 
             <p>
                 <label class="w3-text-grey">Notiz</label>
-                <textarea class="w3-input w3-border" style="resize:vertical; min-height:200px;" id="content" name="content">@Content</textarea>
-                <!--<button type="button" onclick="CarReturn();"><span style='font-size: 20px; border-style: solid;'>&crarr;</span></button>
-                <button type="button"><span style='font-size: 20px; border-style: solid;'><b>B</b></span></button>-->
+                <textarea onblur="CarReturn();" class="w3-input w3-border" style="resize:vertical; min-height:200px;" id="content" name="content">@Content</textarea>
+                <button type="button" onclick="formatText('h3');"><span style='font-size: 22px;'>H</span></button>
+                <button type="button" onclick="formatText('h4');"><span style='font-size: 18px;'>H</span></button>
+                <button type="button" onclick="formatText('b');"><span style='font-size: 20px;'><b>B</b></span></button>
+                <button type="button" onclick="formatText('i');"><span style='font-size: 20px;'><i>i</i></span></button>
+                <button type="button" onclick="formatText('br');"><span style='font-size: 20px;'>&crarr;</span></button>
             </p>
 
             <p class="w3-row-padding">
@@ -39,20 +42,21 @@
         </form>
     </div>
 </div>
-<!--<script>
-    function CarReturn(){
-        let x = document.getElementById("content");
-        var start = x.selectionStart;
-        var end = x.selectionEnd;
-        var val = x.value;
+<script>
+    var txtarea = document.getElementById("content");
 
+    function formatText(e) {
+        var start = txtarea.selectionStart;
+        var end = txtarea.selectionEnd;
+        var sel = txtarea.value.substring(start, end);
 
-        // Check if you've selected text
-        if (startPosition == endPosition) {
-            alert("The position of the cursor is (" + start + "/" + val.length + ")");
+        if (e == 'br') {
+            var finText = txtarea.value.substring(0, start) + sel + '[br]' + txtarea.value.substring(end);
         } else {
-            alert("Selected text from (" + start + " to " + end + " of " + val.length + ")");
+            var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
         }
-    }
 
-</script>-->
+        txtarea.value = finText;
+        txtarea.focus();
+    }
+</script>

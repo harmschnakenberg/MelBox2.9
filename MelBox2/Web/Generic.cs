@@ -346,6 +346,32 @@ namespace MelBox2
             "<input class='w3-container w3-button w3-light-blue' type='submit' value='Anzeigen'>\r\n" +
             "</form>";
 
+        /// <summary>
+        /// Es dürfen keine HTML-Entitäten in der Datenbank gespeichert sein. Angeleht an Formatierung in Foren.
+        /// </summary>
+        /// <param name="s">string mit codierten HTML-Entitäten</param>
+        /// <returns>string mit decodierten HTML-Entitäten</returns>
+        public static string HtmlEntitiesDecode(this string s)
+        {
+            StringBuilder sb = new StringBuilder(s);
+
+            sb.Replace("[br]", "</br>");
+            sb.Replace("[b]", "<b>");
+            sb.Replace("[/b]", "</b>");
+            sb.Replace("[i]", "<i>");
+            sb.Replace("[/i]", "</i>");
+            sb.Replace("[u]", "<u>");
+            sb.Replace("[/u]", "</u>");
+            sb.Replace("[h3]", "<h3>");
+            sb.Replace("[/h3]", "</h3>");
+            sb.Replace("[h4]", "<h4>");
+            sb.Replace("[/h4]", "</h4>");
+
+            return sb.ToString().ToLower();
+        }
+
+
+
         #endregion
 
 
@@ -631,7 +657,7 @@ namespace MelBox2
                 html += "</td><td>" + dt.Rows[i]["Bearbeitet"].ToString().Replace("-", "&#8209;").Replace(" ", "&nbsp;") + "</td>"; //non-breaking hyphen, non-breaking space
                 html += "<td>" + dt.Rows[i]["Von"].ToString() + "</td>";
                 html += "<td>" + dt.Rows[i]["Kunde"].ToString() + "</td>";
-                html += "<td>" + dt.Rows[i]["Notiz"].ToString() + "</td>";
+                html += "<td>" + dt.Rows[i]["Notiz"].ToString().HtmlEntitiesDecode() + "</td>";
 
                 html += "</tr>\n";
             }
