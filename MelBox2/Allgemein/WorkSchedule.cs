@@ -26,7 +26,8 @@ namespace MelBox2
 
             execute.Elapsed += new ElapsedEventHandler(CheckEmailInBox);
             execute.Elapsed += new ElapsedEventHandler(CheckCallForwardingNumber);
-            execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);            
+            execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);
+            execute.Elapsed += ConsolidateGsmSignal;
             execute.Elapsed += new ElapsedEventHandler(DailyBackup);
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
             execute.Elapsed += new ElapsedEventHandler(DailyNotification); //Stundensprung beachten!
@@ -34,6 +35,11 @@ namespace MelBox2
             
             execute.AutoReset = false;
             execute.Start();
+        }
+
+        private static void ConsolidateGsmSignal(object sender, ElapsedEventArgs e)
+        {
+            Sql.ConsolidateGsmSignal();
         }
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
@@ -131,7 +137,6 @@ namespace MelBox2
 
                // Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
         }
-
 
 
     }

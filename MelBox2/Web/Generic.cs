@@ -123,7 +123,7 @@ namespace MelBox2
                 string[] item = pair.Split('=');
 
                 if (item.Length > 1)
-                    payload.Add(item[0], WebUtility.UrlDecode(item[1]));
+                    payload.Add(item[0], WebUtility.UrlDecode(item[1]).EncodeHtml());
             }
 
             return payload;
@@ -340,8 +340,11 @@ namespace MelBox2
             return html;
         }
 
+        /// <summary>
+        /// HTML für zusätzliche Suchleiste Form "Liste Empfangene Nachrichten nach Absender"
+        /// </summary>
         internal const string SearchBySenderForm = "<form id='senderForm' action='/in/special' class='w3-margin-top w3-row w3-light-grey' accept-charset='utf-8'>\r\n" +
-            "<div class='w3-container w3-quarter'>einen Sender auflisten:</div>\r\n" +
+            "<div class='w3-container w3-quarter'>Nachrichten dieses Absenders auflisten:</div>\r\n" +
             "<input class='w3-container w3-input w3-border w3-half' name='sender' type='text'>\r\n" +
             "<input class='w3-container w3-button w3-light-blue' type='submit' value='Anzeigen'>\r\n" +
             "</form>";
@@ -362,15 +365,26 @@ namespace MelBox2
             sb.Replace("[/i]", "</i>");
             sb.Replace("[u]", "<u>");
             sb.Replace("[/u]", "</u>");
-            sb.Replace("[h3]", "<h3>");
-            sb.Replace("[/h3]", "</h3>");
-            sb.Replace("[h4]", "<h4>");
-            sb.Replace("[/h4]", "</h4>");
+            sb.Replace("[h1]", "<h3>");
+            sb.Replace("[/h1]", "</h3>");
+            sb.Replace("[h2]", "<h4>");
+            sb.Replace("[/h2]", "</h4>");
 
             return sb.ToString().ToLower();
         }
 
+        /// <summary>
+        /// Codiert HTML-Entities, um Script-Injection zu verhindern.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string EncodeHtml(this string s)
+        {
+            if (s?.Length > 3)            
+                return s.Replace("<", "&lt;").Replace(">", "&gt;");
 
+            return s;
+        }
 
         #endregion
 
@@ -892,10 +906,12 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<div class='w3-container'><ul class='w3-ul 3-card'>");
             sb.AppendLine(" <li>Hier werden die zuletzt empfangenen Nachrichten angezeigt.</li>");
-            sb.AppendLine(" <li>&Uuml;ber die Schaltfl&auml;che &quot;Datum w&auml;hlen&quot; lassen sich die an einem bestimmten Tag eingegangenen Nachrichten anzeigen.</li>");
+            sb.AppendLine(" <li>&Uuml;ber die Schaltfl&auml;che <q>Datum w&auml;hlen</q> lassen sich die an einem bestimmten Tag eingegangenen Nachrichten anzeigen.</li>");
+            sb.AppendLine(" <li>&Uuml;ber das unten stehenden Feld <q>Nachrichten dieses Absenders auflisten</q> kann die Liste aller Nachrichten eines beliebigen Absenders angezeigt werden.</li>");
 
             if (isAdmin) sb.AppendLine(" <li>Mit dem Button <span class='material-icons-outlined'>edit</span> &ouml;ffnet sich die Maske zum Sperren der nebenstehenden Nachricht.</li>");
 
+            sb.AppendLine(" <li>Diese Seite wird nach 5 Minuten neu geladen, um neue Nachrichten anzuzeigen. Die Funktion kann mit dem Schalter am Ende der Seite ausgeschaltet werden.</li>");
             sb.AppendLine("</ul></div>");
             return sb.ToString();
         }
@@ -990,8 +1006,6 @@ namespace MelBox2
             sb.AppendLine(" <li>Hier k&ouml;nnen freie Notizen hinterlegt werden.</li>");
             sb.AppendLine(" <li>Notizen k&ouml;nnen nur vom Verfasser ge&auml;ndert werden.</li>");
             sb.AppendLine(" <li>Die Notiz muss einer Anlage bzw. einem Kunden zugeordnet werden.</li>");
-            sb.AppendLine(" <li>Die Notiz muss einer Anlage bzw. einem Kunden zugeordnet werden.</li>");
-
             sb.AppendLine("</ul></div>");
             return sb.ToString();
         }

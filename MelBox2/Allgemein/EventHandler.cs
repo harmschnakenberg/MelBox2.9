@@ -41,6 +41,8 @@ namespace MelBox2
                 Log.Warning(txt, 1515);
                 Email.Send(Email.Admin,txt, "MelBox2: Kein Mobilfunkempfang");
             }
+
+            Sql.InsertGsmSignal(quality);
         }
 
         /// <summary>

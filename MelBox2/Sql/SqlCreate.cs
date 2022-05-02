@@ -88,6 +88,13 @@ namespace MelBox2
                     "DeliveryCode INTEGER " +
                     "); ";
 
+                //GSM-Signal-Tabelle nur zum testen. Später rausnehmen?
+                query += "CREATE TABLE GsmSignal ( " +
+                    "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                    "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "SignalQuality INTEGER " +
+                    "); ";
+
                 query += "CREATE TABLE IF NOT EXISTS Shift ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "PersonId INTEGER, " +

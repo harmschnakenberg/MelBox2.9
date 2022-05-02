@@ -45,6 +45,33 @@ namespace MelBox2
             return NonQuery(query, args);
         }
 
+        #region GSM-Signal
+
+        internal static void InsertGsmSignal(int quality)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Quality", quality }
+            };
+
+            _ = NonQuery($"INSERT INTO GsmSignal (SignalQuality) VALUES (@Quality);", args);
+        }
+
+        internal static void ConsolidateGsmSignal()
+        {            
+            string query = "SELECT AVG(SignalQuality), MIN(Time), MAX(Time) FROM GsmSignal;";
+            DataTable dt = SelectDataTable(query, null);
+
+            int.TryParse(dt.Rows[0][0].ToString(), out int avgSignalQuality);
+            DateTime.TryParse(dt.Rows[0][1].ToString(), out DateTime begin);
+            DateTime.TryParse(dt.Rows[0][2].ToString(), out DateTime end);
+
+            InsertLog(4, $"Durchnittliches Mobilfunknetzsignal {avgSignalQuality}% von {begin.ToLocalTime()} bis {end.ToLocalTime()}");
+
+            string query2 = "DELETE FROM GsmSignal";
+            _ = NonQuery(query2, null);
+        }
+        #endregion
 
     }
 }

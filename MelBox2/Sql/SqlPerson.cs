@@ -97,13 +97,11 @@ namespace MelBox2
             return GetPerson(dt);
         }
 
+
+
         internal static Person NewPerson(Dictionary<string, string> payload)
         {
-            foreach (var key in payload.Keys)
-            {
-                payload[key] = payload[key].Replace("<", "&lt;").Replace(">", "&gt;"); //HTML-Markups entfernen
-            }
-
+            
             Person p = new Person();
 
             if (payload.TryGetValue("Id", out string strId))
@@ -223,7 +221,7 @@ namespace MelBox2
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@Name", email.DisplayName },
-                { "@Email", email.Address.ToLower()}                
+                { "@Email", email.Address.ToLower() }                
             };
 
             DataTable dt = SelectDataTable(query1, args);
@@ -289,24 +287,10 @@ namespace MelBox2
                     { "@Level", level },
                     { "@Company", company },
                     { "@Phone", NormalizePhone(phone) },
-                    { "@Email", email},
+                    { "@Email", email },
                     { "@Via", (int)via},
                     { "@MaxInactive", maxInactiveHours}
                 };
-
-            /*
-             *  query += "CREATE TABLE IF NOT EXISTS Person ( " +
-                    "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
-                    "Name TEXT NOT NULL, " +
-                    "Password TEXT, " +
-                    "Level INTEGER DEFAULT 0, " +
-                    "Company TEXT, " +
-                    "Phone TEXT, " +
-                    "Email TEXT, " +
-                    "Via INTEGER, " +
-                    "KeyWord TEXT, " +
-                    "MaxInactive INTEGER, " +
-            */
 
             return NonQuery(query, args);
         }
