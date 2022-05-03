@@ -64,12 +64,6 @@
                 var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
         }
 
-        //if (e == 'br') {
-        //    var finText = txtarea.value.substring(0, start) + sel + '[br]' + txtarea.value.substring(end);
-        //} else {
-        //    var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
-        //}
-
         txtarea.value = finText;
         txtarea.focus();
     }

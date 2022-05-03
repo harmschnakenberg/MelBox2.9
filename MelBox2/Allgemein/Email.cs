@@ -223,9 +223,9 @@ namespace MelBox2
             {
                 Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
                 Client.IdleError += Client_IdleError;
-
-                //Console.WriteLine("ImapServer:" + ImapServer + ":" + ImapPort);
-
+#if DEBUG
+                Console.WriteLine("ImapServer:" + ImapServer + ":" + ImapPort);
+#endif
                 if (!Client.Authed)
                     Console.WriteLine("Der Imap-Server konnte nicht angemeldet werden.");
 
@@ -303,7 +303,8 @@ namespace MelBox2
         #region Methods
         public void Dispose()
         {
-            Client.Dispose();            
+            if (Client != null)
+                Client.Dispose();            
         }
 
         public void ReadUnseen()
@@ -331,8 +332,8 @@ namespace MelBox2
         /// </summary>
         /// <returns>true= Server kann benachrichtigen bei neu empfangenen Emails.</returns>
         public bool IsIdleEmailSupported()
-        {
-            return Client.Supports("IDLE");
+        {            
+            return Client != null && Client.Authed && Client.Supports("IDLE");
         }
 
         /// <summary>

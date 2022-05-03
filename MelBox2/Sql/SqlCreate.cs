@@ -7,11 +7,11 @@ namespace MelBox2
     {
         private static readonly string AppFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-        public static string DbPath { get; set; } = Path.Combine(AppFolder, "DB", "MelBox2.db");
+        public static string DbPath { get; set; } = Path.Combine( AppFolder + @"\", "DB", "MelBox2.db" );
 
         private static void CreateNewDataBase()
         {
-            Log.Info("Erstelle eine neue Datenbank-Datei unter " + DbPath, 21405);
+            Log.Info($"Erstelle eine neue Datenbank-Datei unter '{DbPath}'", 21405);
 
             try
             {

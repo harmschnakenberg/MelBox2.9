@@ -29,12 +29,9 @@ namespace MelBox2
                 Gsm.RingSecondsBeforeCallForwarding = GetIniValue(nameof(Gsm.RingSecondsBeforeCallForwarding), Gsm.RingSecondsBeforeCallForwarding);
                 Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
 
-                OverideCallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
+                Program.OverideCallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
                 Gsm.SetCallForewarding(Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber));
-
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
-                Console.WriteLine("Fehler und Debug-Meldungen gehen an: " + Gsm.AdminPhone);
-
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);                
                 Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName);
                 Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
                 Gsm.GsmCharacterSet = GetIniValue(nameof(Gsm.GsmCharacterSet), Gsm.GsmCharacterSet);
@@ -57,7 +54,13 @@ namespace MelBox2
                 Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
                 Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);
 
+                Sql.StartOfBusinessDay = GetIniValue(nameof(Sql.StartOfBusinessDay), Sql.StartOfBusinessDay);
+                Sql.EndOfBusinessFriday = GetIniValue(nameof(Sql.EndOfBusinessFriday), Sql.EndOfBusinessFriday);
+                Sql.EndOfBusinessDay = GetIniValue(nameof(Sql.EndOfBusinessDay), Sql.EndOfBusinessDay); 
+
                 Scheduler.TaskName = GetIniValue(nameof(Scheduler.TaskName), Scheduler.TaskName);
+
+                Console.WriteLine("Fehler und Debug-Meldungen gehen an: " + Gsm.AdminPhone + " " + Email.Admin.Address);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch

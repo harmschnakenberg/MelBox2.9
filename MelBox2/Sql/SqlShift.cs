@@ -9,6 +9,10 @@ namespace MelBox2
     {
         public static int PermanentEmailRecievers { get; private set; }
 
+        public static int StartOfBusinessDay { get; set; } = 8;
+        public static int EndOfBusinessDay { get; set; } = 17;
+        public static int EndOfBusinessFriday { get; set; } = 15;
+
         #region Feiertage
 
         // Aus VB konvertiert
@@ -76,25 +80,25 @@ namespace MelBox2
                 case DayOfWeek.Sunday:
                     return true;
                 case DayOfWeek.Friday:
-                    return DateTime.Now.Hour < 8 || DateTime.Now.Hour >= 15;                   
+                    return DateTime.Now.Hour < StartOfBusinessDay || DateTime.Now.Hour >= EndOfBusinessFriday;                   
                 default:
-                    return DateTime.Now.Hour < 8 || DateTime.Now.Hour >= 17;
+                    return DateTime.Now.Hour < StartOfBusinessDay || DateTime.Now.Hour >= EndOfBusinessDay;
             }
         }
 
         internal static DateTime ShiftStartTimeUtc(DateTime dateLocal)
         {
-            int hour = 17;
+            int hour = EndOfBusinessDay;
             DayOfWeek day = dateLocal.DayOfWeek;
-            if (day == DayOfWeek.Friday) hour = 15;
-            if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = 8;
+            if (day == DayOfWeek.Friday) hour = EndOfBusinessFriday;
+            if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday || IsHolyday(dateLocal)) hour = StartOfBusinessDay;
 
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
         internal static DateTime ShiftEndTimeUtc(DateTime dateLocal)
         {
-            int hour = 8;
+            int hour = StartOfBusinessDay;
             return dateLocal.Date.AddHours(hour).ToUniversalTime();
         }
 
@@ -132,6 +136,7 @@ namespace MelBox2
         /// <summary>
         /// Gibt die aktuelle Rufweiterleitungsnummer aus. Ist aktuell keine Rufannahme definiert, wird die Nummer des Bereitschaftshandys ausgegeben.
         /// Gibt es keinen Eintrag für das Bereitschaftshandy, wird der Eintrag erzeugt.
+        /// Gibt es mehr als eine eingeteilte Bereitschaft, wird nur der erste Eintrag zurückgegeben.
         /// </summary>
         /// <param name="overrideCallForwardingNumber">Überschreibt die automatisch ermittelte Weiterleitungsnummer</param>
         /// <returns>Telefonnumer an die aktuell Sprachanrufe weitergeleitet werden sollen.</returns>
