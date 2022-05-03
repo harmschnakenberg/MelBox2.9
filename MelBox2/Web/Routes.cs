@@ -406,7 +406,7 @@ namespace MelBox2
 
             //kann maximal eigenen Access-Level vergeben.
             if (p.Level > user.Level)
-                p.Level = user.Level; 
+                p.Level = user.Level;
             #endregion
 
             bool success = p.Id > 0 && Sql.UpdatePerson(p.Id, p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, (int)p.Via, p.KeyWord, p.MaxInactive);
@@ -1118,9 +1118,8 @@ namespace MelBox2
             else if (payload.TryGetValue("hour", out string hourStr)
                 && int.TryParse(hourStr, out int hour)
                 && hour >= 0 && hour < 24
-                && ((int)user.Via & (int)Sql.Via.Email) > 0
-                && user.Email.Length > 10
-                && ((int)user.Via & (int)Sql.Via.Sms) > 0
+                && (((int)user.Via & (int)Sql.Via.SmsAndEmail) > 0 || ((int)user.Via & (int)Sql.Via.PermanentEmailAndSms) > 0)
+                && user.Email.Length > 10                
                 && user.Phone.Length > 10)
             {
                 Program.HourOfDailyTasks = hour;
@@ -1128,10 +1127,11 @@ namespace MelBox2
                 Gsm.AdminPhone = user.Phone;
 
                 string txt = $"{user.Name} ist nun verantwortlicher Systemadministrator von MelBox2.\r\n" +
-                    $"Tägliche Routinemeldungen werden um {Program.HourOfDailyTasks} Uhr an {Gsm.AdminPhone} und {Email.Admin} versendet.";
+                    $"Tägliche Routinemeldungen werden ab jetzt um {Program.HourOfDailyTasks} Uhr an {Gsm.AdminPhone} und {Email.Admin.Address} versendet.";
 
                 Email.Send(Email.Admin, txt);
                 Log.Warning(txt, 42563);
+                Sql.InsertLog(1, txt);
                 html = Html.Alert(4, "Systemadministrator erfolgreich aktualisiert", txt.Replace(Environment.NewLine, "<br/>"));
             }
             else

@@ -369,8 +369,10 @@ namespace MelBox2
             sb.Replace("[/h1]", "</h3>");
             sb.Replace("[h2]", "<h4>");
             sb.Replace("[/h2]", "</h4>");
+            sb.Replace("[strike]", "<strike>");
+            sb.Replace("[/strike]", "</strike>");
 
-            return sb.ToString().ToLower();
+            return sb.ToString();
         }
 
         /// <summary>

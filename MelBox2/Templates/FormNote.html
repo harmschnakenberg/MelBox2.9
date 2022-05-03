@@ -30,7 +30,10 @@
                 <button type="button" class="w3-button" onclick="formatText('h1');"><span class="w3-tag w3-light-gray"><b>H1</b></span></button>
                 <button type="button" class="w3-button" onclick="formatText('h2');"><span class="w3-tag w3-light-gray">H2</span></button>
                 <button type="button" class="w3-button" onclick="formatText('b');"><span class="w3-tag w3-light-gray"><b>B</b></span></button>
-                <button type="button" class="w3-button" onclick="formatText('i');"><span class="w3-tag w3-light-gray"><i>i</i></span></button>
+                <button type="button" class="w3-button" onclick="formatText('i');"><span class="w3-tag w3-light-gray"><i>I</i></span></button>
+                <button type="button" class="w3-button" onclick="formatText('u');"><span class="w3-tag w3-light-gray"><u>U</u></span></button>
+                <button type="button" class="w3-button" onclick="formatText('strike');"><span class="w3-tag w3-light-gray"><strike>abc</strike></span></button>
+                <button type="button" class="w3-button" onclick="formatText('*');"><span class="w3-tag w3-light-gray">&bull;</span></button>
                 <button type="button" class="w3-button" onclick="formatText('br');"><span class="w3-tag w3-light-gray">&crarr;</span></button>
             </p>
 
@@ -50,11 +53,22 @@
         var end = txtarea.selectionEnd;
         var sel = txtarea.value.substring(start, end);
 
-        if (e == 'br') {
-            var finText = txtarea.value.substring(0, start) + sel + '[br]' + txtarea.value.substring(end);
-        } else {
-            var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
+        switch (e) {
+            case 'br':
+                var finText = txtarea.value.substring(0, start) + sel + '[br]' + txtarea.value.substring(end);
+                break;
+            case '*':
+                var finText = txtarea.value.substring(0, start) + '&bull;' + sel + '[br]' + txtarea.value.substring(end);
+                break;
+            default:
+                var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
         }
+
+        //if (e == 'br') {
+        //    var finText = txtarea.value.substring(0, start) + sel + '[br]' + txtarea.value.substring(end);
+        //} else {
+        //    var finText = txtarea.value.substring(0, start) + '[' + e + ']' + sel + '[/' + e + ']' + txtarea.value.substring(end);
+        //}
 
         txtarea.value = finText;
         txtarea.focus();

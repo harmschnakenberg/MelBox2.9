@@ -79,7 +79,7 @@ namespace MelBox2
             Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");
 
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
-            Email.Send(Email.Admin, "Routinemeldung. E-Mail versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
+            Email.Send(Email.Admin, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
         }
 
         private static void DailyBackup(object sender, ElapsedEventArgs e)
