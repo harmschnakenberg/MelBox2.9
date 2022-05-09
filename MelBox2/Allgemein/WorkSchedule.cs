@@ -44,9 +44,9 @@ namespace MelBox2
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
-#if DEBUG
-            Console.WriteLine("> E-Mail-Abruf zur vollen Stunde.");
-#endif
+//#if DEBUG
+            Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf zur vollen Stunde.");
+//#endif
             EmailListener emailListener = new EmailListener();
             emailListener.ReadUnseen();
             emailListener.Dispose();

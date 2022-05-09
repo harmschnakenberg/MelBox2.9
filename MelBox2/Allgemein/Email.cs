@@ -309,10 +309,13 @@ namespace MelBox2
 
         public void ReadUnseen()
         {
-            if (Client is null || !Client.Authed) return;
-            
+            if (Client is null || !Client.Authed)
+            {
+                Log.Warning("Ungelesen Emails können nicht abgeholt werden. Keine Verbindung zum Email-Server.", 9641);
+                return;
+            }
                 //Download unseen mail messages
-                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());            
                 IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
 
                 foreach (MailMessage m in messages1)

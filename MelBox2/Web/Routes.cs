@@ -1123,6 +1123,7 @@ namespace MelBox2
                 && user.Phone.Length > 10)
             {
                 Program.HourOfDailyTasks = hour;
+                Sql.UpdateIniProperty(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks.ToString());
                 Email.Admin = new System.Net.Mail.MailAddress(user.Email, user.Name + " (MelBox2-Admin)");
                 Gsm.AdminPhone = user.Phone;
 

@@ -80,7 +80,7 @@ namespace MelBox2
             Console.WriteLine($"E-Mail empfangen von {email.From.Address}:\r\n\t" +
                 $"Übermittelte Zeit: {email.Headers["Date"]}\r\n\t" +
                 $"Ermittelte Sendezeit {emailDate}\r\n\t" +
-                $"Datenbankeintrag {emailDate.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}");
+                $"Datenbankeintrag {emailDate.ToUniversalTime():yyyy-MM-dd HH:mm:ss}");
 #else
             Console.WriteLine($"{emailDate.ToShortTimeString()}: E-Mail empfangen von {email.From.Address}");
 #endif
