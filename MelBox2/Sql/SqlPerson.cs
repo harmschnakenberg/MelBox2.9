@@ -15,7 +15,8 @@ namespace MelBox2
             SmsAndEmail = 3,
             PermanentEmail = 4,
             PermanentEmailAndSms = 5,
-            EmailWhitelist = 8
+            EmailWhitelist = 8,
+            NoCalls = 16
         }
 
         public static int Level_Admin { get; set; } = 9000; //Benutzerverwaltung u. -Einteilung
@@ -130,6 +131,9 @@ namespace MelBox2
 
             if (payload.TryGetValue("viaPhone", out string viaPhone) && viaPhone.Length > 0)
                 p.Via += (int)Via.Sms;
+
+            if (payload.TryGetValue("noCalls", out string noCalls) && noCalls.Length > 0)
+                p.Via += (int)Via.NoCalls;
 
             if (payload.TryGetValue("phone", out string phoneStr))
                 p.Phone = NormalizePhone(phoneStr);
@@ -425,6 +429,7 @@ namespace MelBox2
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
                 "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 16) > 0 THEN 'u' WHEN (Via & 16) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE ID = @ID;";
 
@@ -433,6 +438,7 @@ namespace MelBox2
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
                 "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 16) > 0 THEN 'u' WHEN (Via & 16) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE Level <= @Level AND lower(Company) LIKE @Company ORDER BY Name;";
 
@@ -441,6 +447,7 @@ namespace MelBox2
                 "CASE WHEN Phone = @CallF THEN 'y' WHEN Phone != @CallF THEN '0' END || " +
                 "CASE WHEN (Via & 4) > 0 THEN 'x' WHEN (Via & 4) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 2) > 0 THEN 'v' WHEN (Via & 2) < 1 THEN '0' END || " +
+                "CASE WHEN (Via & 16) > 0 THEN 'u' WHEN (Via & 16) < 1 THEN '0' END || " +
                 "CASE WHEN (Via & 1) > 0 THEN 'w' WHEN (Via & 1) < 1 THEN '0' END AS Attribut " +
                 "FROM Person WHERE Level <= @Level AND lower(Company) NOT LIKE @Company ORDER BY Name;";
 

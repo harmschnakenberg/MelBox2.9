@@ -38,14 +38,14 @@ namespace MelBox2
         }
 
         private static void ConsolidateGsmSignal(object sender, ElapsedEventArgs e)
-        {
+        {            
             Sql.ConsolidateGsmSignal();
         }
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
 //#if DEBUG
-            Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf zur vollen Stunde.");
+            Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf.");
 //#endif
             EmailListener emailListener = new EmailListener();
             emailListener.ReadUnseen();

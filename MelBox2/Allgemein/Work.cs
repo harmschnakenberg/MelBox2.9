@@ -68,8 +68,9 @@ namespace MelBox2
         {
             if (!Sql.IsKnownAddress(mail.From)) //nur bekannte Absender verarbeiten
             {
+                int length = Math.Min(50, mail.Body.Length-1);
                 Log.Warning($"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
-                Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert.");
+                Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. '{ Sql.RemoveHTMLTags(mail.Body).Substring(0, length)}'");
                 return;
             }
             

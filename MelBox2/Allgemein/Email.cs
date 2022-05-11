@@ -218,7 +218,7 @@ namespace MelBox2
     {
         #region Constructor
         public EmailListener()
-        {                   
+        {            
             try
             {
                 Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
@@ -229,7 +229,9 @@ namespace MelBox2
                 if (!Client.Authed)
                     Console.WriteLine("Der Imap-Server konnte nicht angemeldet werden.");
 
-                Client.DefaultMailbox = "Kreualarm"; // Nur zum testen
+                if (ImapUserName == "harmschnakenberg@gmx.de")
+                    Client.DefaultMailbox = "Kreualarm"; // zum testen von meinem privat-Account
+
                 Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
 
                 Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
@@ -258,8 +260,6 @@ namespace MelBox2
                 Console.WriteLine(">" + item);
             }
 #endif
-            Client.DefaultMailbox = "Kreualarm"; // Nur zum testen
-            Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
 
             // We want to be informed when new messages arrive
             Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
@@ -292,9 +292,9 @@ namespace MelBox2
 
         public static int ImapPort { get; set; } = 993;
 
-        public static string ImapUserName { get; set; } = "kreubereit@gmx.de";
+        public static string ImapUserName { get; set; } = @"kreubereit@gmx.de";
 
-        public static string ImapPassword { get; set; } = "Bernd&Co";
+        public static string ImapPassword { get; set; } = @"Bernd&Co";
 
         public static bool ImapEnableSSL { get; set; } = true;
 

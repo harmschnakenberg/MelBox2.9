@@ -148,7 +148,7 @@ namespace MelBox2
             const string query1 = "INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via)  " +
                                   @"SELECT 'Bereitschaftshandy', '�u�q�_��)vIh�ҷ\z�(yC[B���^|�', 2000, 'Kreutzträger Kältetechnik, Bremen', '+491729441694', 'Bereitschaftshandy@kreutztraeger.de', 1 " +
                                   "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); " +
-                                  "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) " +  //AND Via IN (1,3,5) " + Via weglassen damit Rufumleitung immer zur aktuellen Bereitschaft geht
+                                  "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via < 16 " + //Via weglassen damit Rufumleitung immer zum Handy aktuellen Bereitschaft geht?
                                   "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' " +
                                  // "AND NOT EXISTS (SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5)) " + // unnötig ?
                                   "LIMIT 1; ";
@@ -158,7 +158,7 @@ namespace MelBox2
 
         internal static MailAddressCollection GetCurrentEmailRecievers(bool permanentRecieversOnly = true)
         {
-            const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via = 4;"; //nur Dauerempfänger
+            const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via IN (4,5);"; //nur Dauerempfänger
             const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3,4) )"; //Bereitschaft per Email + Dauerempfänger
 
             DataTable dt = SelectDataTable(permanentRecieversOnly ? query1 : query2, null);

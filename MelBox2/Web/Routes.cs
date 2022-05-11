@@ -319,6 +319,7 @@ namespace MelBox2
             bool viaEmail = (account.Via & Sql.Via.Email) > 0;
             bool viaAlwaysEmail = (account.Via & Sql.Via.PermanentEmail) > 0;
             bool onEmailWhitelist = (account.Via & Sql.Via.EmailWhitelist) > 0;
+            bool noCalls = (account.Via & Sql.Via.NoCalls) > 0;
 
             string userRole = "Aspirant";
             if (account.Level >= Server.Level_Admin) userRole = "Admin";
@@ -341,6 +342,7 @@ namespace MelBox2
                 { "@onEmailWhitelist", onEmailWhitelist ? "checked" : string.Empty },
                 { "@Email", account.Email },
                 { "@viaPhone", viaSms ? "checked" : string.Empty },
+                { "@noCalls", noCalls ? "checked" : string.Empty },
                 { "@Phone", account.Phone },
                 { "@MaxInactiveHours", account.MaxInactive.ToString() },
                 { "@KeyWord", account.KeyWord },
@@ -778,7 +780,7 @@ namespace MelBox2
 
         #region Log
         [RestRoute("Get", "/log")]
-        [RestRoute("Get", "/log/{maxPrio:num}")]
+        //[RestRoute("Get", "/log/{maxPrio:num}")]
         public static async Task LoggingShow(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
@@ -787,8 +789,12 @@ namespace MelBox2
             #endregion
 
             int maxPrio = 3;
-            if (context.Request.PathParameters.ContainsKey("maxPrio"))
-                _ = int.TryParse(context.Request.PathParameters["maxPrio"], out maxPrio);
+
+            if (context.Request.QueryString.HasKeys())            
+                _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio); 
+            
+            //if (context.Request.PathParameters.ContainsKey("maxPrio"))
+            //    _ = int.TryParse(context.Request.PathParameters["maxPrio"], out maxPrio);
             
             System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
             string table = Html.FromTable(log, false, "");
@@ -796,6 +802,10 @@ namespace MelBox2
             string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
             html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
+            html += "<a href='/log/?prio=1' class='w3-button material-icons-outlined'>filter_1</a>\r\n" +
+                "<a href='/log/?prio=2' class='w3-button material-icons-outlined'>filter_2</a>\r\n" +
+                "<a href='/log/?prio=3' class='w3-button material-icons-outlined'>filter_3</a>\r\n" +
+                "<a href='/log/?prio=4' class='w3-button material-icons-outlined'>filter_4</a>\r\n";
 
             await Html.PageAsync(context, "Log", table + html, user);
         }

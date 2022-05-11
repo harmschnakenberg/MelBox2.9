@@ -44,7 +44,7 @@ namespace MelBox2
                     "KeyWord TEXT, " +
                     "MaxInactive INTEGER DEFAULT 0, " +
 
-                    "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL " +
+                    "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL " + // Einschränkung bei Bitweise Nutzung von Via sinnvoll?
                     "); ";
 
                 query += "CREATE TABLE IF NOT EXISTS Message ( " +
@@ -198,6 +198,13 @@ namespace MelBox2
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmail + ", 'immer Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.PermanentEmailAndSms + ", 'SMS + immer Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.EmailWhitelist + ", 'freigegebener E-Mail-Absender (Whitelist)'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + ", 'keine Sprachanrufe an diese Nummer'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.Sms + ", 'keine Sprachanrufe an diese Nummer + SMS'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.Email + ", 'keine Sprachanrufe an diese Nummer + Email'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.SmsAndEmail + ", 'keine Sprachanrufe an diese Nummer + SMS+EMail'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.PermanentEmail + ", 'keine Sprachanrufe an diese Nummer + immerEmail'); ";
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.PermanentEmailAndSms +", 'keine Sprachanrufe an diese Nummer + SMS+immerEmail'); ";
+         
 
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";

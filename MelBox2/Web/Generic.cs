@@ -456,11 +456,13 @@ namespace MelBox2
                             bool phone = 0 != (via & (int)Sql.Via.Sms);
                             bool email = 0 != ((via & (int)Sql.Via.Email) | (via & (int)Sql.Via.PermanentEmail));
                             bool whitelist = 0 != (via & (int)Sql.Via.EmailWhitelist);
+                            bool noCalls = 0 != (via & (int)Sql.Via.NoCalls);
 
                             html += "<td>";
                             if (phone) html += "<span class='material-icons-outlined'>smartphone</span>";
                             if (email) html += "<span class='material-icons-outlined'>email</span>";
                             if (whitelist) html += "<span class='material-icons-outlined'>markunread_mailbox</span>";
+                            if (noCalls) html += "<span class='material-icons-outlined'>phone_disabled</span>";
                             html += "</td>";
                         }
                     }
@@ -477,6 +479,8 @@ namespace MelBox2
                             html += "<span class='material-icons-outlined' title='Empf&auml;ngt Telefon'>smartphone</span>";
                         if (dt.Rows[i][j].ToString().Contains("v"))
                             html += "<span class='material-icons-outlined' title='Empf&auml;ngt E-Mail'>email</span>";
+                        if (dt.Rows[i][j].ToString().Contains("u"))
+                            html += "<span class='material-icons-outlined' title='keine Sprachanrufe'>phone_disabled</span>";
                         html += "</td>";
                     }
                     else if (colName.Contains("Status"))
@@ -541,7 +545,7 @@ namespace MelBox2
             holydays.AddRange(Sql.Holydays(DateTime.Now.AddYears(1))); // Feiertage auch im kommenden Jahr anzeigen
 
             DateTime lastRowEnd = DateTime.MinValue; //Merker, ob Bereitschaft über Kalenderwoche hinaus geht.
-            List<int> usedCalendarWeeks = new List<int>();
+            int lastKW = 0;
 
             //add rows
             int numRows = dt.Rows.Count;
@@ -581,12 +585,15 @@ namespace MelBox2
                 #region Sendeweg                
                 bool phone = ((Sql.Via)via & Sql.Via.Sms) > 0; //int 1= SMS - Siehe Tabelle SendWay
                 bool email = ((Sql.Via)via & Sql.Via.Email) > 0 || ((Sql.Via)via & Sql.Via.PermanentEmail) > 0; //= IsBitSet(via, 1) || IsBitSet(via, 2);  // int 2 = Email, int 4 = immerEmail - Siehe Tabelle SendWay
+                bool noCalls = 0 != (via & (int)Sql.Via.NoCalls);
 
                 html += "<td>";
                 if (phone) html += "<span class='material-icons-outlined' title='per SMS'>smartphone</span>";
                 if (email) html += "<span class='material-icons-outlined' title='per Email'>email</span>";
                 if (contactName.Length > 0 && !phone && !email) 
                     html += "<span class='material-icons-outlined' title='kein Empfangsweg'>report_problem</span>";
+                if (noCalls) html += "<span class='material-icons-outlined' title='keine Sprachanrufe'>phone_disabled</span>";
+
                 html += "</td>";
                 #endregion
 
@@ -599,13 +606,12 @@ namespace MelBox2
                 #endregion
 
                 #region Kalenderwoche
-                if (i < numRows - 1 && usedCalendarWeeks.Contains(kw)) //Doppelt vergebene KW hervorheben
-                    html += "<td><span class='w3-tag w3-amber'>" + kw.ToString("00") + "</span></td>";
-                else
-                {
-                    usedCalendarWeeks.Add(kw);
-                    html += "<td>" + kw.ToString("00") + "</td>"; 
-                }
+                if (lastKW == kw) //Doppelt vergebene KW hervorheben                
+                    html += "<td><span class='w3-tag w3-amber' title='KW mit mehr als einem Empf&auml;nger'>" + kw.ToString("00") + "</span></td>";                
+                else                 
+                    html += "<td>" + kw.ToString("00") + "</td>";
+                
+                lastKW = kw;
                 #endregion
 
                 #region Wochentage

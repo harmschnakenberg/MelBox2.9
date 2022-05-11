@@ -59,14 +59,14 @@ namespace MelBox2
 
         internal static void ConsolidateGsmSignal()
         {            
-            string query = "SELECT AVG(SignalQuality), MIN(Time), MAX(Time) FROM GsmSignal;";
+            string query = "SELECT ROUND(AVG(SignalQuality)) AS AVG, MIN(Time) AS MIN, MAX(Time) AS MAX FROM GsmSignal;";
             DataTable dt = SelectDataTable(query, null);
 
             int.TryParse(dt.Rows[0][0].ToString(), out int avgSignalQuality);
             DateTime.TryParse(dt.Rows[0][1].ToString(), out DateTime begin);
             DateTime.TryParse(dt.Rows[0][2].ToString(), out DateTime end);
 
-            InsertLog(4, $"Durchnittliches Mobilfunknetzsignal {avgSignalQuality}% von {begin.ToLocalTime()} bis {end.ToLocalTime()}");
+            InsertLog(4, $"Mobilfunknetzsignal &Oslash; {avgSignalQuality}% von {begin.ToLocalTime()} bis {end.ToLocalTime()}");
 
             string query2 = "DELETE FROM GsmSignal";
             _ = NonQuery(query2, null);
