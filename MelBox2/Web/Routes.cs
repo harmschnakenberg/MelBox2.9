@@ -802,12 +802,12 @@ namespace MelBox2
             string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
             html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
-            html += "<a href='/log/?prio=1' class='w3-button material-icons-outlined'>filter_1</a>\r\n" +
+            html += "<span style='top:140px;left:200px;'><a href='/log/?prio=1' class='w3-button material-icons-outlined'>filter_1</a>\r\n" +
                 "<a href='/log/?prio=2' class='w3-button material-icons-outlined'>filter_2</a>\r\n" +
                 "<a href='/log/?prio=3' class='w3-button material-icons-outlined'>filter_3</a>\r\n" +
-                "<a href='/log/?prio=4' class='w3-button material-icons-outlined'>filter_4</a>\r\n";
+                "<a href='/log/?prio=4' class='w3-button material-icons-outlined'>filter_4</a></span>\r\n";
 
-            await Html.PageAsync(context, "Log", table + html, user);
+            await Html.PageAsync(context, "Log", html + table, user);
         }
 
 

@@ -22,7 +22,7 @@ namespace MelBox2
 
         public static DataTable SelectLastLogs(int maxRows = 300,  int maxPrio = 3)
         {
-            string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
+            string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, 'P'|| Prio AS Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
@@ -66,7 +66,8 @@ namespace MelBox2
             DateTime.TryParse(dt.Rows[0][1].ToString(), out DateTime begin);
             DateTime.TryParse(dt.Rows[0][2].ToString(), out DateTime end);
 
-            InsertLog(4, $"Mobilfunknetzsignal &Oslash; {avgSignalQuality}% von {begin.ToLocalTime()} bis {end.ToLocalTime()}");
+            if (begin != DateTime.MinValue)
+                InsertLog(4, $"Mobilfunknetzsignal &Oslash; {avgSignalQuality}% von {begin.ToLocalTime()} bis {end.ToLocalTime()}");
 
             string query2 = "DELETE FROM GsmSignal";
             _ = NonQuery(query2, null);

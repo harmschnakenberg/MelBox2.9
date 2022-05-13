@@ -23,8 +23,6 @@ FRAGEN:
 	-> Standard ist Characterset GSM. Bei Sonderzeichen in SMS schaltet das Modem selbsttätig auf UCS2. Ist im Programm abgefangen. Muss die Praxis zeigen.
 
 TODO: 
-	- Planer Bereitschaft: Direkt zur Benutzerverwaltung von Spalte >Name< springen?
-	- GSM-Signalqualität protokollieren?
 
 PRAXISTEST:
 -	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51

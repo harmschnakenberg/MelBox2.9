@@ -559,9 +559,10 @@ namespace MelBox2
                 _ = DateTime.TryParse(dt.Rows[i]["End"].ToString(), out DateTime end);
                 _ = int.TryParse(dt.Rows[i]["KW"].ToString(), out int kw);
 
+                bool isOwner = user.Level >= Server.Level_Admin || user.Level >= Server.Level_Reciever && (user.Id == shiftContactId || shiftId == 0);
                 #region Editier-Button
 
-                if (user.Level >= Server.Level_Admin || user.Level >= Server.Level_Reciever && (user.Id == shiftContactId || shiftId == 0))
+                if (isOwner)
                 {
                     string route = shiftId == 0 ? start.ToShortDateString() : shiftId.ToString();
 
@@ -579,7 +580,10 @@ namespace MelBox2
                 #endregion
 
                 #region Name
-                html += "<td>" + contactName + "</td>";
+                if (isOwner)                
+                    html += "<td><a href='/account/" + shiftContactId + "'>" + contactName + "</a></td>";                
+                else
+                    html += "<td>" + contactName + "</td>";
                 #endregion
 
                 #region Sendeweg                
@@ -986,6 +990,7 @@ namespace MelBox2
             sb.AppendLine("<div class='w3-container'><ul class='w3-ul 3-card'>");
             sb.AppendLine(" <li>Hier werden Änderungen und Ereignisse protokolliert.</li>");
             sb.AppendLine($" <li>Es werden maximal {Html.MaxTableRowsShow} Eintr&auml;ge angezeigt.</li>");
+            sb.AppendLine(" <li>Per Button <span class='w3-button material-icons-outlined'>filter_1</span> können die Einträge nach Prioritäten vorgewählt werden.</li>");
             sb.AppendLine("</ul></div>");
             return sb.ToString();
         }
