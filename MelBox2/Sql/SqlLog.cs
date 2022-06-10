@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MelBox2
 {
@@ -20,7 +17,7 @@ namespace MelBox2
             _ = NonQuery($"INSERT INTO Log (Prio, Content) VALUES (@Prio, @Content);", args);
         }
 
-        public static DataTable SelectLastLogs(int maxRows = 300,  int maxPrio = 3)
+        public static DataTable SelectLastLogs(int maxRows = 300, int maxPrio = 3)
         {
             string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, 'P'|| Prio AS Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
 
@@ -58,7 +55,7 @@ namespace MelBox2
         }
 
         internal static void ConsolidateGsmSignal()
-        {            
+        {
             string query = "SELECT ROUND(AVG(SignalQuality)) AS AVG, MIN(Time) AS MIN, MAX(Time) AS MAX FROM GsmSignal;";
             DataTable dt = SelectDataTable(query, null);
 

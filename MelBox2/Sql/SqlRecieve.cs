@@ -1,14 +1,13 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using MelBoxGsm;
-using static MelBoxGsm.Gsm;
 
 namespace MelBox2
 {
     partial class Sql
     {
-        
+
         internal static DataTable SelectLastRecieved(string sender)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
@@ -45,12 +44,12 @@ namespace MelBox2
             const string query = "SELECT r.ContentId AS ID, m.Content, m.BlockDays, m.BlockStart, m.BlockEnd FROM Recieved r JOIN Message AS m ON m.ID = r.ContentId  WHERE r.ID = @recId";
 
             DataTable dt = SelectDataTable(query, args);
-            
+
             return GetMessage(dt);
         }
 
 
-        internal static bool InsertRecieved(SmsIn sms) 
+        internal static bool InsertRecieved(SmsIn sms)
         {
             Person sender = SelectOrCreatePerson(sms);
             Message msg = SelectOrCreateMessage(sms.Message);
@@ -64,14 +63,14 @@ namespace MelBox2
 
             const string query = "INSERT INTO Recieved (Time, SenderId, ContentId) VALUES (@Time, @SenderId, @ContentId);";
 
-           return NonQuery(query, args);
+            return NonQuery(query, args);
         }
 
-        internal static bool InsertRecieved(System.Net.Mail.MailMessage email) 
+        internal static bool InsertRecieved(System.Net.Mail.MailMessage email)
         {
-            
+
             Person sender = SelectOrCreatePerson(email.From);
-            Message msg = SelectOrCreateMessage( RemoveHTMLTags(email.Body) ); //Emails ohne HTML-Tags speichern
+            Message msg = SelectOrCreateMessage(RemoveHTMLTags(email.Body)); //Emails ohne HTML-Tags speichern
 
             //Sendezeit aus E-Mail-Header lesen. Bei unplausiblen Werten aktuelle Zeit nehmen
             if (!DateTime.TryParse(email.Headers["Date"], out DateTime emailDate) || emailDate.CompareTo(DateTime.Now) > 0)
@@ -113,7 +112,7 @@ namespace MelBox2
             return SelectDataTable(query, null);
         }
 
-       
+
     }
 
 

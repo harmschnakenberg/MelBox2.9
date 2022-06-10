@@ -102,7 +102,7 @@ namespace MelBox2
 
         internal static Person NewPerson(Dictionary<string, string> payload)
         {
-            
+
             Person p = new Person();
 
             if (payload.TryGetValue("Id", out string strId))
@@ -173,7 +173,7 @@ namespace MelBox2
                 phone = "+" + phone.Remove(0, 2);
             else if (phone.StartsWith("0"))
                 phone = "+49" + phone.TrimStart('0');
-                            
+
             if (phone[3] == '0')
                 phone = phone.Remove(3, 1);
 
@@ -225,7 +225,7 @@ namespace MelBox2
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@Name", email.DisplayName },
-                { "@Email", email.Address.ToLower() }                
+                { "@Email", email.Address.ToLower() }
             };
 
             DataTable dt = SelectDataTable(query1, args);
@@ -375,7 +375,7 @@ namespace MelBox2
             const string queryAdmin = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE Level > 0 ORDER BY Name;";
             const string queryUser = "SELECT ID, Name, Level, Company AS Firma FROM Person WHERE ID = @ID";
 
-           // Dictionary<string, object> argsAdmin = new Dictionary<string, object>() { { "@Level", Level_Reciever } };
+            // Dictionary<string, object> argsAdmin = new Dictionary<string, object>() { { "@Level", Level_Reciever } };
             Dictionary<string, object> argsUser = new Dictionary<string, object>() { { "@ID", p.Id } };
 
             DataTable dt;
@@ -503,7 +503,7 @@ namespace MelBox2
                 string[] lines = System.IO.File.ReadAllLines(path, System.Text.Encoding.GetEncoding("ISO-8859-1")); //wg. Umlaute!
                 string[] captions = lines[0].Split(';');
 
-               
+
                 int iCol = captions.Length;
                 int iName = 0;
                 int iAbsInakt = 0;
@@ -523,7 +523,7 @@ namespace MelBox2
                             iAbsInakt = i;
                             break;
                         case "AbsNr":
-                            iAbsNr = i;                            
+                            iAbsNr = i;
                             break;
                         case "AbsKey":
                             iAbsKey = i;
@@ -581,7 +581,7 @@ namespace MelBox2
                             Console.WriteLine($"Zeile {i} >{name}<".PadRight(32) + " bereits vergeben. KEIN NEUER EINTRAG!");
                         else if (ImportPerson(name, values[iAbsNr], maxInactive, values[iAbsKey], company, email, level))
                         {
-                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< "); 
+                            Console.WriteLine($"Zeile {i} >{name}< ".PadRight(32) + $">{values[iAbsNr]}< ");
                             counter++;
                         }
                         else
@@ -636,5 +636,5 @@ namespace MelBox2
                     "KeyWord TEXT, " +
                     "MaxInactive INTEGER, " +
         */
-        }
     }
+}

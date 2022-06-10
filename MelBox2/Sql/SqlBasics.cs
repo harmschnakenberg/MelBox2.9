@@ -65,7 +65,7 @@ namespace MelBox2
             if (!CheckDbFile()) return false;
 
             try
-            {             
+            {
                 using (var connection = new SqliteConnection("Data Source=" + DbPath))
                 {
                     SQLitePCL.Batteries.Init();
@@ -81,7 +81,7 @@ namespace MelBox2
                         }
                     }
 
-                    return command.ExecuteNonQuery() > 0;                   
+                    return command.ExecuteNonQuery() > 0;
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -100,33 +100,33 @@ namespace MelBox2
         /// <param name="args">Parameter für SQL-Abfrage</param>
         /// <returns>Tabelle mit dem Ergebnis der Abfrage.</returns>
         internal static DataTable SelectDataTable(string query, Dictionary<string, object> args)
-        {           
+        {
             DataTable myTable = new DataTable();
 
             if (!CheckDbFile()) return myTable;
 
             try
-            {                
+            {
                 using (var connection = new SqliteConnection("Data Source=" + DbPath))
                 {
                     connection.Open();
 
                     var command = connection.CreateCommand();
                     command.CommandText = query;
-                    
-                  
+
+
                     if (args != null && args.Count > 0)
                     {
                         foreach (string key in args.Keys)
                         {
-                            command.Parameters.AddWithValue(key, args[key]);                        
+                            command.Parameters.AddWithValue(key, args[key]);
                         }
                     }
 
                     try
-                    {                        
+                    {
                         using (var reader = command.ExecuteReader())
-                        {                           
+                        {
                             //Mit Schema einlesen
                             myTable.Load(reader);
                         }
@@ -195,8 +195,8 @@ namespace MelBox2
         /// <param name="query">SQL-Abfrage</param>
         /// <param name="args">Parameter für SQL-Abfrage</param>
         /// <returns>Ergebniswert der Abfrage.</returns>
-        internal static object SelectValue (string query, Dictionary<string, object> args)
-        {            
+        internal static object SelectValue(string query, Dictionary<string, object> args)
+        {
             try
             {
                 using (var connection = new SqliteConnection("Data Source=" + DbPath))

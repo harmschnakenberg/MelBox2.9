@@ -2,7 +2,7 @@
 
 namespace MelBox2
 {
-    
+
     static class Log
     {
         private static readonly string AppName = System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().Location);

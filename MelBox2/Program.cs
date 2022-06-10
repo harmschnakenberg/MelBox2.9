@@ -3,23 +3,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Timers;
 
 namespace MelBox2
 {
     partial class Program
     {
         public static readonly string AppName = Process.GetCurrentProcess().ProcessName;
-      
+
         static void Main()
         {
             #region nur eine Instanz des Progamms zulassen
             if (Process.GetProcessesByName(AppName).Length > 1)
             {
                 //if (Args.Length == 0)
-                #if DEBUG
+#if DEBUG
                     Log.Warning($"Debug: Es kann nur eine Instanz von {AppName} ausgeführt werden.", 739);
-                #endif
+#endif
                 return;
             }
 
@@ -87,7 +86,7 @@ namespace MelBox2
             Gsm.SetupModem();
 
             SetHourTimer(null, null);
-            
+
             Scheduler.CeckOrCreateWatchDog();
 
             EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
@@ -101,13 +100,13 @@ namespace MelBox2
                 $"Signalstärke: {(Gsm.SignalQuality > 100 ? 0 : Gsm.SignalQuality)}%,\r\n" +
                 $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
                 $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
-                       
+
             bool run = true;
             while (run)
             {
                 string input = Console.ReadLine();
                 if (input == null) continue;
-                
+
                 switch (input.ToLower())
                 {
                     case "exit":
@@ -118,9 +117,9 @@ namespace MelBox2
                         break;
                     case "ini":
                         {
-                            GetIniValues(); 
-                            Gsm.SetupModem(); 
-                            Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen."); 
+                            GetIniValues();
+                            Gsm.SetupModem();
+                            Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen.");
                             Log.Info("Einlesen der Initialisierungswerte aus der Datenbank wurde manuell aus der Konsole angestoßen.", 4112);
                         }
                         break;
@@ -140,7 +139,7 @@ namespace MelBox2
                         if (Console.ReadKey().Key == ConsoleKey.J)
                         {
                             Gsm.SetCallForewarding(phone);
-                            Console.WriteLine($"Sprachanrufe werden an die Telefonnummer {Gsm.CallForwardingNumber} weitergeleitet.");                           
+                            Console.WriteLine($"Sprachanrufe werden an die Telefonnummer {Gsm.CallForwardingNumber} weitergeleitet.");
                         }
                         break;
                     case "sms read sim":
@@ -168,7 +167,7 @@ namespace MelBox2
                         string x = Console.ReadLine();
                         if (byte.TryParse(x, out byte d))
                         {
-                            ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug) d;
+                            ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)d;
                             Console.WriteLine("Neuer Debug-Level: " + d);
                         }
                         break;
@@ -213,8 +212,8 @@ namespace MelBox2
             };
 
             Console.WriteLine($"Folgendes simulieren:\r\nSMS von >{sms.Phone}< empfangen mit Inhalt >{sms.Message}< ? (j/n)");
-            
-            if ( Console.ReadKey().Key != ConsoleKey.J)
+
+            if (Console.ReadKey().Key != ConsoleKey.J)
             {
                 Console.WriteLine("\r\nSimulation SMS-Empfang abgebrochen.");
                 return;
@@ -257,7 +256,7 @@ namespace MelBox2
             sb.AppendLine($"\r\n### GSM MODEM STATUS {DateTime.Now}  ###");
             sb.AppendLine("Modemtype".PadRight(32) + Gsm.ModemType);
             sb.AppendLine("Angeschlossen an".PadRight(32) + Gsm.SerialPortName);
-            sb.AppendLine("Kommunikationsmodus".PadRight(32) + (Gsm.IsGsmTextMode ? "Text":"PDU"));
+            sb.AppendLine("Kommunikationsmodus".PadRight(32) + (Gsm.IsGsmTextMode ? "Text" : "PDU"));
             sb.AppendLine("Zeichensatz".PadRight(32) + Gsm.GsmCharacterSet);
             sb.AppendLine("SIM Status".PadRight(32) + Gsm.SimPinStatus);
             sb.AppendLine("SIM Hinterlegter PIN".PadRight(32) + Gsm.SimPin);

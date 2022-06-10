@@ -1,16 +1,14 @@
 ﻿using Grapevine;
+using MelBoxGsm;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MelBoxGsm;
 
 namespace MelBox2
 {
     [RestResource]
     class Routes
     {
-
-
 
         #region Nachrichten
 
@@ -26,7 +24,7 @@ namespace MelBox2
 
             DateTime date = DateTime.Now.Date;
             string filter = string.Empty;
-            
+
             if (context.Request.QueryString.HasKeys())
             {
                 DateTime.TryParse(context.Request.QueryString.Get("datum"), out date);
@@ -80,7 +78,7 @@ namespace MelBox2
             {
                 System.Data.DataTable rec = Sql.SelectLastRecieved(senderFilter);
                 table += "<h3>Sender enthält '" + senderFilter + "'</h3>";
-               table += Html.FromTable(rec, isAdmin, "in");
+                table += Html.FromTable(rec, isAdmin, "in");
             }
 
             if (filter?.Length > 2)  //Filter beim blättern beibehalten
@@ -152,14 +150,14 @@ namespace MelBox2
             }
 
             System.Data.DataTable sent = Sql.SelectSent(date);
-            
+
             string table = Html.Modal("Sendestatus", Html.InfoSent());
             table += sent.Rows.Count > 0 ? string.Empty : Html.Alert(4, "Keine Eintr&auml;ge", $"F&uuml;r den {date.ToShortDateString()} sind keine gesendeten Nachrichten protokolliert.");
             table += Html.ChooseDate("out", date);
             table += Html.FromTable(sent, false);
 
             if (filter?.Length > 2) //Filter beim blättern beibehalten
-                table +=  $"<script>w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';</script>";
+                table += $"<script>w3.filterHTML('#table1', '.item', '{filter}'); document.getElementById('tablefilter').value='{filter}';</script>";
 
 
             await Html.PageAsync(context, "Gesendete Nachrichten", table);
@@ -197,7 +195,7 @@ namespace MelBox2
 
 
         #region Gesperrte Nachrichten
-     
+
         [RestRoute("Get", "/blocked/{msgId:num}")]
         public static async Task InBoxBlock(IHttpContext context)
         {
@@ -268,7 +266,7 @@ namespace MelBox2
             Dictionary<string, string> payload = Html.Payload(context);
 
             Message msg = Sql.GetMessage(payload);
-            
+
             string alert;
             if (!Sql.UpdateMessage(msg.Id, msg.BlockDays, msg.BlockStart, msg.BlockEnd))
                 alert = Html.Alert(1, "Sperrzeiten aktualisieren fehlgeschlagen", $"Die Nachricht [{msg.Id}]<p><i>{msg.Content}</i></p> konnte nicht geändert werden.");
@@ -336,7 +334,7 @@ namespace MelBox2
                 { "@Accesslevel", account.Level.ToString() },
                 { "@UserRole", userRole },
                 { "@UserAccesslevel", user.Level.ToString() },
-                { "@Company", account.Company },                
+                { "@Company", account.Company },
                 { "@viaEmail", viaEmail ? "checked" : string.Empty },
                 { "@viaAlwaysEmail", viaAlwaysEmail ? "checked" : string.Empty },
                 { "@onEmailWhitelist", onEmailWhitelist ? "checked" : string.Empty },
@@ -353,13 +351,13 @@ namespace MelBox2
             };
 
             string filter = isAdmin ? Html.AccountFilter("kreu") : string.Empty;
-            string form = Html.Page(Server.Html_FormAccount, pairs);            
+            string form = Html.Page(Server.Html_FormAccount, pairs);
             string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
             string info = Html.Modal("Benutzerkategorien", Html.InfoAccount());
 
-            await Html.PageAsync(context, "Benutzerverwaltung", filter + form + info + table, user);            
+            await Html.PageAsync(context, "Benutzerverwaltung", filter + form + info + table, user);
         }
-        
+
         [RestRoute("Post", "/account/new")]
         public static async Task AccountCreate(IHttpContext context)
         {
@@ -378,10 +376,10 @@ namespace MelBox2
             #endregion
 
             string alert;
-            
+
             if (p_known.Id > 0)
             {
-                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", $"Der Kontakt [{ p_known.Id}] {p_known.Name} existiert bereits in der Datenbank.");
+                alert = Html.Alert(1, "Fehler beim speichern des Kontakts", $"Der Kontakt [{p_known.Id}] {p_known.Name} existiert bereits in der Datenbank.");
             }
             else if (Sql.InsertPerson(p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, p.Via, p.MaxInactive))
             {
@@ -393,7 +391,7 @@ namespace MelBox2
 
             await Html.PageAsync(context, "Benutzerkonto erstellen", alert, user);
         }
-               
+
         [RestRoute("Post", "/account/update")]
         public static async Task AccountUpdate(IHttpContext context)
         {
@@ -423,7 +421,7 @@ namespace MelBox2
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
 
-            string companyFilter = p.Company.Substring(0,3); //Filter hier sinnvoll?
+            string companyFilter = p.Company.Substring(0, 3); //Filter hier sinnvoll?
             string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
 
             await Html.PageAsync(context, "Benutzerkonto ändern", alert + table, user);
@@ -480,7 +478,7 @@ namespace MelBox2
 
             Dictionary<string, string> pairs = new Dictionary<string, string>
             {
-                { "@Name", name.Replace("<", "&lt;").Replace(">", "&gt;") },              
+                { "@Name", name.Replace("<", "&lt;").Replace(">", "&gt;") },
                 { "@Password", password.Replace("<", "&lt;").Replace(">", "&gt;") },
                 { "@Company", "Kreutzträger Kältetechnik, Bremen" }
             };
@@ -498,7 +496,7 @@ namespace MelBox2
 
             Person p_new = Sql.NewPerson(payload);
             Person p_known = Sql.SelectPerson(p_new.Name);
-            
+
             if (p_known.Id > 0)
             {
                 string error = Html.Alert(1, "Registrierung fehlgeschlagen", $"Der Benutzername {p_new.Name} ist bereits vergeben." + @"<a href='/' class='w3-bar-item w3-button w3-light-blue w3-margin'>Nochmal</a>");
@@ -528,11 +526,11 @@ namespace MelBox2
         public static async Task Login(IHttpContext context)
         {
             Dictionary<string, string> payload = Html.Payload(context);
-            string name = payload["name"].Replace("<", "&lt;").Replace(">", "&gt;"); //HTML unschädlcih machen
+            string name = payload["name"].Replace("<", "&lt;").Replace(">", "&gt;"); //HTML unschädlich machen
             string password = payload["password"].Replace("<", "&lt;").Replace(">", "&gt;");
             string guid = Sql.CheckCredentials(name, password);
 
-            Person user = new Person() { Name = name };            
+            Person user = new Person() { Name = name };
             string titel = "Login fehlgeschlagen";
             string text = "Benutzername und Passwort prüfen.<br/>Neue Benutzer müssen freigeschaltet sein.<br/>" + @"<a href='/' class='w3-bar-item w3-button w3-teal w3-margin'>Nochmal</a>";
             int prio = 1;
@@ -568,7 +566,7 @@ namespace MelBox2
         {
             System.Net.Cookie cookie = new System.Net.Cookie("MelBoxId", string.Empty, "/");
             context.Response.Cookies.Add(cookie);
-           
+
             string alert = Html.Alert(4, "Cookie geleert", "Der Cookie mit Ihren codierten Anmeldeinformationen wurde geleert.");
 
             await Html.PageAsync(context, "Cookie geleert", alert, null);
@@ -580,8 +578,8 @@ namespace MelBox2
         #region Bereitschaftszeiten
         [RestRoute("Get", "/shift")]
         public static async Task ShiftShow(IHttpContext context)
-        {            
-            Person user = await Html.GetLogedInUserAsync(context, false);           
+        {
+            Person user = await Html.GetLogedInUserAsync(context, false);
             string table = Html.FromShiftTable(user);
             string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
 
@@ -594,7 +592,7 @@ namespace MelBox2
             Person user = await Html.GetLogedInUserAsync(context);
             if (user == null) return;
             bool isAdmin = user.Level >= Server.Level_Admin;
-            
+
 
             var shiftIdStr = context.Request.PathParameters["shiftId"];
             _ = int.TryParse(shiftIdStr, out int shiftId);
@@ -669,12 +667,12 @@ namespace MelBox2
             if (shift.PersonId == 0) shift.PersonId = user.Id;
 
             string alert;
-            bool success = true;            
+            bool success = true;
             int shiftHours = (int)shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
-            if (user.Level < Server.Level_Reciever)            
-                alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Sie haben keine Berechtigung zum Erstellen dieser Bereitschaft.");            
-            else if (shiftHours < 1)            
+            if (user.Level < Server.Level_Reciever)
+                alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Sie haben keine Berechtigung zum Erstellen dieser Bereitschaft.");
+            else if (shiftHours < 1)
                 alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", $"Die Bereitschaft vom {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ist ungültig.");
             else
             {
@@ -687,7 +685,7 @@ namespace MelBox2
                 else
                     alert = Html.Alert(1, "Fehler beim speichern der Bereitschaft", "Die Bereitschaft konnte nicht in der Datenbank gespeichert werden.");
             }
-             
+
             string table = Html.FromShiftTable(user);
 
             await Html.PageAsync(context, "Bereitschaftszeit erstellen", alert + table, user);
@@ -705,7 +703,7 @@ namespace MelBox2
 
             int shiftHours = (int)shift.EndUtc.Subtract(shift.StartUtc).TotalHours;
 
-            bool success = true;            
+            bool success = true;
             string alert;
             string shiftName = Sql.SelectPerson(shift.PersonId).Name;
             List<Shift> shifts = Sql.SplitShift(shift);
@@ -730,7 +728,7 @@ namespace MelBox2
             }
             else
                 alert = Html.Alert(2, "Fehler beim Ändern der Bereitschaft", "Sie haben keine Berechtigung für diese Änderung der Bereitschaft " +
-                    $"Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} oder es wurden ungültige Parameter übergeben.");                    
+                    $"Nr. {shift.Id} von {shift.StartUtc.ToLocalTime():g} bis {shift.EndUtc.ToLocalTime():g} ({shiftHours} Std.) für {shiftName} oder es wurden ungültige Parameter übergeben.");
 
             string table = Html.FromShiftTable(user);
 
@@ -748,8 +746,8 @@ namespace MelBox2
             Shift shift = Sql.GetShift(Sql.SelectShift(shiftId));
 
             string alert;
-            if (shift.Id == 0)            
-                alert = Html.Alert(2, "Fehler Bereitschaftszeit löschen", $"Die angeforderte Bereitschaft Nr. [{shiftIdStr}] wurde nicht gefunden.");            
+            if (shift.Id == 0)
+                alert = Html.Alert(2, "Fehler Bereitschaftszeit löschen", $"Die angeforderte Bereitschaft Nr. [{shiftIdStr}] wurde nicht gefunden.");
             else
             {
                 Person p = Sql.SelectPerson(shift.PersonId);
@@ -790,12 +788,12 @@ namespace MelBox2
 
             int maxPrio = 3;
 
-            if (context.Request.QueryString.HasKeys())            
-                _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio); 
-            
+            if (context.Request.QueryString.HasKeys())
+                _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio);
+
             //if (context.Request.PathParameters.ContainsKey("maxPrio"))
             //    _ = int.TryParse(context.Request.PathParameters["maxPrio"], out maxPrio);
-            
+
             System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
             string table = Html.FromTable(log, false, "");
             int del = 100;
@@ -825,7 +823,7 @@ namespace MelBox2
             if (isAdmin)
             {
                 if (int.TryParse(context.Request.PathParameters["del"].ToString(), out int del))
-                {                   
+                {
                     if (Sql.DeleteLogExeptLast(del))
                     {
                         string text = $"Log-Einträge bis auf letzten {del} Einträge gelöscht durch [{user.Id}] >{user.Name}<.";
@@ -877,7 +875,7 @@ namespace MelBox2
                     if (note.Rows[0]["VonId"]?.ToString() == user.Id.ToString())
                         updateButton = "<button class='w3-button w3-cyan w3-padding w3-margin w3-quarter' type='submit' formaction='/notepad/update'>&Auml;ndern</button>";
                 }
-                    
+
                 string customerOptions = Sql.HtmlOptionCustomers(selectedCustomerId);
 
                 Dictionary<string, string> pairs = new Dictionary<string, string>
@@ -911,12 +909,12 @@ namespace MelBox2
             #region Form auslesen
             bool success = false;
             Dictionary<string, string> payload = Html.Payload(context);
-            
+
             if (payload.TryGetValue("authorId", out string authorIdStr)
                 && int.TryParse(authorIdStr, out int authorId)
                 && payload.TryGetValue("customerId", out string customerIdStr)
                 && int.TryParse(customerIdStr, out int customerId)
-                && payload.TryGetValue("content", out string content) 
+                && payload.TryGetValue("content", out string content)
                 )
                 success = Sql.InsertNote(authorId, customerId, content);
             #endregion
@@ -925,7 +923,7 @@ namespace MelBox2
 
             string alert = string.Empty;
             if (success)
-                alert += Html.Alert(3, "Notiz erstellt", $"{author} hat eine neue Notiz erstellt.") ;
+                alert += Html.Alert(3, "Notiz erstellt", $"{author} hat eine neue Notiz erstellt.");
             else
                 alert += Html.Alert(1, "Notiz erstellen fehlgeschlagen", $"Es konnte keine neue Notiz erstellt werden.");
 
@@ -952,7 +950,7 @@ namespace MelBox2
                 && int.TryParse(authorIdStr, out int authorId)
                 && payload.TryGetValue("customerId", out string customerIdStr)
                 && int.TryParse(customerIdStr, out int customerId)
-                && payload.TryGetValue("content", out string content) 
+                && payload.TryGetValue("content", out string content)
                 )
                 success = Sql.UpdateNote(noteId, authorId, customerId, content);
             #endregion
@@ -1056,7 +1054,7 @@ namespace MelBox2
             System.Threading.Thread.Sleep(2000);
 
             string html = Html.Alert(4, "Aktuelle Rufweiterleitung geprüft", $"Sprachanrufe werden aktuell an {(Gsm.CallForwardingNumber.Length > 8 ? Gsm.CallForwardingNumber : "-unbekannt-")} weitergeleitet.");
-            
+
             await Html.PageAsync(context, "Rufweiterleitung geprüft", html);
         }
 
@@ -1129,7 +1127,7 @@ namespace MelBox2
                 && int.TryParse(hourStr, out int hour)
                 && hour >= 0 && hour < 24
                 && (((int)user.Via & (int)Sql.Via.SmsAndEmail) > 0 || ((int)user.Via & (int)Sql.Via.PermanentEmailAndSms) > 0)
-                && user.Email.Length > 10                
+                && user.Email.Length > 10
                 && user.Phone.Length > 10)
             {
                 Program.HourOfDailyTasks = hour;
@@ -1210,7 +1208,7 @@ namespace MelBox2
 
         [RestRoute]
         public static async Task Home(IHttpContext context)
-        {           
+        {
             string form = Html.Modal("Login und Registrierung", Html.InfoLogin());
             form += Html.Page(Server.Html_FormLogin, null);
 

@@ -13,7 +13,7 @@ namespace MelBox2
         private static IRestServer restServer;
 
         public static int Level_Admin { get; set; } = 9000; //Benutzerverwaltung u. -Einteilung
-       
+
         public static int Level_Reciever { get; set; } = 2000; //Empfänger bzw. Bereitschaftsnehmer
 
         private static readonly string appPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -21,7 +21,7 @@ namespace MelBox2
         public static string Html_Skeleton { get; } = Path.Combine(appPath, "Templates", "Skeleton.html");
         public static string Html_FormLogin { get; } = Path.Combine(appPath, "Templates", "FormLogin.html");
         public static string Html_FormMessage { get; } = Path.Combine(appPath, "Templates", "FormMessage.html");
-        public static string Html_FormAccount { get; } = Path.Combine(appPath, "Templates", "FormAccount.html");        
+        public static string Html_FormAccount { get; } = Path.Combine(appPath, "Templates", "FormAccount.html");
         public static string Html_FormRegister { get; } = Path.Combine(appPath, "Templates", "FormRegister.html");
         public static string Html_FormShift { get; } = Path.Combine(appPath, "Templates", "FormShift.html");
         public static string Html_FormNote { get; } = Path.Combine(appPath, "Templates", "FormNote.html");

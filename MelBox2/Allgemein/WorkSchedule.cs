@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Data;
 using System.Timers;
-using MelBoxGsm;
 
 namespace MelBox2
 {
     static partial class Program
-    {        
+    {
         public static int HourOfDailyTasks { get; set; } = 8;
 
         /// <summary>
@@ -32,28 +32,28 @@ namespace MelBox2
             execute.Elapsed += new ElapsedEventHandler(GetUsedMemory);
             execute.Elapsed += new ElapsedEventHandler(DailyNotification); //Stundensprung beachten!
             execute.Elapsed += new ElapsedEventHandler(SetHourTimer);
-            
+
             execute.AutoReset = false;
             execute.Start();
         }
 
         private static void ConsolidateGsmSignal(object sender, ElapsedEventArgs e)
-        {            
+        {
             Sql.ConsolidateGsmSignal();
         }
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
-//#if DEBUG
+            //#if DEBUG
             Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf.");
-//#endif
+            //#endif
             EmailListener emailListener = new EmailListener();
             emailListener.ReadUnseen();
             emailListener.Dispose();
         }
 
         private static void SenderTimeoutCheck(object sender, ElapsedEventArgs e)
-        {            
+        {
             if (Sql.IsWatchTime()) return; //Inaktivität nur zur Geschäftszeit prüfen.
 
             DataTable dt = Sql.SelectOverdueSenders();
@@ -94,7 +94,7 @@ namespace MelBox2
         {
             System.Diagnostics.PerformanceCounter perfCpuCount = new System.Diagnostics.PerformanceCounter("Processor Information", "% Processor Time", "_Total");
 
-            using (System.Diagnostics.Process proc = System.Diagnostics.Process.GetCurrentProcess())           
+            using (System.Diagnostics.Process proc = System.Diagnostics.Process.GetCurrentProcess())
             {
                 // The proc.PrivateMemorySize64 will returns the private memory usage in byte.
                 // Would like to Convert it to Megabyte? divide it by 2^20
@@ -123,7 +123,7 @@ namespace MelBox2
             string phone = Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber);
 
             if (Gsm.CallForwardingNumber != phone)
-            {                
+            {
                 Gsm.SetCallForewarding(phone);
 
                 if (Gsm.CallForwardingActive)
@@ -135,7 +135,7 @@ namespace MelBox2
             if (phone != Gsm.CallForwardingNumber)
                 Console.WriteLine($"Die aktuelle Rufumleitung soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
 
-               // Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
+            // Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
         }
 
 

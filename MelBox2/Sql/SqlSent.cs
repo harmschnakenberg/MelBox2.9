@@ -1,8 +1,7 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using static MelBoxGsm.Gsm;
-using MelBoxGsm;
 
 namespace MelBox2
 {
@@ -91,7 +90,7 @@ namespace MelBox2
 
             const string query = "UPDATE Sent SET Time = @Time, Confirmation = @Confirmation WHERE Reference IN ( SELECT Reference FROM Sent WHERE Reference = @Reference ORDER BY Id DESC LIMIT 1);";
 
-           _ = NonQuery(query, args);
+            _ = NonQuery(query, args);
         }
 
         internal static void UpdateSent(int emailId, Gsm.DeliveryStatus confirmation) //ungetestet

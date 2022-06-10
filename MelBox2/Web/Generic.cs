@@ -36,7 +36,7 @@ namespace MelBox2
         internal static async Task<Person> GetLogedInUserAsync(IHttpContext context, bool blockUser = true)
         {
             _ = Html.ReadCookies(context).TryGetValue("MelBoxId", out string guid);
-           
+
             Person user = new Person();
 
             if (guid == null || !Server.LogedInHash.TryGetValue(guid, out user))
@@ -80,7 +80,7 @@ namespace MelBox2
             return cookies;
         }
 
-        internal static async Task PageAsync(IHttpContext context, string titel, string body, Person user = null )
+        internal static async Task PageAsync(IHttpContext context, string titel, string body, Person user = null)
         {
 
             string connectIcon = Gsm.NetworkRegistration != Gsm.Registration.Registered ? "signal_cellular_connected_no_internet_0_bar" :
@@ -208,7 +208,7 @@ namespace MelBox2
 
             return html.AppendLine("</span>").ToString();
         }
-	
+
         /// <summary>
         /// F&auml;rbe den Tag im Kalender ein
         /// </summary>
@@ -251,7 +251,7 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("<div class='w3-container w3-center w3-padding '>");
-            sb.AppendLine($"  <form id='chooseDate' method='get' action='/{root}' >"); 
+            sb.AppendLine($"  <form id='chooseDate' method='get' action='/{root}' >");
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
             sb.AppendLine($"   <input name='datum' id='anzeigedatum' type='date' title='Anzeigedatum' placeholder='{date:yyyy-MM-dd}' value='{date:yyyy-MM-dd}' min='{DateTime.Now.AddYears(-10).Date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);' onkeyup='onEnter();'>"); //onblur='inc(0);'
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
@@ -285,9 +285,9 @@ namespace MelBox2
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<select class='w3-select w3-pale-yellow' name='hour'>");
-            for (int i = 0; i < 24; i++)            
+            for (int i = 0; i < 24; i++)
                 sb.AppendLine($"<option value='{i}' {(i == selected ? "selected" : string.Empty)}>{i} Uhr</option>");
-            
+
             sb.AppendLine("</select>");
             return sb.ToString();
         }
@@ -304,7 +304,7 @@ namespace MelBox2
             sb.AppendLine($"<a href='/account' class='w3-button' title='Filter zur&uuml;cksetzen'><i class='w3-xlarge material-icons-outlined'>filter_none</i></a>");
             sb.AppendLine($"<a href='/account?company=-{filter}' class='w3-button' title='Filter Firma enth&auml;lt nicht &quot;{filter}&quot;'><i class='w3-xlarge material-icons-outlined'>filter_1</i></a>");
             sb.AppendLine($"<a href='/account?company={filter}' class='w3-button' title='Filter Firma enth&auml;lt &quot;{filter}&quot;'><i class='w3-xlarge material-icons-outlined'>filter_2</i></a>");
-            
+
             return sb.ToString();
         }
 
@@ -328,7 +328,7 @@ namespace MelBox2
                 if (phoneStr.StartsWith("+"))
                     phoneStr = "0" + user.Phone.Remove(0, 3); //'+49...' -> '0...'
 
-                html =  $"<input name='phone' type='hidden' value='{phoneStr}'>" +
+                html = $"<input name='phone' type='hidden' value='{phoneStr}'>" +
                         $"<input class='w3-button w3-light-blue w3-threequarter' type='submit' value='Sprachanrufe dauerhaft an mich weiterleiten ({phoneStr})'>";
             }
             else
@@ -382,7 +382,7 @@ namespace MelBox2
         /// <returns></returns>
         public static string EncodeHtml(this string s)
         {
-            if (s?.Length > 3)            
+            if (s?.Length > 3)
                 return s.Replace("<", "&lt;").Replace(">", "&gt;");
 
             return s;
@@ -396,7 +396,7 @@ namespace MelBox2
         internal static string FromTable(System.Data.DataTable dt, bool isAuthorized, string root = "x")
         {
             string html = string.Empty;
-            
+
             if (dt.Rows.Count > 2) //Filter nur, wenn etwas zum Filtern da ist
                 html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' id='tablefilter' placeholder='Suche nach..'></p>\r\n";
 
@@ -419,7 +419,7 @@ namespace MelBox2
             else
             {
                 for (int i = 0; i < dt.Columns.Count; i++)
-                    html += $"<th class='w3-hover-sand' onclick=\"w3.sortHTML('#table1', '.item', 'td:nth-child({ i + 2 })')\" title='Klicken zum sortieren'>&#8645;&nbsp;" +
+                    html += $"<th class='w3-hover-sand' onclick=\"w3.sortHTML('#table1', '.item', 'td:nth-child({i + 2})')\" title='Klicken zum sortieren'>&#8645;&nbsp;" +
                             $"{dt.Columns[i].ColumnName.Replace('_', ' ')}" +
                             $"</th>";
             }
@@ -517,7 +517,7 @@ namespace MelBox2
 
             System.Data.DataTable dt = Sql.SelectShiftsCalendar();
 
-            string html = Modal("Bereitschaft", InfoShift()); 
+            string html = Modal("Bereitschaft", InfoShift());
             html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             //Quelle: https://css-tricks.com/stripes-css/
@@ -580,8 +580,8 @@ namespace MelBox2
                 #endregion
 
                 #region Name
-                if (isOwner)                
-                    html += "<td><a href='/account/" + shiftContactId + "'>" + contactName + "</a></td>";                
+                if (isOwner)
+                    html += "<td><a href='/account/" + shiftContactId + "'>" + contactName + "</a></td>";
                 else
                     html += "<td>" + contactName + "</td>";
                 #endregion
@@ -594,7 +594,7 @@ namespace MelBox2
                 html += "<td>";
                 if (phone) html += "<span class='material-icons-outlined' title='per SMS'>smartphone</span>";
                 if (email) html += "<span class='material-icons-outlined' title='per Email'>email</span>";
-                if (contactName.Length > 0 && !phone && !email) 
+                if (contactName.Length > 0 && !phone && !email)
                     html += "<span class='material-icons-outlined' title='kein Empfangsweg'>report_problem</span>";
                 if (noCalls) html += "<span class='material-icons-outlined' title='keine Sprachanrufe'>phone_disabled</span>";
 
@@ -611,19 +611,19 @@ namespace MelBox2
 
                 #region Kalenderwoche
                 if (lastKW == kw) //Doppelt vergebene KW hervorheben                
-                    html += "<td><span class='w3-tag w3-amber' title='KW mit mehr als einem Empf&auml;nger'>" + kw.ToString("00") + "</span></td>";                
-                else                 
+                    html += "<td><span class='w3-tag w3-amber' title='KW mit mehr als einem Empf&auml;nger'>" + kw.ToString("00") + "</span></td>";
+                else
                     html += "<td>" + kw.ToString("00") + "</td>";
-                
+
                 lastKW = kw;
                 #endregion
 
                 #region Wochentage
                 //Wenn in dieser Woche die selbe Person Bereitschaft hat wie in der Vorwoche, den Bereitschaftswechesel am Montag nicht hervorheben
-                bool sameAsLastWeek = i > 0 
+                bool sameAsLastWeek = i > 0
                     && start.DayOfWeek == DayOfWeek.Monday
-                    && dt.Rows[i-1]["Name"].ToString() == contactName 
-                    && start.Date == lastRowEnd.Date; 
+                    && dt.Rows[i - 1]["Name"].ToString() == contactName
+                    && start.Date == lastRowEnd.Date;
 
                 for (int j = 7; j < dt.Columns.Count; j++)
                 {
@@ -662,11 +662,11 @@ namespace MelBox2
                 html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' placeholder='Suche nach..'></p>\r\n";
 
             html += "<table id='table1' class='w3-table-all'>\n";
-            
+
             //add header row
             html += "<tr><th>Edit</th>";
-                    html += $"<th>{dt.Columns["Bearbeitet"].ColumnName}</th>";
-                    html += $"<th>{dt.Columns["Von"].ColumnName}</th>";
+            html += $"<th>{dt.Columns["Bearbeitet"].ColumnName}</th>";
+            html += $"<th>{dt.Columns["Von"].ColumnName}</th>";
             html += $"<th>{dt.Columns["Kunde"].ColumnName}</th>";
             html += $"<th>{dt.Columns["Notiz"].ColumnName}</th>";
             html += "</tr>\n";
@@ -677,7 +677,7 @@ namespace MelBox2
 
                 html += "<tr class='item'><td>";
 
-                if (dt.Rows[i]["VonId"].ToString() == user.Id.ToString())                
+                if (dt.Rows[i]["VonId"].ToString() == user.Id.ToString())
                     html += "<a href='/notepad/" + dt.Rows[i][0].ToString() + "'><i class='material-icons-outlined'>edit</i></a>";
 
                 html += "</td><td>" + dt.Rows[i]["Bearbeitet"].ToString().Replace("-", "&#8209;").Replace(" ", "&nbsp;") + "</td>"; //non-breaking hyphen, non-breaking space
@@ -688,7 +688,7 @@ namespace MelBox2
                 html += "</tr>\n";
             }
 
-                html += "</table>\n";
+            html += "</table>\n";
             return html;
         }
 
@@ -712,7 +712,7 @@ namespace MelBox2
             sb.AppendLine("        </div>");
             sb.AppendLine("    </div>");
             sb.AppendLine("</div>");
-     
+
             return sb.ToString();
         }
 
@@ -731,7 +731,7 @@ namespace MelBox2
             sb.AppendLine(" <li><hr></li>");
             sb.AppendLine(" <li><b>Attribute</b></li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>smartphone</span>Versand von SMS an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
-            sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");            
+            sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
             //sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>call</span>Sprachanrufe werden aktuell an diesen Empf&auml;nger weitergeleitet.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. Zurzeit gibt es {Sql.PermanentEmailRecievers} Abonnenten.</li>");
@@ -778,36 +778,36 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<table class='w3-table'>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <th>Symbol</th>");            
+            sb.AppendLine("  <th>Symbol</th>");
             sb.AppendLine("  <th>Bedeutung</th>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>smartphone</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>smartphone</span></td>");
             sb.AppendLine("  <td>per SMS</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr class='w3-border-bottom'>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>email</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>email</span></td>");
             sb.AppendLine("  <td>per Email</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr><hr/></tr>");
-            
+
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>check_circle_outline</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>check_circle_outline</span></td>");
             sb.AppendLine("  <td>Senden erfolgreich</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>timer</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>timer</span></td>");
             sb.AppendLine("  <td>Tempor&auml;rer Fehler - versucht weiter zu senden</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>highlight_off</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>highlight_off</span></td>");
             sb.AppendLine("  <td>Dauerhafter Fehler - Senden fehlgeschlagen</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td><span class='material-icons-outlined'>help_outline</span></td>");            
+            sb.AppendLine("  <td><span class='material-icons-outlined'>help_outline</span></td>");
             sb.AppendLine("  <td>-Sendestatus unbekannt-</td>");
             sb.AppendLine("</tr>");
-            sb.AppendLine("<tr>");          
+            sb.AppendLine("<tr>");
             sb.AppendLine("</table>");
 
             sb.AppendLine("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
@@ -852,7 +852,7 @@ namespace MelBox2
             sb.AppendLine("  <td></td>");
             sb.AppendLine("  <td></td>");
             sb.AppendLine("</tr>");
-            sb.AppendLine("<tr>");  
+            sb.AppendLine("<tr>");
             sb.AppendLine("  <th>Farbe</th>");
             sb.AppendLine("  <th>Bedeutung</th>");
             sb.AppendLine("  <th colspan='2'>Zuweisung Empf&auml;nger</th>");
@@ -907,12 +907,12 @@ namespace MelBox2
             sb.AppendLine("<li>Benutzer k&ouml;nnen eine neue Kalenderwoche einrichten oder eigene Zeiten bearbeiten.<br/>Administratoren k&ouml;nnen auch Zeiten anderer Benutzer &auml;ndern.</li>");
             sb.AppendLine("<li>Hinweis zu &Auml;nderungen: Eintr&auml;ge mit einer Dauer von weniger als 1 Std. sind ung&uuml;ltig und werden abgelehnt.<br/>Eintr&auml;ge k&ouml;nnen nur von Administratoren gel&ouml;scht werden.</li>");
             sb.AppendLine("<li>Die Weiterleitung von Sprachanrufen wird nur zur vollen Stunde gewechselt.</li>");
-            
-          sb.AppendLine("</ul></div>");
+
+            sb.AppendLine("</ul></div>");
 
             return sb.ToString();
         }
- 
+
         internal static string InfoRecieved(bool isAdmin)
         {
             StringBuilder sb = new StringBuilder();
@@ -936,8 +936,8 @@ namespace MelBox2
             sb.AppendLine(" <li>Liegt die Uhrzeit &apos;Beginn&apos; nach der Uhrzeit &apos;Ende&apos;, ist diese Nachricht bis zum n&auml;chsten Tag zur Uhrzeit &apos;Ende&apos; gesperrt.</li>");
             sb.AppendLine(" <li>Sind die Uhrzeit &apos;Beginn&apos; und &apos;Ende&apos; gleich, ist diese Nachricht 24 Stunden gesperrt.</li>");
             sb.AppendLine(" <li>Die Sperrzeiten k&ouml;nnen nur von Administratoren ge&auml;ndert werden.</li>");
-            if (isAdmin) sb.AppendLine(" <li>Ist kein Wochentag angehakt, wird die Sperre aufgehoben.</li>");            
-            
+            if (isAdmin) sb.AppendLine(" <li>Ist kein Wochentag angehakt, wird die Sperre aufgehoben.</li>");
+
             sb.AppendLine("</ul></div>");
             return sb.ToString();
         }
@@ -960,7 +960,7 @@ namespace MelBox2
                         "<ol> " +
                         "<li>Waren im Zeitraum &apos;Max&nbsp;Inaktiv&apos; Meldungen vorhanden?</li>" +
                         "<li>St&ouml;rmeldungsweiterleitung vor Ort eingeschaltet?</li>" +
-                        "<li>GSM-Modem von Visu erreichbar? Fehlermeldungen von GSM-Modem?</li>" +                        
+                        "<li>GSM-Modem von Visu erreichbar? Fehlermeldungen von GSM-Modem?</li>" +
                         "<li>Empfangsqualität ausreichend?</li>" +
                         "<li>Bei EMail-Versand: Kunden-IT informieren</li>" +
                         "</td>");

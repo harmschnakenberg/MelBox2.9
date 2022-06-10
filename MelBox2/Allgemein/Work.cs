@@ -9,7 +9,7 @@ namespace MelBox2
     static partial class Program
     {
         public static string SmsTestTrigger { get; set; } = "SMSAbruf";
-       
+
         public static string[] LifeMessageTrigger { get; set; } = { "MelSysOK", "SgnAlarmOK" };
 
         private static bool isStartupTimeStartup = true; //Zeitraum nach Programmneustart aktiv 
@@ -36,9 +36,9 @@ namespace MelBox2
         /// </summary>
         /// <param name="smsenIn">Eingegangene SMS</param>
         private static void ParseNewSms(List<SmsIn> smsenIn)
-        {            
+        {
             if (smsenIn.Count == 0) return;
-           
+
             bool isWatchTime = Sql.IsWatchTime();
 #if DEBUG
             if (!isWatchTime)
@@ -51,12 +51,12 @@ namespace MelBox2
             {
                 if (Sql.InsertRecieved(smsIn)) //Empfang in Datenbank protokollieren                
                     Gsm.SmsDelete(smsIn.Index);
-                
+
                 bool isSmsTest = IsSmsTest(smsIn);
                 if (isSmsTest) continue; //'SmsAbruf' nicht an Bereitschaft und Emailverteiler senden. 
                 bool isLifeMessage = IsLifeMessage(smsIn); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
                 bool isMessageBlocked = Sql.IsMessageBlockedNow(smsIn.Message);
-               
+
                 if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup)
                     SendSmsToShift(smsIn);
 
@@ -68,15 +68,15 @@ namespace MelBox2
         {
             if (!Sql.IsKnownAddress(mail.From)) //nur bekannte Absender verarbeiten
             {
-                int length = Math.Min(50, mail.Body.Length-1);
-                Log.Warning($"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body) , 7698);
-                Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. '{ Sql.RemoveHTMLTags(mail.Body).Substring(0, length)}'");
+                int length = Math.Min(50, mail.Body.Length - 1);
+                Log.Warning($"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. Inhalt:\r\n" + Sql.RemoveHTMLTags(mail.Body), 7698);
+                Sql.InsertLog(2, $"Email von unbekanntem Absender '{mail.From.Address}' wird ignoriert. '{Sql.RemoveHTMLTags(mail.Body).Substring(0, length)}'");
                 return;
             }
-            
+
             if (mail.From.Address.Contains("elreha")) //Sonderbehandlung für Emails von Elreha Kühlstellenreglern            
                 mail.Body = Email.ParseElrehaEmail(mail.Body);
-            
+
             if (Sql.InsertRecieved(mail)) //Empfang in Datenbank protokollieren
             {
                 //TODO Email im Posteingang löschen?
@@ -87,8 +87,8 @@ namespace MelBox2
             bool isWatchTime = Sql.IsWatchTime();
 
             if (isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup)
-                SendSmsToShift( Sql.RemoveHTMLTags(mail.Body) ); //Email ohne HTML an aktuelle Bereitschaft per Sms senden
-           
+                SendSmsToShift(Sql.RemoveHTMLTags(mail.Body)); //Email ohne HTML an aktuelle Bereitschaft per Sms senden
+
             SendEmailToShift(mail, isWatchTime, isLifeMessage, isMessageBlocked); //Empfangene Email an Bereitschaft/Service Email
         }
 
@@ -179,11 +179,11 @@ namespace MelBox2
 
             Person p = Sql.SelectOrCreatePerson(smsIn);
 
-            string subject = $"SMS-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
+            string subject = $"SMS-Eingang >{p.Name}<{(p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
             //Email An: nur an eingeteilte Bereitschaft
             bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup;
-            
+
             System.Net.Mail.MailAddressCollection mc = isMsgForShift
                                                         ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger
                                                         : Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger
@@ -222,7 +222,7 @@ namespace MelBox2
 
             Person p = Sql.SelectOrCreatePerson(mail.From);
 
-            string subject = $"Email-Eingang >{p.Name}<{ (p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
+            string subject = $"Email-Eingang >{p.Name}<{(p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
 
             //Email an nur an eingeteilte Bereitschaft, wenn...
             bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked;
@@ -237,7 +237,7 @@ namespace MelBox2
 
             if (isMsgForShift)
                 Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
-            
+
             Email.Send(mc, body, subject, true, emailId);
         }
 

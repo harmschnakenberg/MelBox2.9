@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MelBox2
 {
@@ -13,14 +9,14 @@ namespace MelBox2
         public static string TaskName { get; set; } = "MelBoxWatchDog";
         static readonly string taskPath = System.Reflection.Assembly.GetAssembly(typeof(Program)).Location;  // Diese exe
 
-        internal static void CeckOrCreateWatchDog() 
+        internal static void CeckOrCreateWatchDog()
         {
-            if (!HasTask(TaskName) && !CreateSchedulerTask(15, TaskName, taskPath))                
-                    Log.Error("Es konnte kein Task zur Überwachung von MelBox erstellt werden.", 1211);                
+            if (!HasTask(TaskName) && !CreateSchedulerTask(15, TaskName, taskPath))
+                Log.Error("Es konnte kein Task zur Überwachung von MelBox erstellt werden.", 1211);
         }
 
         private static bool HasTask(string taskname)
-        {           
+        {
             ProcessStartInfo start = new ProcessStartInfo
             {
                 FileName = "schtasks.exe",
@@ -60,9 +56,9 @@ namespace MelBox2
         }
 
         private static bool CreateSchedulerTask(int intervallMinutes, string scheduledTaskName, string taskPath)
-        {            
+        {
             string startTime = DateTime.Now.AddMinutes(5).ToShortTimeString();
-           
+
             string schtasksCommand = String.Format("/Create /SC Minute /MO {0} /TN \\KKT\\{1} /TR \"{2}\" /ST {3}", intervallMinutes, scheduledTaskName, taskPath, startTime);
 
             ProcessStartInfo start = new ProcessStartInfo

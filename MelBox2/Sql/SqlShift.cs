@@ -80,7 +80,7 @@ namespace MelBox2
                 case DayOfWeek.Sunday:
                     return true;
                 case DayOfWeek.Friday:
-                    return DateTime.Now.Hour < StartOfBusinessDay || DateTime.Now.Hour >= EndOfBusinessFriday;                   
+                    return DateTime.Now.Hour < StartOfBusinessDay || DateTime.Now.Hour >= EndOfBusinessFriday;
                 default:
                     return DateTime.Now.Hour < StartOfBusinessDay || DateTime.Now.Hour >= EndOfBusinessDay;
             }
@@ -118,7 +118,7 @@ namespace MelBox2
             {
                 //an Bereitschafshandy, wenn zur Zeit keine Bereitschaft definiert ist (für den Fall, dass sich die Bereitschaft nur per EMail benachrichtigen lässt).
                 const string query2 = "SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' AND NOT EXISTS (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End)";
-                
+
                 dt = SelectDataTable(query2, null);
             }
 
@@ -150,7 +150,7 @@ namespace MelBox2
                                   "WHERE NOT EXISTS (SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy'); " +
                                   "SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via < 16 " + //Via weglassen damit Rufumleitung immer zum Handy aktuellen Bereitschaft geht?
                                   "UNION SELECT Phone FROM Person WHERE Name = 'Bereitschaftshandy' " +
-                                 // "AND NOT EXISTS (SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5)) " + // unnötig ?
+                                  // "AND NOT EXISTS (SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5)) " + // unnötig ?
                                   "LIMIT 1; ";
 
             return SelectValue(query1, null).ToString();
@@ -172,7 +172,7 @@ namespace MelBox2
                 string email = dt.Rows[i]["Email"].ToString();
 
                 try
-                {                    
+                {
                     emailAddresses.Add(
                         new MailAddress(
                             email, dt.Rows[i]["Name"].ToString()
@@ -184,8 +184,8 @@ namespace MelBox2
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-                { 
-                    Log.Warning($"Die Emailadresse >{email}< ist ungültig: " + ex.Message , 11313); 
+                {
+                    Log.Warning($"Die Emailadresse >{email}< ist ungültig: " + ex.Message, 11313);
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
@@ -238,7 +238,7 @@ namespace MelBox2
                     }
                     while (localEnd.Date != shift.EndUtc.Date && localEnd.DayOfWeek != DayOfWeek.Monday);
 
-                    if (localEnd.Date == shift.EndUtc.Date) 
+                    if (localEnd.Date == shift.EndUtc.Date)
                         localEnd = shift.EndUtc; //ausgewählte End-Uhrzeit beibehalten 
                     else
                         localEnd = Sql.ShiftEndTimeUtc(localEnd.ToLocalTime()); //Standard-End-Uhrzeit nehmen
@@ -267,7 +267,7 @@ namespace MelBox2
         {
             if (shift.StartUtc.CompareTo(shift.EndUtc) > 0) //Wenn Ende vor Start liegt, abbrechen.            
                 return false;
-            
+
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@PersonId", shift.PersonId},
@@ -322,15 +322,15 @@ namespace MelBox2
             if (payload.ContainsKey("Start") && payload.TryGetValue("Start", out string startStr) && DateTime.TryParse(startStr, out DateTime start))
             {
                 s.StartUtc = start;
-                if (payload.ContainsKey("StartTime") && payload.TryGetValue("StartTime", out string startTStr) && DateTime.TryParse(startTStr, out DateTime startTime))                
-                    s.StartUtc = s.StartUtc.AddHours(startTime.Hour).AddMinutes(startTime.Minute).ToUniversalTime();                
+                if (payload.ContainsKey("StartTime") && payload.TryGetValue("StartTime", out string startTStr) && DateTime.TryParse(startTStr, out DateTime startTime))
+                    s.StartUtc = s.StartUtc.AddHours(startTime.Hour).AddMinutes(startTime.Minute).ToUniversalTime();
             }
 
             if (payload.ContainsKey("End") && payload.TryGetValue("End", out string endStr) && DateTime.TryParse(endStr, out DateTime end))
             {
                 s.EndUtc = end;
-                if (payload.ContainsKey("EndTime") && payload.TryGetValue("EndTime", out string endTStr) && DateTime.TryParse(endTStr, out DateTime endTime))                
-                    s.EndUtc = s.EndUtc.AddHours(endTime.Hour).AddMinutes(endTime.Minute).ToUniversalTime();                
+                if (payload.ContainsKey("EndTime") && payload.TryGetValue("EndTime", out string endTStr) && DateTime.TryParse(endTStr, out DateTime endTime))
+                    s.EndUtc = s.EndUtc.AddHours(endTime.Hour).AddMinutes(endTime.Minute).ToUniversalTime();
             }
 
             return s;
@@ -340,7 +340,7 @@ namespace MelBox2
         {
             Shift s = new Shift();
 
-            if (dt.Rows.Count == 0) 
+            if (dt.Rows.Count == 0)
                 return s;
 
             if (dt.Columns.Contains("ID") && int.TryParse(dt.Rows[0]["ID"].ToString(), out int shiftId))
@@ -369,7 +369,7 @@ namespace MelBox2
         public DateTime StartUtc { get; set; }
 
         public DateTime EndUtc { get; set; }
-       
+
     }
 
 }

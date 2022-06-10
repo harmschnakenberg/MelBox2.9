@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MelBoxGsm;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
-using MelBoxGsm;
 using static MelBoxGsm.Gsm;
 
 namespace MelBox2
@@ -29,7 +29,7 @@ namespace MelBox2
         private static void Gsm_NetworkStatusEvent(object sender, int quality)
         {
             //Ist die Mobilfunkverbindung zu schlecht, Nachricht an Admin
-            if(quality < 20 && Gsm_NetworkStatusNotify) // bei MelBox1 Grenze 20%
+            if (quality < 20 && Gsm_NetworkStatusNotify) // bei MelBox1 Grenze 20%
             {
                 Gsm_NetworkStatusNotify = false;
                 Timer NotificationTimeout = new Timer(600000); //10 min
@@ -39,7 +39,7 @@ namespace MelBox2
 
                 string txt = $"Das GSM-Modem ist nicht mit dem Mobilfunknetz verbunden bzw. der Empfangslevel ist zu niedrig \r\n Empfangslevel {quality}% < Grenzwert 20%";
                 Log.Warning(txt, 1515);
-                Email.Send(Email.Admin,txt, "MelBox2: Kein Mobilfunkempfang");
+                Email.Send(Email.Admin, txt, "MelBox2: Kein Mobilfunkempfang");
             }
 
             Sql.InsertGsmSignal(quality);
@@ -106,10 +106,10 @@ namespace MelBox2
                 emailTimer.Enabled = true;
                 emailTimer.Elapsed += EmailTimer_Elapsed;
                 emailTimer.Start();
-            }            
+            }
 #endif
             Log.Warning("GSM-Fehlermeldung - " + e, 1320);
-            Sql.InsertLog(1, "Fehlermeldung Modem: " + e);            
+            Sql.InsertLog(1, "Fehlermeldung Modem: " + e);
         }
 
         private static void EmailTimer_Elapsed(object sender, ElapsedEventArgs e)

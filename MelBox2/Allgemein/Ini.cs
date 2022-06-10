@@ -14,24 +14,24 @@ namespace MelBox2
         /// Liest Initialisierungswerte aus der Datenbank
         /// </summary>
         private static void GetIniValues()
-        {           
+        {
             try
             {
                 Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath); // Erst die richtige Datenbank laden!
                 Console.WriteLine("Initialisiere Konfiguration aus Datenbankdatei: " + Sql.DbPath);
 
                 ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
-                
+
                 Sql.Level_Admin = GetIniValue(nameof(Sql.Level_Admin), Sql.Level_Admin);
                 Sql.Level_Reciever = GetIniValue(nameof(Sql.Level_Reciever), Sql.Level_Reciever);
-              
+
                 Gsm.MaxSendTrysPerSms = GetIniValue(nameof(Gsm.MaxSendTrysPerSms), Gsm.MaxSendTrysPerSms);
                 Gsm.RingSecondsBeforeCallForwarding = GetIniValue(nameof(Gsm.RingSecondsBeforeCallForwarding), Gsm.RingSecondsBeforeCallForwarding);
                 Gsm.TrackingTimeoutMinutes = GetIniValue(nameof(Gsm.TrackingTimeoutMinutes), Gsm.TrackingTimeoutMinutes);
 
                 Program.OverideCallForwardingNumber = GetIniValue(nameof(Gsm.CallForwardingNumber), Gsm.CallForwardingNumber);
                 Gsm.SetCallForewarding(Sql.GetCurrentCallForwardingNumber(OverideCallForwardingNumber));
-                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);                
+                Gsm.AdminPhone = GetIniValue(nameof(Gsm.AdminPhone), Gsm.AdminPhone);
                 Gsm.SerialPortName = GetIniValue(nameof(Gsm.SerialPortName), Gsm.SerialPortName);
                 Gsm.SimPin = GetIniValue(nameof(Gsm.SimPin), Gsm.SimPin);
                 Gsm.GsmCharacterSet = GetIniValue(nameof(Gsm.GsmCharacterSet), Gsm.GsmCharacterSet);
@@ -49,14 +49,14 @@ namespace MelBox2
                 EmailListener.ImapUserName = GetIniValue(nameof(EmailListener.ImapUserName), EmailListener.ImapUserName);
                 EmailListener.ImapPassword = GetIniValue(nameof(EmailListener.ImapPassword), EmailListener.ImapPassword);
                 EmailListener.ImapEnableSSL = GetIniValue(nameof(EmailListener.ImapEnableSSL), EmailListener.ImapEnableSSL);
-          
+
                 Program.LifeMessageTrigger = GetIniValue(nameof(Program.LifeMessageTrigger), string.Join(",", Program.LifeMessageTrigger)).Split(',');
                 Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
                 Program.HourOfDailyTasks = GetIniValue(nameof(Program.HourOfDailyTasks), Program.HourOfDailyTasks);
 
                 Sql.StartOfBusinessDay = GetIniValue(nameof(Sql.StartOfBusinessDay), Sql.StartOfBusinessDay);
                 Sql.EndOfBusinessFriday = GetIniValue(nameof(Sql.EndOfBusinessFriday), Sql.EndOfBusinessFriday);
-                Sql.EndOfBusinessDay = GetIniValue(nameof(Sql.EndOfBusinessDay), Sql.EndOfBusinessDay); 
+                Sql.EndOfBusinessDay = GetIniValue(nameof(Sql.EndOfBusinessDay), Sql.EndOfBusinessDay);
 
                 Scheduler.TaskName = GetIniValue(nameof(Scheduler.TaskName), Scheduler.TaskName);
 
@@ -80,12 +80,12 @@ namespace MelBox2
                 return GetIniValue(propertyName, standardValue);
             }
 
-            return int.Parse((result?? 0).ToString());                
+            return int.Parse((result ?? 0).ToString());
         }
 
         private static string GetIniValue(string propertyName, string standardValue)
         {
-            
+
             object result = Sql.SelectIniProperty(propertyName);
 
             if (result == null && Sql.InsertIniProperty(propertyName, standardValue))
@@ -93,7 +93,7 @@ namespace MelBox2
                 return GetIniValue(propertyName, standardValue).ToString();
             }
 
-            return (result?? string.Empty).ToString();
+            return (result ?? string.Empty).ToString();
         }
 
         private static System.Net.Mail.MailAddress GetIniValue(string propertyName, System.Net.Mail.MailAddress mail)
@@ -105,8 +105,8 @@ namespace MelBox2
                 return GetIniValue(propertyName, mail);
             }
 
-            string[] rawEmail = (result?? string.Empty).ToString().Split('>');
-            
+            string[] rawEmail = (result ?? string.Empty).ToString().Split('>');
+
             if (rawEmail.Length == 2)
                 mail = new System.Net.Mail.MailAddress(rawEmail[0].TrimStart('<'), rawEmail[1].Trim());
             else if (rawEmail.Length == 1)

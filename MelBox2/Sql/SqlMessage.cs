@@ -37,7 +37,7 @@ namespace MelBox2
         }
 
         internal static Message GetMessage(Dictionary<string, string> payload)
-        {            
+        {
             Message m = new Message();
 
             if (payload.TryGetValue("MsgId", out string msgId))
@@ -79,7 +79,7 @@ namespace MelBox2
                 blockDays = Html.SetBit(blockDays, (int)DayOfWeek.Sunday);
 
             m.BlockDays = blockDays;
-            
+
             return m;
         }
 

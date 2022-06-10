@@ -1,7 +1,7 @@
-﻿using System;
-using System.Net.Mail;
+﻿using S22.Imap;
+using System;
 using System.Collections.Generic;
-using S22.Imap;
+using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -199,11 +199,11 @@ namespace MelBox2
         public static string ParseElrehaEmail(string body)
         {
             string txt = Sql.RemoveHTMLTags(body).Replace(Environment.NewLine, " ").Replace('\t', ' ');
-           
+
             string pattern = @"Anlage:(.*)Datum(?:.*)Fehler(.*)Regleradresse";
             var regex = new Regex(pattern, RegexOptions.IgnoreCase);
 
-            Match m =  regex.Match(txt);
+            Match m = regex.Match(txt);
             return (m.Groups[1].Value + ", " + m.Groups[2].Value).Trim();
         }
 
@@ -218,7 +218,7 @@ namespace MelBox2
     {
         #region Constructor
         public EmailListener()
-        {            
+        {
             try
             {
                 Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
@@ -252,7 +252,7 @@ namespace MelBox2
             ImapPassword = imapPassword;
             ImapEnableSSL = imapEnableSSL;
 
-            Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);            
+            Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
             Client.IdleError += Client_IdleError;
 #if DEBUG
             foreach (var item in Client.ListMailboxes())
@@ -304,7 +304,7 @@ namespace MelBox2
         public void Dispose()
         {
             if (Client != null)
-                Client.Dispose();            
+                Client.Dispose();
         }
 
         public void ReadUnseen()
@@ -314,19 +314,19 @@ namespace MelBox2
                 Log.Warning("Ungelesen Emails können nicht abgeholt werden. Keine Verbindung zum Email-Server.", 9641);
                 return;
             }
-                //Download unseen mail messages
-                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());            
-                IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
+            //Download unseen mail messages
+            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+            IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1);
 
-                foreach (MailMessage m in messages1)
-                {
+            foreach (MailMessage m in messages1)
+            {
 #if DEBUG
                 Console.WriteLine($"{DateTime.Now.ToShortTimeString()} - Neue Email; gesendet {m.Headers["Date"]}; " +
                         $"<{(m.IsBodyHtml ? "html" : "Text")}>; BodyEncoding <{m.BodyEncoding}>; " +
                         $"von {m.From.Address}<"); //: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
 #endif
-                    EmailInEvent?.Invoke(this, m);
-                }            
+                EmailInEvent?.Invoke(this, m);
+            }
         }
 
 
@@ -335,7 +335,7 @@ namespace MelBox2
         /// </summary>
         /// <returns>true= Server kann benachrichtigen bei neu empfangenen Emails.</returns>
         public bool IsIdleEmailSupported()
-        {            
+        {
             return Client != null && Client.Authed && Client.Supports("IDLE");
         }
 
@@ -357,7 +357,7 @@ namespace MelBox2
             EmailInEvent?.Invoke(this, m);
         }
 
-#endregion
+        #endregion
     }
 
 }

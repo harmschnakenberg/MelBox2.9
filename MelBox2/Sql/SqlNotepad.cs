@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MelBox2
 {
@@ -54,7 +51,7 @@ namespace MelBox2
 
             const string query = "UPDATE Notepad SET Time = @Time, AuthorId = @AuthorId, CustomerId = @CustomerId, Content = @Content WHERE ID = @ID; ";
 
-           return NonQuery(query, args);
+            return NonQuery(query, args);
         }
 
 
@@ -72,7 +69,7 @@ namespace MelBox2
 
         public static DataTable SelectLastNotes(int maxCount = 100)
         {
-            string query = "SELECT ID, datetime(Bearbeitet, 'localtime') AS Bearbeitet, VonId, Von, KundeId, Kunde, Notiz FROM ViewNotepad ORDER BY Bearbeitet DESC LIMIT @LIMIT; "; 
+            string query = "SELECT ID, datetime(Bearbeitet, 'localtime') AS Bearbeitet, VonId, Von, KundeId, Kunde, Notiz FROM ViewNotepad ORDER BY Bearbeitet DESC LIMIT @LIMIT; ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
@@ -88,11 +85,11 @@ namespace MelBox2
         /// <param name="selectedCustomerId">Id des selektierten Eintrags</param>
         /// <returns></returns>
         internal static string HtmlOptionCustomers(int selectedCustomerId)
-        {            
+        {
             const string query = "SELECT ID, Name, Company FROM Person WHERE lower(Company) NOT LIKE 'kreutzt%' ORDER BY Name;";
             DataTable dt = SelectDataTable(query, null);
             string options = string.Empty;
-          
+
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 int id = int.Parse(dt.Rows[i][0].ToString());

@@ -7,7 +7,7 @@ namespace MelBox2
     {
         private static readonly string AppFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-        public static string DbPath { get; set; } = Path.Combine( AppFolder + @"\", "DB", "MelBox2.db" );
+        public static string DbPath { get; set; } = Path.Combine(AppFolder + @"\", "DB", "MelBox2.db");
 
         private static void CreateNewDataBase()
         {
@@ -73,7 +73,7 @@ namespace MelBox2
                     "Via INTEGER, " +
                     "ContentId INTEGER, " +
                     "Reference INTEGER, " +
-                    "Confirmation INTEGER DEFAULT " + (int)MelBoxGsm.Gsm.DeliveryStatus.Simulated + ", " + 
+                    "Confirmation INTEGER DEFAULT " + (int)MelBoxGsm.Gsm.DeliveryStatus.Simulated + ", " +
 
                     "CONSTRAINT fk_ToId FOREIGN KEY (ToId) REFERENCES Person (ID) ON DELETE SET DEFAULT, " +
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL, " +
@@ -104,9 +104,9 @@ namespace MelBox2
                     "); ";
 
                 query += "CREATE TABLE IF NOT EXISTS Ini ( " +
-                    "ID INTEGER NOT NULL PRIMARY KEY, " +                    
+                    "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "Property TEXT NOT NULL UNIQUE, " +
-                    "Value TEXT NOT NULL " +                    
+                    "Value TEXT NOT NULL " +
                     "); ";
 
                 query += "CREATE TABLE IF NOT EXISTS Notepad ( " +
@@ -161,7 +161,7 @@ namespace MelBox2
                          "DATE(s.Start, 'localtime', 'weekday 6', '+1 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS So " +
                          "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID WHERE s.End > date('now', '-1 day') ORDER BY Start; ";
 
-                query += "CREATE VIEW View_Calendar_Full AS " + 
+                query += "CREATE VIEW View_Calendar_Full AS " +
                         "SELECT * FROM View_Calendar " +
                         "UNION " +
                         "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATETIME(d, 'weekday 1') AS Start, NULL AS End, " +
@@ -203,8 +203,8 @@ namespace MelBox2
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.Email + ", 'keine Sprachanrufe an diese Nummer + Email'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.SmsAndEmail + ", 'keine Sprachanrufe an diese Nummer + SMS+EMail'); ";
                 query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.PermanentEmail + ", 'keine Sprachanrufe an diese Nummer + immerEmail'); ";
-                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.PermanentEmailAndSms +", 'keine Sprachanrufe an diese Nummer + SMS+immerEmail'); ";
-         
+                query += "INSERT INTO SendWay (ID, Way) VALUES (" + (int)Via.NoCalls + (int)Via.PermanentEmailAndSms + ", 'keine Sprachanrufe an diese Nummer + SMS+immerEmail'); ";
+
 
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('SMSZentrale', '{Encrypt("7307")}', 9999, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 4); ";
                 query += $"INSERT INTO Person (Name, Password, Level, Company, Phone, Email, Via) VALUES ('Bereitschaftshandy', '{Encrypt("7307")}', 2000, 'Kreutzträger Kältetechnik, Bremen', '+4916095285xxx', 'harm.schnakenberg@kreutztraeger.de', 2); ";
