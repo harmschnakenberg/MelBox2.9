@@ -253,7 +253,7 @@ namespace MelBox2
             sb.AppendLine("<div class='w3-container w3-center w3-padding '>");
             sb.AppendLine($"  <form id='chooseDate' method='get' action='/{root}' >");
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(-1);'><span class='material-icons-outlined'>arrow_back_ios</span></button>");
-            sb.AppendLine($"   <input name='datum' id='anzeigedatum' type='date' title='Anzeigedatum' placeholder='{date:yyyy-MM-dd}' value='{date:yyyy-MM-dd}' min='{DateTime.Now.AddYears(-10).Date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);' onkeyup='onEnter();'>"); //onblur='inc(0);'
+            sb.AppendLine($"   <input name='datum' id='anzeigedatum' type='date' title='Anzeigedatum, Auswahl + Enter' placeholder='{date:yyyy-MM-dd}' value='{date:yyyy-MM-dd}' min='{DateTime.Now.AddYears(-10).Date:yyyy-MM-dd}' max='{DateTime.Now.Date:yyyy-MM-dd}' onblur='inc(0);' onkeyup='onEnter();'>"); //onblur='inc(0);'
             sb.AppendLine("    <button type='button' class='w3-button w3-padding' onclick='inc(1);'><span class='material-icons-outlined'>arrow_forward_ios</span></button>");
             sb.AppendLine("    <input type='hidden' id='submitfilter' name='filter' disabled>");
             sb.AppendLine("   </form>");
@@ -350,7 +350,7 @@ namespace MelBox2
             "</form>";
 
         /// <summary>
-        /// Es dürfen keine HTML-Entitäten in der Datenbank gespeichert sein. Angeleht an Formatierung in Foren.
+        /// Es dürfen keine HTML-Entitäten in der Datenbank gespeichert sein. Angeleht an Formatierung in Foren (siehe auch https://de.wikipedia.org/wiki/BBCode).
         /// </summary>
         /// <param name="s">string mit codierten HTML-Entitäten</param>
         /// <returns>string mit decodierten HTML-Entitäten</returns>
@@ -369,8 +369,8 @@ namespace MelBox2
             sb.Replace("[/h1]", "</h3>");
             sb.Replace("[h2]", "<h4>");
             sb.Replace("[/h2]", "</h4>");
-            sb.Replace("[strike]", "<strike>");
-            sb.Replace("[/strike]", "</strike>");
+            sb.Replace("[s]", "<s>");
+            sb.Replace("[/s]", "</s>");
 
             return sb.ToString();
         }
@@ -398,8 +398,40 @@ namespace MelBox2
             string html = string.Empty;
 
             if (dt.Rows.Count > 2) //Filter nur, wenn etwas zum Filtern da ist
+            //{
                 html += "<p><input oninput=\"w3.filterHTML('#table1', '.item', this.value)\" class='w3-input' id='tablefilter' placeholder='Suche nach..'></p>\r\n";
-
+                /* //EInträge ignorieren
+                html += "<p><input oninput=\"filterIgnoreHTML('#table1', '.item', this.value)\" class='w3-input w3-half' id='tablefilter' placeholder='ignoriere..'>" +
+                "<script>function filterIgnoreHTML (id, sel, filter) {" + 
+                "var a, b, c, i, ii, iii, hit;" +              
+                "a = w3.getElements(id);" +
+                "for (i = 0; i < a.length; i++)" +
+                "{" +
+                "b = a[i].querySelectorAll(sel);" +
+                "for (ii = 0; ii < b.length; ii++)" +
+                "{" +
+                " hit = 0;" +
+                "if (b[ii].innerText.toUpperCase().indexOf(filter.toUpperCase()) > -1)" +
+                "{" +
+                " hit = 1;" +
+                "}" +
+                "c = b[ii].getElementsByTagName('*');" +
+                "   for (iii = 0; iii < c.length; iii++)" +
+                "   {" +
+                "       if (c[iii].innerText.toUpperCase().indexOf(filter.toUpperCase()) > -1)" +
+                "       {" +
+                "           hit = 1;" +
+                "       }" +
+                "   }" +
+                "   if (hit == 0)" + //hier der Unterschied zu w3.filterHTML();
+                "   {" +
+                "       b[ii].style.display = '';" +
+                "   } else {" +
+                "       b[ii].style.display = 'none';" +
+                "   }" +
+                "}}};</script></p>\r\n";
+            }
+                //*/
             html += "<table id='table1' class='w3-table-all'>\n";
             //add header row
             html += "<tr>";
@@ -476,7 +508,7 @@ namespace MelBox2
                         if (dt.Rows[i][j].ToString().Contains("x"))
                             html += "<span class='material-icons-outlined' title='Dauerempf&auml;nger'>loyalty</span>";
                         if (dt.Rows[i][j].ToString().Contains("w"))
-                            html += "<span class='material-icons-outlined' title='Empf&auml;ngt Telefon'>smartphone</span>";
+                            html += "<span class='material-icons-outlined' title='Empf&auml;ngt Anrufe/SMS'>smartphone</span>";
                         if (dt.Rows[i][j].ToString().Contains("v"))
                             html += "<span class='material-icons-outlined' title='Empf&auml;ngt E-Mail'>email</span>";
                         if (dt.Rows[i][j].ToString().Contains("u"))
@@ -493,7 +525,7 @@ namespace MelBox2
                         if (int.TryParse(val, out int confirmation))
                             deliveryStatus = Gsm.GetDeliveryStatus(confirmation, out detaildStatus, out icon);
 
-                        html += $"<td><span class='material-icons-outlined' title='Wert: [{val}] {deliveryStatus} - {detaildStatus}'>{icon}</span></td>";
+                        html += $"<td><span class='material-icons-outlined {(confirmation < 3 ? "w3-text-teal" : "")}' title='Wert: [{val}] {deliveryStatus} - {detaildStatus}'>{icon}</span></td>";
                     }
                     else
                     {
@@ -733,7 +765,8 @@ namespace MelBox2
             sb.AppendLine($" <li><span class='material-icons-outlined'>smartphone</span>Versand von SMS an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
             //sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
-            sb.AppendLine($" <li><span class='material-icons-outlined'>call</span>Sprachanrufe werden aktuell an diesen Empf&auml;nger weitergeleitet.</li>");
+            sb.AppendLine("  <li><span class='material-icons-outlined'>call</span>Sprachanrufe werden aktuell an diesen Empf&auml;nger weitergeleitet.</li>");
+            sb.AppendLine("  <li><span class='material-icons-outlined'>phone_disabled</span>Dieser Empf&auml;nger bekommt keine Sprachanrufe.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. Zurzeit gibt es {Sql.PermanentEmailRecievers} Abonnenten.</li>");
             sb.AppendLine("</ul></div>");
 
@@ -813,6 +846,7 @@ namespace MelBox2
             sb.AppendLine("<div class='w3-container'><ul class='w3-ul 3-card w3-border'>");
             //sb.AppendLine($" <li>Es werden max. {Html.MaxTableRowsShow} gesendete Nachrichten angezeigt.</li>");
             sb.AppendLine(" <li>&Uuml;ber die Schaltfl&auml;che &quot;Datum w&auml;hlen&quot; lassen sich die an einem bestimmten Tag versendeten Nachrichten anzeigen.</li>");
+            sb.AppendLine(" <li>Nachrichten mit den Schlagworten &quot;" + String.Join("&quot;, &quot;", Program.LifeMessageTrigger) + "&quot; werden nicht an die Bereitschaft weitergeleitet.</li>");
             sb.AppendLine("</ul></div>");
 
             return sb.ToString();
@@ -1019,6 +1053,7 @@ namespace MelBox2
             sb.AppendLine(" <li>Hier k&ouml;nnen freie Notizen hinterlegt werden.</li>");
             sb.AppendLine(" <li>Notizen k&ouml;nnen nur vom Verfasser ge&auml;ndert werden.</li>");
             sb.AppendLine(" <li>Die Notiz muss einer Anlage bzw. einem Kunden zugeordnet werden.</li>");
+            sb.AppendLine(" <li>Die Formatieurng der Eintr&auml;ge lehnt sich an <a href=\"https://de.wikipedia.org/wiki/BBCode\">BBCode</a> an.</li>");
             sb.AppendLine("</ul></div>");
             return sb.ToString();
         }

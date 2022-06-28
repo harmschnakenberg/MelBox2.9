@@ -89,7 +89,7 @@ namespace MelBox2
 
             Scheduler.CeckOrCreateWatchDog();
 
-            EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "Oyterdamm64!", true);
+            EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "O*******m64!", true);
             Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
             emailListener.EmailInEvent += EmailListener_EmailInEvent;
             emailListener.ReadUnseen();

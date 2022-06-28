@@ -959,7 +959,7 @@ namespace MelBox2
 
             string alert = string.Empty;
             if (success)
-                alert += Html.Alert(3, "Notiz geändert", $"{author} hat eine neue Notiz ge&auml;ndert.");
+                alert += Html.Alert(3, "Notiz geändert", $"{author} hat eine Notiz ge&auml;ndert.");
             else
                 alert += Html.Alert(1, "Notiz &auml;ndern fehlgeschlagen", $"Die Notiz konnte nicht ge&auml;ndert werden.");
 

@@ -44,9 +44,9 @@ namespace MelBox2
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
-            //#if DEBUG
-            Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf.");
-            //#endif
+            #if DEBUG
+                Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf.");
+            #endif
             EmailListener emailListener = new EmailListener();
             emailListener.ReadUnseen();
             emailListener.Dispose();
@@ -79,7 +79,11 @@ namespace MelBox2
             Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");
 
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
-            Email.Send(Email.Admin, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
+            //Email.Send(Email.Admin, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
+
+            System.Net.Mail.MailAddressCollection mailAddresses = new System.Net.Mail.MailAddressCollection();
+            mailAddresses.Add(Email.Admin);
+            Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", false, DateTime.UtcNow.Millisecond); //Test Doku Routinemeldung in Tabelle Sent
         }
 
         private static void DailyBackup(object sender, ElapsedEventArgs e)
@@ -133,7 +137,7 @@ namespace MelBox2
             }
 
             if (phone != Gsm.CallForwardingNumber)
-                Console.WriteLine($"Die aktuelle Rufumleitung soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
+                Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Die aktuelle Rufumleitung soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
 
             // Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
         }

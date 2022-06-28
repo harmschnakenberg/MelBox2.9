@@ -230,9 +230,10 @@ namespace MelBox2
                     Console.WriteLine("Der Imap-Server konnte nicht angemeldet werden.");
 
                 if (ImapUserName == "harmschnakenberg@gmx.de")
+                {
                     Client.DefaultMailbox = "Kreualarm"; // zum testen von meinem privat-Account
-
-                Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
+                    Console.WriteLine("Default Mailbox ist >" + Client.DefaultMailbox + "<");
+                }
 
                 Client.NewMessage += new EventHandler<IdleMessageEventArgs>(OnNewMessage);
             }
