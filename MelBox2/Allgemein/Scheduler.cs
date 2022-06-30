@@ -86,7 +86,7 @@ namespace MelBox2
                 }
                 else
                 {
-                    string infoText = "Es wurde ein neuer Windows-SchedulerTask zur Überwachung von MelBox2 erstelt.";
+                    string infoText = "Es wurde ein neuer Windows-SchedulerTask zur Überwachung von MelBox2 erstellt.";
                     Log.Info(infoText, 61301);
                     Console.WriteLine(infoText);
                     return true;

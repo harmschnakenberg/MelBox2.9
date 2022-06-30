@@ -20,6 +20,8 @@ namespace MelBox2
                 FileStream stream = File.Create(DbPath);
                 stream.Close();
 
+                System.Threading.Thread.Sleep(500);
+
                 string query = "CREATE TABLE IF NOT EXISTS Log ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
@@ -27,12 +29,15 @@ namespace MelBox2
                     "Content TEXT " +
                     "); ";
 
-                query += "CREATE TABLE IF NOT EXISTS SendWay ( " +
+                NonQuery(query, null);
+
+                query = "CREATE TABLE IF NOT EXISTS SendWay ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "Way TEXT " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Person ( " +
+                query = "CREATE TABLE IF NOT EXISTS Person ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Name TEXT NOT NULL UNIQUE, " +
                     "Password TEXT, " +
@@ -46,8 +51,9 @@ namespace MelBox2
 
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL " + // Einschränkung bei Bitweise Nutzung von Via sinnvoll?
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Message ( " +
+                query = "CREATE TABLE IF NOT EXISTS Message ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "Content TEXT NOT NULL UNIQUE, " +
@@ -55,8 +61,9 @@ namespace MelBox2
                     "BlockStart INTEGER, " +
                     "BlockEnd INTEGER " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Recieved ( " +
+                query = "CREATE TABLE IF NOT EXISTS Recieved ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "SenderId INTEGER, " +
@@ -65,8 +72,9 @@ namespace MelBox2
                     "CONSTRAINT fk_SenderId FOREIGN KEY (SenderId) REFERENCES Person (ID) ON DELETE SET DEFAULT, " +
                     "CONSTRAINT fk_ContentId FOREIGN KEY (ContentId) REFERENCES Message (ID) ON DELETE SET DEFAULT " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Sent ( " +
+                query = "CREATE TABLE IF NOT EXISTS Sent ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "ToId INTEGER NOT NULL, " +
@@ -79,37 +87,42 @@ namespace MelBox2
                     "CONSTRAINT fk_Via FOREIGN KEY (Via) REFERENCES SendWay (ID) ON DELETE SET NULL, " +
                     "CONSTRAINT fk_ContentId FOREIGN KEY (ContentId) REFERENCES Message (ID) ON DELETE SET DEFAULT " +
                     "); ";
+                NonQuery(query, null);
 
                 //Report-Tabelle nur zum testen. Später rausnehmen?
-                query += "CREATE TABLE Report ( " +
+                query = "CREATE TABLE Report ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "Reference INTEGER, " +
                     "DeliveryCode INTEGER " +
                     "); ";
+                NonQuery(query, null);
 
                 //GSM-Signal-Tabelle nur zum testen. Später rausnehmen?
-                query += "CREATE TABLE GsmSignal ( " +
+                query = "CREATE TABLE GsmSignal ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "SignalQuality INTEGER " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Shift ( " +
+                query = "CREATE TABLE IF NOT EXISTS Shift ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "PersonId INTEGER, " +
                     "Start TEXT NOT NULL, " +
                     "End TEXT NOT NULL, " +
                     "CONSTRAINT fk_PersonId FOREIGN KEY (PersonId) REFERENCES Person (ID) ON DELETE SET DEFAULT " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Ini ( " +
+                query = "CREATE TABLE IF NOT EXISTS Ini ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY, " +
                     "Property TEXT NOT NULL UNIQUE, " +
                     "Value TEXT NOT NULL " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE TABLE IF NOT EXISTS Notepad ( " +
+                query = "CREATE TABLE IF NOT EXISTS Notepad ( " +
                     "ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     "Time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "AuthorId INTEGER, " +
@@ -118,6 +131,7 @@ namespace MelBox2
                     "CONSTRAINT fk_AuthorId FOREIGN KEY(AuthorId) REFERENCES Person(ID) ON DELETE SET DEFAULT, " +
                     "CONSTRAINT fk_CustomerId FOREIGN KEY(CustomerId) REFERENCES Person(ID) ON DELETE SET DEFAULT " +
                     "); ";
+                NonQuery(query, null);
 
                 query += "CREATE VIEW ViewYearFromToday AS " +
                     "SELECT CASE(CAST(strftime('%w', d) AS INT) +6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +

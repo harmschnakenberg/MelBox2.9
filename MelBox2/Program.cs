@@ -12,185 +12,200 @@ namespace MelBox2
 
         static void Main()
         {
-            #region nur eine Instanz des Progamms zulassen
-            if (Process.GetProcessesByName(AppName).Length > 1)
+            try
             {
-                //if (Args.Length == 0)
+                #region nur eine Instanz des Progamms zulassen
+                if (Process.GetProcessesByName(AppName).Length > 1)
+                {
+                    //if (Args.Length == 0)
 #if DEBUG
                     Log.Warning($"Debug: Es kann nur eine Instanz von {AppName} ausgeführt werden.", 739);
 #endif
-                return;
-            }
+                    return;
+                }
 
-            #endregion
-            #region COM-Port vorhanden?
-            if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
-            {
-                string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
-                Console.WriteLine(txt);
-                Log.Error(txt, 5000);
-                //Sql.InsertLog(1, txt);
-                System.Threading.Thread.Sleep(5000);
-                return;
-            }
-            #endregion
+                #endregion
+                #region COM-Port vorhanden?
+                if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
+                {
+                    string txt = "Es ist kein Modem angeschlossen (kein COM-Port registriert). Programm beendet.";
+                    Console.WriteLine(txt);
+                    Log.Error(txt, 5000);
+                    //Sql.InsertLog(1, txt);
+                    System.Threading.Thread.Sleep(5000);
+                    return;
+                }
+                #endregion
 
-            Console.Title = "MelBox2";
+                Console.Title = "MelBox2";
 
-            #region Aufräumen beim Beenden sicherstellen
-            MelBoxGsm.CleanClose.CloseConsoleHandler += new CleanClose.EventHandler(CleanClose.Handler); //erzwungenes Beenden (X am Konsolenfenster)
-            CleanClose.SetConsoleCtrlHandler(CleanClose.CloseConsoleHandler, true);
-            Console.CancelKeyPress += Console_CancelKeyPress;
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit; //Normales Beenden 
-            #endregion
+                #region Aufräumen beim Beenden sicherstellen
+                MelBoxGsm.CleanClose.CloseConsoleHandler += new CleanClose.EventHandler(CleanClose.Handler); //erzwungenes Beenden (X am Konsolenfenster)
+                CleanClose.SetConsoleCtrlHandler(CleanClose.CloseConsoleHandler, true);
+                Console.CancelKeyPress += Console_CancelKeyPress;
+                AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit; //Normales Beenden 
+                #endregion
 
-            GetIniValues();
+                GetIniValues();
 
-            #region Programmstart protokollieren
+                #region Programmstart protokollieren
 #if DEBUG
-            string startUpMsg = System.Reflection.Assembly.GetExecutingAssembly().Location + " [Debug-Kompilat] gestartet.";
+                string startUpMsg = System.Reflection.Assembly.GetExecutingAssembly().Location + " [Debug-Kompilat] gestartet.";
 #else
             string startUpMsg = System.Reflection.Assembly.GetExecutingAssembly().Location + " gestartet.";
 #endif
-            Log.Info(startUpMsg, 121);
-            Sql.InsertLog(3, AppName + " gestartet.");
-            Console.WriteLine(DateTime.Now.ToShortTimeString() + " - " + startUpMsg);
-            #endregion
+                Log.Info(startUpMsg, 121);
+                Sql.InsertLog(3, AppName + " gestartet.");
+                Console.WriteLine(DateTime.Now.ToShortTimeString() + " - " + startUpMsg);
+                #endregion
 
-            #region Startsequenz
-            startUpTimer.Start();
-            startUpTimer.Elapsed += StartUpTimer_Elapsed;
+                #region Startsequenz
+                startUpTimer.Start();
+                startUpTimer.Elapsed += StartUpTimer_Elapsed;
 
-            Server.Start();
-            Sql.CheckDbFile();
-            Sql.DbBackup();
-            #endregion
+                Server.Start();
+                
+                //GetIniValues(); //Test
+                Sql.DbBackup();
+                #endregion
 
-            ShowHelp();
+                ShowHelp();
 
-            #region Ereignisse abonieren
-            ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
-            ReliableSerialPort.SerialPortUnavailableEvent += ReliableSerialPort_SerialPortUnavailableEvent;
-            Gsm.NewErrorEvent += Gsm_NewErrorEvent;
-            Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
-            Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
-            Gsm.SmsSentEvent += Gsm_SmsSentEvent;
-            Gsm.FailedSmsSendEvent += Gsm_FailedSmsSendEvent;
-            Gsm.FailedSmsCommission += Gsm_FailedSmsCommission;
-            Gsm.SmsReportEvent += Gsm_SmsReportEvent;
-            Gsm.NewCallRecieved += Gsm_NewCallRecieved;
-            #endregion
+                #region Ereignisse abonieren
+                ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
+                ReliableSerialPort.SerialPortUnavailableEvent += ReliableSerialPort_SerialPortUnavailableEvent;
+                Gsm.NewErrorEvent += Gsm_NewErrorEvent;
+                Gsm.NetworkStatusEvent += Gsm_NetworkStatusEvent;
+                Gsm.SmsRecievedEvent += Gsm_SmsRecievedEvent;
+                Gsm.SmsSentEvent += Gsm_SmsSentEvent;
+                Gsm.FailedSmsSendEvent += Gsm_FailedSmsSendEvent;
+                Gsm.FailedSmsCommission += Gsm_FailedSmsCommission;
+                Gsm.SmsReportEvent += Gsm_SmsReportEvent;
+                Gsm.NewCallRecieved += Gsm_NewCallRecieved;
+                #endregion
 
-            CheckCallForwardingNumber(null, null);
+                CheckCallForwardingNumber(null, null);
 
-            Gsm.SetupModem();
+                Gsm.SetupModem();
 
-            SetHourTimer(null, null);
+                SetHourTimer(null, null);
 
-            Scheduler.CeckOrCreateWatchDog();
+                Scheduler.CeckOrCreateWatchDog();
 
-            EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "O*******m64!", true);
-            Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
-            emailListener.EmailInEvent += EmailListener_EmailInEvent;
-            emailListener.ReadUnseen();
+                EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "O*******m64!", true);
+                Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
+                emailListener.EmailInEvent += EmailListener_EmailInEvent;
+                emailListener.ReadUnseen();
 
-            //Neustart melden
-            Email.Send(Email.Admin, $"MelBox2 Neustart um {DateTime.Now.ToLongTimeString()}\r\n\r\n" +
-                $"Mobilfunkverbindung: {Gsm.NetworkRegistration.RegToString()},\r\n" +
-                $"Signalstärke: {(Gsm.SignalQuality > 100 ? 0 : Gsm.SignalQuality)}%,\r\n" +
-                $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
-                $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
+                //Neustart melden
+                Email.Send(Email.Admin, $"MelBox2 Neustart um {DateTime.Now.ToLongTimeString()}\r\n\r\n" +
+                    $"Mobilfunkverbindung: {Gsm.NetworkRegistration.RegToString()},\r\n" +
+                    $"Signalstärke: {(Gsm.SignalQuality > 100 ? 0 : Gsm.SignalQuality)}%,\r\n" +
+                    $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
+                    $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
 
-            bool run = true;
-            while (run)
-            {
-                string input = Console.ReadLine();
-                if (input == null) continue;
-
-                switch (input.ToLower())
+                bool run = true;
+                while (run)
                 {
-                    case "exit":
-                        run = false;
-                        break;
-                    case "help":
-                        ShowHelp();
-                        break;
-                    case "ini":
-                        {
-                            GetIniValues();
+                    string input = Console.ReadLine();
+                    if (input == null) continue;
+
+                    switch (input.ToLower())
+                    {
+                        case "exit":
+                            run = false;
+                            break;
+                        case "help":
+                            ShowHelp();
+                            break;
+                        case "ini":
+                            {
+                                GetIniValues();
+                                Gsm.SetupModem();
+                                Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen.");
+                                Log.Info("Einlesen der Initialisierungswerte aus der Datenbank wurde manuell aus der Konsole angestoßen.", 4112);
+                            }
+                            break;
+                        case "cls":
+                            Console.Clear();
+                            break;
+                        case "modem reinit":
                             Gsm.SetupModem();
-                            Console.WriteLine($"Initialisierungswerte wurden aus der Datenbank neu eingelesen.");
-                            Log.Info("Einlesen der Initialisierungswerte aus der Datenbank wurde manuell aus der Konsole angestoßen.", 4112);
-                        }
-                        break;
-                    case "cls":
-                        Console.Clear();
-                        break;
-                    case "modem reinit":
-                        Gsm.SetupModem();
-                        break;
-                    case "modem status":
-                        GetModemParameters();
-                        break;
-                    case "call forward":
-                        Console.WriteLine("Weiterleitung Sprachanrufe an Telefonnummer: (+49...)");
-                        string phone = Console.ReadLine();
-                        Console.WriteLine($"Sprachanrufe an die Telefonnummer {phone} weiterleiten (j/n)?");
-                        if (Console.ReadKey().Key == ConsoleKey.J)
-                        {
-                            Gsm.SetCallForewarding(phone);
-                            Console.WriteLine($"Sprachanrufe werden an die Telefonnummer {Gsm.CallForwardingNumber} weitergeleitet.");
-                        }
-                        break;
-                    case "sms read sim":
-                        SmsRead_Sim();
-                        break;
-                    case "sms read all":
-                        List<SmsIn> list = Gsm.SmsRead("ALL");
-                        Console.WriteLine($"Es konnten {list.Count} Nachrichten aus dem Modemspeicher gelesen werden.");
-                        foreach (SmsIn sms in list)
-                            Console.WriteLine($"[{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
-                        break;
-                    case "email read":
-                        EmailListener listener = new EmailListener();
-                        listener.EmailInEvent += EmailListener_EmailInEvent;
-                        listener.ReadUnseen();
-                        System.Threading.Thread.Sleep(2000);
-                        listener.EmailInEvent -= EmailListener_EmailInEvent;
-                        listener.Dispose();
-                        break;
-                    case "debug":
-                        Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");
-                        Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.AnswerGsm}\tAntwort von Modem");
-                        Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.RequestGsm}\tAnfrage an Modem");
-                        Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.UnsolicatedResult}\tEreignisse von Modem");
-                        string x = Console.ReadLine();
-                        if (byte.TryParse(x, out byte d))
-                        {
-                            ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)d;
-                            Console.WriteLine("Neuer Debug-Level: " + d);
-                        }
-                        break;
-                    case "restart":
-                        {
-                            Log.Info("Die Anwendung wurde mit dem Befehl 'Restart' manuell neugestartet.", 4445);
-                            ReliableSerialPort_SerialPortUnavailableEvent(null, 4445);
-                        }
-                        break;
-                    case "import contact":
-                        Console.WriteLine("Kontakte als CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsKey;' laden. Siehe alte Tabelle 'Tbl_Absender'. Optionale Spalte 'AbsEmail;AbsLevel'. Dateipfad angeben:");
-                        string path = Console.ReadLine();
-                        Sql.LoadPersonsFromCsv(path);
-                        break;
+                            break;
+                        case "modem status":
+                            GetModemParameters();
+                            break;
+                        case "call forward":
+                            Console.WriteLine("Weiterleitung Sprachanrufe an Telefonnummer: (+49...)");
+                            string phone = Console.ReadLine();
+                            Console.WriteLine($"Sprachanrufe an die Telefonnummer {phone} weiterleiten (j/n)?");
+                            if (Console.ReadKey().Key == ConsoleKey.J)
+                            {
+                                Gsm.SetCallForewarding(phone);
+                                Console.WriteLine($"Sprachanrufe werden an die Telefonnummer {Gsm.CallForwardingNumber} weitergeleitet.");
+                            }
+                            break;
+                        case "sms read sim":
+                            SmsRead_Sim();
+                            break;
+                        case "sms read all":
+                            List<SmsIn> list = Gsm.SmsRead("ALL");
+                            Console.WriteLine($"Es konnten {list.Count} Nachrichten aus dem Modemspeicher gelesen werden.");
+                            foreach (SmsIn sms in list)
+                                Console.WriteLine($"[{sms.Index}] {sms.TimeUtc.ToLocalTime()} Tel. >{sms.Phone}< >{sms.Message}<");
+                            break;
+                        case "email read":
+                            EmailListener listener = new EmailListener();
+                            listener.EmailInEvent += EmailListener_EmailInEvent;
+                            listener.ReadUnseen();
+                            System.Threading.Thread.Sleep(2000);
+                            listener.EmailInEvent -= EmailListener_EmailInEvent;
+                            listener.Dispose();
+                            break;
+                        case "debug":
+                            Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");
+                            Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.AnswerGsm}\tAntwort von Modem");
+                            Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.RequestGsm}\tAnfrage an Modem");
+                            Console.WriteLine($"{(int)ReliableSerialPort.GsmDebug.UnsolicatedResult}\tEreignisse von Modem");
+                            string x = Console.ReadLine();
+                            if (byte.TryParse(x, out byte d))
+                            {
+                                ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)d;
+                                Console.WriteLine("Neuer Debug-Level: " + d);
+                            }
+                            break;
+                        case "restart":
+                            {
+                                Log.Info("Die Anwendung wurde mit dem Befehl 'Restart' manuell neugestartet.", 4445);
+                                ReliableSerialPort_SerialPortUnavailableEvent(null, 4445);
+                            }
+                            break;
+                        case "import contact":
+                            Console.WriteLine("Kontakte als CSV-Datei der Form 'AbsName;AbsInakt;AbsNr;AbsKey;' laden. Siehe alte Tabelle 'Tbl_Absender'. Optionale Spalte 'AbsEmail;AbsLevel'. Dateipfad angeben:");
+                            string path = Console.ReadLine();
+                            Sql.LoadPersonsFromCsv(path);
+                            break;
+                        case "at":
+                            Console.WriteLine("AT-Befehl:");
+                            var at = Console.ReadLine();
+                            MelBoxGsm.Gsm.AskModem(at);
+                            break;
+                    }
+
                 }
 
-            }
-
-            emailListener.Dispose();
+                emailListener.Dispose();
 #if DEBUG
-            Console.WriteLine("Progammende. Beliebige Taste zum beenden..");
-            Console.ReadKey();
+                Console.WriteLine("Progammende. Beliebige Taste zum beenden..");
+                Console.ReadKey();
 #endif
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler in Main(): " + ex.Message + Environment.NewLine + ex.StackTrace);
+                Console.WriteLine("Beliebige Taste zum beenden...");
+                Console.ReadKey();
+            }
         }
 
 

@@ -23,6 +23,10 @@ FRAGEN:
 	-> Standard ist Characterset GSM. Bei Sonderzeichen in SMS schaltet das Modem selbsttätig auf UCS2. Ist im Programm abgefangen. Muss die Praxis zeigen.
 
 TODO: 
+-	Automatische Rufnummern-Link in Browser unterdrücken? 
+		Wenn ja im Header ergänzen:
+	    <meta name="format-detection" content="telephone=no">
+
 
 PRAXISTEST:
 -	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51

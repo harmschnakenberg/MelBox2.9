@@ -15,6 +15,13 @@ namespace MelBox2
         /// </summary>
         private static void GetIniValues()
         {
+            if (!System.IO.File.Exists(Sql.DbPath))
+            {
+                Log.Warning($"Ini-Datei kann nicht gelesen werden. Datei '{Sql.DbPath}' nicht gefunden.Es wird versucht eine neue Datenbank anzulegen.", 3333);
+                Sql.CheckDbFile();
+                
+            }
+
             try
             {
                 Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath); // Erst die richtige Datenbank laden!

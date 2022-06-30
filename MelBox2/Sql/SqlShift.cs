@@ -153,7 +153,7 @@ namespace MelBox2
                                   // "AND NOT EXISTS (SELECT Phone FROM Person WHERE Phone NOT NULL AND ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (1,3,5)) " + // unnötig ?
                                   "LIMIT 1; ";
 
-            return SelectValue(query1, null).ToString();
+            return SelectValue(query1, null)?.ToString() ?? String.Empty;
         }
 
         internal static MailAddressCollection GetCurrentEmailRecievers(bool permanentRecieversOnly = true)
