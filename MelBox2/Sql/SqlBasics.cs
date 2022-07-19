@@ -87,7 +87,11 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Error("SqlNonQuery(): " + query + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 21401);
+                string argsShow = "";
+                foreach (string key in args.Keys) {
+                    argsShow += "\r\n" + key +"\t'"+ args[key] + "'";
+                }
+                Log.Error("SqlNonQuery(): " + query + argsShow + "\r\n" + ex.GetType() + "\r\n" + ex.Message, 21401);
                 return false;
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -235,7 +239,7 @@ namespace MelBox2
             try
             {
                 string backupPath = Path.Combine(Path.GetDirectoryName(DbPath), string.Format("MelBox2_{0}_KW{1:00}.db", DateTime.UtcNow.Year, GetIso8601WeekOfYear(DateTime.UtcNow)));
-                if (File.Exists(backupPath)) return;
+                if (File.Exists(backupPath) || !File.Exists(DbPath) ) return;
 
                 using (var connection = new SqliteConnection("Data Source=" + DbPath))
                 {
@@ -251,7 +255,7 @@ namespace MelBox2
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Log.Error("Sql - Fehler DbBackup()\r\n" + ex.Message, 1427);
+                Log.Error("Sql - Fehler DbBackup() \r\n" + ex.Message + Environment.NewLine + ex.InnerException + Environment.NewLine + ex.GetBaseException().Message, 1427);
 #if DEBUG
                 throw new Exception("Sql-Fehler DbBackup()\r\n" + ex.Message);
 #endif

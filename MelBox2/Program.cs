@@ -10,6 +10,10 @@ namespace MelBox2
     {
         public static readonly string AppName = Process.GetCurrentProcess().ProcessName;
 
+        internal static EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "O*******m64!", true);
+       
+
+
         static void Main()
         {
             try
@@ -25,6 +29,10 @@ namespace MelBox2
                 }
 
                 #endregion
+
+                Sql.CheckDbFile();
+                GetIniValues();
+
                 #region COM-Port vorhanden?
                 if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
                 {
@@ -45,8 +53,6 @@ namespace MelBox2
                 Console.CancelKeyPress += Console_CancelKeyPress;
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit; //Normales Beenden 
                 #endregion
-
-                GetIniValues();
 
                 #region Programmstart protokollieren
 #if DEBUG
@@ -92,7 +98,7 @@ namespace MelBox2
 
                 Scheduler.CeckOrCreateWatchDog();
 
-                EmailListener emailListener = new EmailListener(); // "imap.gmx.net", 993, "harmschnakenberg@gmx.de", "O*******m64!", true);
+                //Emails empfangen
                 Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
                 emailListener.EmailInEvent += EmailListener_EmailInEvent;
                 emailListener.ReadUnseen();
@@ -243,7 +249,9 @@ namespace MelBox2
         private static void ShowHelp()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("\r\n### HILFE MELBOX CONSOLE ###");
+            sb.AppendLine("\u250C" + new string('\u2500', 32) + "\u2510");
+            sb.AppendLine("\u2502 HILFE MELBOX CONSOLE "+ new string(' ', 10) + "\u2502");
+            sb.AppendLine("\u2514" + new string('\u2500', 32) + "\u2518");
             sb.AppendLine("Exit".PadRight(32) + "Beendet das Programm. Fährt den Webserver herunter. Schließt den Seriellen Port.");
             sb.AppendLine("Help".PadRight(32) + "Ruft diese Hilfe auf.");
             sb.AppendLine("CLS".PadRight(32) + "Löscht den Fensterinhalt.");
@@ -258,9 +266,11 @@ namespace MelBox2
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS (wird ggf. an Bereitschaft weitergeleitet).");
             sb.AppendLine("Email Read".PadRight(32) + "Liest auf dem Mailserver vorhandenen neue (ungelesen) E-Mails.");
-
-            sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
-            sb.AppendLine("### HILFE ENDE ###");
+            sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");  
+            
+            sb.AppendLine("\u250C" + new string('\u2500', 32) + "\u2510");
+            sb.AppendLine("\u2502 HILFE ENDE " + new string(' ', 20) + "\u2502");
+            sb.AppendLine("\u2514" + new string('\u2500', 32) + "\u2518");
 
             Console.WriteLine(sb.ToString());
         }

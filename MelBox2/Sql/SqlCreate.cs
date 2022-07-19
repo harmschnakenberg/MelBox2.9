@@ -7,7 +7,7 @@ namespace MelBox2
     {
         private static readonly string AppFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-        public static string DbPath { get; set; } = Path.Combine(AppFolder + @"\", "DB", "MelBox2.db");
+        public static string DbPath { get; set; } = Path.Combine(AppFolder , "DB", "MelBox2.db");
 
         private static void CreateNewDataBase()
         {
@@ -133,25 +133,29 @@ namespace MelBox2
                     "); ";
                 NonQuery(query, null);
 
-                query += "CREATE VIEW ViewYearFromToday AS " +
+                query = "CREATE VIEW ViewYearFromToday AS " +
                     "SELECT CASE(CAST(strftime('%w', d) AS INT) +6) % 7 WHEN 0 THEN 'Mo' WHEN 1 THEN 'Di' WHEN 2 THEN 'Mi' WHEN 3 THEN 'Do' WHEN 4 THEN 'Fr' WHEN 5 THEN 'Sa' ELSE 'So' END AS Tag, d FROM(WITH RECURSIVE dates(d) AS(VALUES(date('now')) " +
                     "UNION ALL " +
                     "SELECT date(d, '+1 day') FROM dates WHERE d<date('now', '+1 year')) SELECT d FROM dates ) WHERE d NOT IN(SELECT date(Start) FROM Shift WHERE date(Start) >= date('now') " +
                     "); ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_Recieved AS " +
+                query = "CREATE VIEW View_Recieved AS " +
                          "SELECT r.Id As Nr, strftime('%Y-%m-%d %H:%M:%S', r.Time, 'localtime') AS Empfangen, c.Name AS Von, (SELECT Content FROM Message WHERE Id = r.ContentId) AS Inhalt " +
                          "FROM Recieved AS r " +
                          "JOIN Person AS c " +
                          "ON SenderId = c.Id; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_Sent AS " +
+                query = "CREATE VIEW View_Sent AS " +
                          "SELECT strftime('%Y-%m-%d %H:%M:%S', ls.Time, 'localtime') AS Gesendet, c.Name AS An, Content AS Inhalt, Reference AS Ref, ls.Via, Confirmation AS Sendestatus " +
                          "FROM Sent AS ls JOIN Person AS c ON ToId = c.Id JOIN Message AS mc ON mc.id = ls.ContentId; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_Blocked AS SELECT Message.Id AS Id, Content As Nachricht, BlockDays As Gesperrt, BlockStart || ' Uhr' As Beginn, BlockEnd || ' Uhr' As Ende FROM Message WHERE BlockDays > 0; ";
+                query = "CREATE VIEW View_Blocked AS SELECT Message.Id AS Id, Content As Nachricht, BlockDays As Gesperrt, BlockStart || ' Uhr' As Beginn, BlockEnd || ' Uhr' As Ende FROM Message WHERE BlockDays > 0; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_Overdue AS  " +
+                query = "CREATE VIEW View_Overdue AS  " +
                          "SELECT Recieved.ID AS Id, Person.Name, Person.Company AS Firma, Person.MaxInactive || ' Std.' AS Max_Inaktiv, " +
                          "MAX(datetime(Recieved.Time, 'localtime')) AS Letzte_Nachricht, " +
                          "Message.Content AS Inhalt, " +
@@ -161,10 +165,12 @@ namespace MelBox2
                          "WHERE MaxInactive > 0 " +
                          "GROUP BY Recieved.SenderId " +
                          "HAVING CAST((strftime('%s', 'now') - strftime('%s', Recieved.Time, '+' || MaxInactive || ' hours')) / 3600 AS INTEGER) > 0; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_WatchedSenders AS SELECT Id, Name, Company AS Firma, MaxInactive || ' Std.' AS Max_Inaktiv FROM Person WHERE MaxInactive > 0 ORDER BY Firma; ";
-
-                query += "CREATE VIEW View_Calendar AS " +
+                query = "CREATE VIEW View_WatchedSenders AS SELECT Id, Name, Company AS Firma, MaxInactive || ' Std.' AS Max_Inaktiv FROM Person WHERE MaxInactive > 0 ORDER BY Firma; ";
+                NonQuery(query, null);
+                
+                query = "CREATE VIEW View_Calendar AS " +
                          "SELECT s.ID, p.ID AS PersonId, p.name, p.Via, s.Start, s.End, strftime('%W', s.Start) AS KW, " +
                          "DATE(s.Start, 'localtime', 'weekday 6', '-5 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-5 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Mo, " +
                          "DATE(s.Start, 'localtime', 'weekday 6', '-4 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '-4 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Di, " +
@@ -174,8 +180,9 @@ namespace MelBox2
                          "DATE(s.Start, 'localtime', 'weekday 6', '-0 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+0 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS Sa, " +
                          "DATE(s.Start, 'localtime', 'weekday 6', '+1 days') || CASE WHEN DATE(s.Start, 'localtime', 'weekday 6', '+1 days') BETWEEN DATE(s.Start) AND DATE(s.End) THEN 'x' ELSE '' END AS So " +
                          "FROM Shift AS s JOIN Person p ON s.PersonId = p.ID WHERE s.End > date('now', '-1 day') ORDER BY Start; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW View_Calendar_Full AS " +
+                query = "CREATE VIEW View_Calendar_Full AS " +
                         "SELECT * FROM View_Calendar " +
                         "UNION " +
                         "SELECT NULL AS ID, NULL AS PersonId, NULL AS Name, NULL AS Via, DATETIME(d, 'weekday 1') AS Start, NULL AS End, " +
@@ -187,8 +194,9 @@ namespace MelBox2
                         "SELECT date(d, '+4 day', 'weekday 1') FROM dates WHERE d < date('now', '+1 year')) SELECT d FROM dates) " +
                         "WHERE KW NOT IN(SELECT KW FROM View_Calendar WHERE date(Start) >= date('now', '-7 day', 'weekday 1') ) " +
                         "ORDER BY Start; ";
+                NonQuery(query, null);
 
-                query += "CREATE VIEW ViewNotepad AS " +
+                query = "CREATE VIEW ViewNotepad AS " +
                         "SELECT n.ID, n.Time AS Bearbeitet, n.AuthorId AS VonId, p1.name AS Von, n.CustomerId AS KundeId, p2.name As Kunde, n.Content AS Notiz " +
                         "FROM Notepad AS n " +
                         "JOIN Person AS p1 ON p1.ID = n.AuthorId " +
@@ -196,9 +204,10 @@ namespace MelBox2
 
                 NonQuery(query, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Log.Error("CreateNewDataBase() " + ex.Message + ex.StackTrace, 57651);
+                throw ex;
             }
 
             try
@@ -234,9 +243,9 @@ namespace MelBox2
                 NonQuery(query, null);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
 
         }

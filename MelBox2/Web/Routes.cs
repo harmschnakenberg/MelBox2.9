@@ -1053,7 +1053,7 @@ namespace MelBox2
             Program.CheckCallForwardingNumber(null, null);
             System.Threading.Thread.Sleep(2000);
 
-            string html = Html.Alert(4, "Aktuelle Rufweiterleitung geprüft", $"Sprachanrufe werden aktuell an {(Gsm.CallForwardingNumber.Length > 8 ? Gsm.CallForwardingNumber : "-unbekannt-")} weitergeleitet.");
+            string html = Html.Alert(4, "Rufweiterleitung geprüft", $"Sprachanrufe werden aktuell an {(Gsm.CallForwardingNumber.Length > 8 ? Gsm.CallForwardingNumber : "-unbekannt-")} weitergeleitet.");
 
             await Html.PageAsync(context, "Rufweiterleitung geprüft", html);
         }

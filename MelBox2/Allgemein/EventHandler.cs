@@ -203,8 +203,65 @@ namespace MelBox2
 
         private static void EmailListener_EmailInEvent(object sender, System.Net.Mail.MailMessage e)
         {
-            e.Body = Email.ChangeEncoding(e.Body, e.BodyEncoding, System.Text.Encoding.UTF8); //email-Inhalt in UTF8 konvertieren wg. Umlaute
+            #region TEST Encoding (Umlaute usw)
+/*
+            string fileName = "C:\\MelBox2\\raw\\email" + DateTime.Now.Ticks.ToString() + ".txt";
+            using (var fs = new System.IO.StreamWriter(fileName))
+            {
+                fs.WriteLine(DateTime.Now + ", " + e.Sender?.Address ?? "-unbekannt-" + ", " + e.Sender?.DisplayName ?? "-ohne Namen-");
+                fs.WriteLine(nameof(e.From) + "\t\t" + e.From);
+                fs.WriteLine(nameof(e.To) + "\t\t" + e.To);
+                fs.WriteLine(nameof(e.DeliveryNotificationOptions) + "\t\t" + e.DeliveryNotificationOptions);
+                fs.WriteLine(nameof(e.SubjectEncoding) + "\t\t" + e.SubjectEncoding);
+                fs.WriteLine(nameof(e.Subject) + "\t\t" + e.Subject);
+
+                fs.WriteLine(nameof(e.IsBodyHtml) + "\t\t" + e.IsBodyHtml);
+                fs.WriteLine(nameof(e.BodyTransferEncoding) + "\t\t" + e.BodyTransferEncoding);
+                fs.WriteLine(nameof(e.BodyEncoding) + "\t\t" + e.BodyEncoding);
+                fs.WriteLine(nameof(e.Body) + "\t\t" + e.Body);
+
+                System.Text.Encoding encoding = System.Text.Encoding.Default;
+
+                fs.WriteLine("############ als " + encoding);
+                
+                byte[] utfBytes = encoding.GetBytes(e.Body);
+
+
+                for (int i = 0; i < utfBytes.Length; i++)
+                {
+                    fs.Write(utfBytes[i] + "\t");
+                }
+                
+                fs.WriteLine("\r\n############");
+
+                for (int i = 0; i < utfBytes.Length; i++)
+                {
+
+                    fs.Write(utfBytes[i].ToString("XX") + "\t");
+                }
+
+                fs.WriteLine("\r\n############");
+
+                fs.Write("\r\n" + System.Text.Encoding.UTF8.GetString(utfBytes).ToCharArray());
+
+                fs.Write("\r\n" + System.Text.Encoding.UTF8.GetString(utfBytes));
+                fs.Write("\r\n" + System.Text.Encoding.UTF7.GetString(utfBytes));                
+                fs.Write("\r\n" + System.Text.Encoding.Default.GetString(utfBytes));
+                fs.Write("\r\n" + System.Text.Encoding.Unicode.GetString(utfBytes));
+            }
+
+            //*/
+            #endregion
+
             ParseNewEmail(e);
+        }
+
+        private static string ByteArrayToString(byte[] ba)
+        {
+            System.Text.StringBuilder hex = new System.Text.StringBuilder(ba.Length * 2);
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
         }
 
         /// <summary>

@@ -24,7 +24,8 @@ namespace MelBox2
 #endif
             Timer execute = new Timer(span.TotalMilliseconds);
 
-            execute.Elapsed += new ElapsedEventHandler(CheckEmailInBox);
+            execute.Elapsed += new ElapsedEventHandler(CheckEmailInBox); //Gürtel
+            execute.Elapsed += new ElapsedEventHandler(RenewEmailInBox); //Hosenträger   
             execute.Elapsed += new ElapsedEventHandler(CheckCallForwardingNumber);
             execute.Elapsed += new ElapsedEventHandler(SenderTimeoutCheck);
             execute.Elapsed += ConsolidateGsmSignal;
@@ -35,6 +36,29 @@ namespace MelBox2
 
             execute.AutoReset = false;
             execute.Start();
+
+            //Tagessprung anzeigen
+            if (DateTime.Now.Hour == 0)
+                Console.WriteLine(DateTime.Now.ToLongDateString());
+        }
+
+        /// <summary>
+        /// Beendet die Verbindung zum Eingngs-Postfach und Stellt die Verbindung erneut wieder her. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void RenewEmailInBox(object sender, ElapsedEventArgs e)
+        {
+            //if (EmailListener.ImapConnectionRenewInterval == 0 || DateTime.Now.Hour % EmailListener.ImapConnectionRenewInterval > 0) return; // 3,6,9,12.. Uhr % 3 = 0 -> Alle 3 Stunden
+
+#if DEBUG
+            Console.WriteLine(DateTime.Now.ToShortTimeString() + ": Die Verbindung zum E-Mail-Server wird planmäßig erneuert.");
+#endif
+            Program.emailListener.EmailInEvent -= EmailListener_EmailInEvent;
+            Program.emailListener.Dispose();
+
+            Program.emailListener = new EmailListener();
+            Program.emailListener.EmailInEvent += EmailListener_EmailInEvent;
         }
 
         private static void ConsolidateGsmSignal(object sender, ElapsedEventArgs e)
@@ -44,9 +68,9 @@ namespace MelBox2
 
         private static void CheckEmailInBox(object sender, ElapsedEventArgs e)
         {
-            #if DEBUG
+#if DEBUG
                 Console.WriteLine(DateTime.Now.ToShortTimeString() + " E-Mail-Abruf.");
-            #endif
+#endif
             EmailListener emailListener = new EmailListener();
             emailListener.ReadUnseen();
             emailListener.Dispose();
@@ -75,14 +99,16 @@ namespace MelBox2
         {
             if (DateTime.Now.Hour != HourOfDailyTasks) return;
 
-            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
+            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
             Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");
 
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
             //Email.Send(Email.Admin, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
 
-            System.Net.Mail.MailAddressCollection mailAddresses = new System.Net.Mail.MailAddressCollection();
-            mailAddresses.Add(Email.Admin);
+            System.Net.Mail.MailAddressCollection mailAddresses = new System.Net.Mail.MailAddressCollection
+            {
+                Email.Admin
+            };
             Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", false, DateTime.UtcNow.Millisecond); //Test Doku Routinemeldung in Tabelle Sent
         }
 
@@ -90,7 +116,7 @@ namespace MelBox2
         {
             if (DateTime.Now.Hour != HourOfDailyTasks) return;
 
-            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Prüfe / erstelle Backup der Datenbank.");
+            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Prüfe / erstelle Backup der Datenbank.");
             Sql.DbBackup();
         }
 
@@ -137,9 +163,7 @@ namespace MelBox2
             }
 
             if (phone != Gsm.CallForwardingNumber)
-                Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Die aktuelle Rufumleitung soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
-
-            // Console.WriteLine($"Rufumleitung an {Gsm.CallForwardingNumber} ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}.");           
+                Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Die Rufumleitung ist {(Gsm.CallForwardingActive ? "aktiv" : "inaktiv")}, soll an {phone}, geht aber an {Gsm.CallForwardingNumber}.");
         }
 
 

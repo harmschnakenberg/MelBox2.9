@@ -18,13 +18,18 @@ namespace MelBox2
             if (!System.IO.File.Exists(Sql.DbPath))
             {
                 Log.Warning($"Ini-Datei kann nicht gelesen werden. Datei '{Sql.DbPath}' nicht gefunden.Es wird versucht eine neue Datenbank anzulegen.", 3333);
-                Sql.CheckDbFile();
-                
+                Sql.CheckDbFile();                
             }
 
             try
             {
-                Sql.DbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath); // Erst die richtige Datenbank laden!
+                string dbPath = GetIniValue(nameof(Sql.DbPath), Sql.DbPath); // Erst die richtige Datenbank laden!
+
+                if (!System.IO.File.Exists(dbPath))
+                    Log.Error($"Ini-Datei kann nicht gelesen werden. Die Datenbankdatei '{dbPath}' existiert nicht.", 6583);
+                else
+                    Sql.DbPath = dbPath;
+
                 Console.WriteLine("Initialisiere Konfiguration aus Datenbankdatei: " + Sql.DbPath);
 
                 ReliableSerialPort.Debug = (ReliableSerialPort.GsmDebug)GetIniValue(nameof(ReliableSerialPort.Debug), (int)ReliableSerialPort.Debug);
@@ -56,6 +61,7 @@ namespace MelBox2
                 EmailListener.ImapUserName = GetIniValue(nameof(EmailListener.ImapUserName), EmailListener.ImapUserName);
                 EmailListener.ImapPassword = GetIniValue(nameof(EmailListener.ImapPassword), EmailListener.ImapPassword);
                 EmailListener.ImapEnableSSL = GetIniValue(nameof(EmailListener.ImapEnableSSL), EmailListener.ImapEnableSSL);
+                EmailListener.ImapConnectionRenewInterval = GetIniValue(nameof(EmailListener.ImapConnectionRenewInterval), EmailListener.ImapConnectionRenewInterval);
 
                 Program.LifeMessageTrigger = GetIniValue(nameof(Program.LifeMessageTrigger), string.Join(",", Program.LifeMessageTrigger)).Split(',');
                 Program.SmsTestTrigger = GetIniValue(nameof(Program.SmsTestTrigger), Program.SmsTestTrigger);
@@ -69,12 +75,10 @@ namespace MelBox2
 
                 Console.WriteLine("Fehler und Debug-Meldungen gehen an: " + Gsm.AdminPhone + " " + Email.Admin.Address);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
             {
                 Log.Warning("Mindestens ein Initialwerte konnte nicht aus der Datenbank gelesen werden. Es werden Standardwerte genommen.", 31635);
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
 

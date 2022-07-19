@@ -159,7 +159,7 @@ namespace MelBox2
         internal static MailAddressCollection GetCurrentEmailRecievers(bool permanentRecieversOnly = true)
         {
             const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via IN (4,5);"; //nur Dauerempfänger
-            const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3,4) )"; //Bereitschaft per Email + Dauerempfänger
+            const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3)"; //Bereitschaft per Email + Dauerempfänger
 
             DataTable dt = SelectDataTable(permanentRecieversOnly ? query1 : query2, null);
 

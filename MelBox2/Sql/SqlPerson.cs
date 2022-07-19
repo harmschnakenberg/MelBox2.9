@@ -186,7 +186,7 @@ namespace MelBox2
 
             //Erst nach Keyword suchen, da Phone nicht eindeutig sein kann.
             const string query1 = "SELECT ID, Name, Level, Company, Phone, Email, Via, KeyWord, MaxInactive FROM Person WHERE Phone = @Phone AND (KeyWord IS NULL OR length(KeyWord) = 0 OR LOWER(KeyWord) = @KeyWord) ORDER BY KeyWord DESC; ";
-            const string query2 = "INSERT INTO Person (Name, Level, Phone, KeyWord) VALUES ('Neu_' || @Phone, 0, @Phone, @KeyWord); ";
+            const string query2 = "INSERT INTO Person (Name, Company, Level, Phone, Via, KeyWord) VALUES ('Neu_' || @Phone, '', 0, @Phone, 0, @KeyWord); ";
 
             Dictionary<string, object> args = new Dictionary<string, object>
             {
@@ -330,7 +330,7 @@ namespace MelBox2
         internal static bool UpdatePerson(int id, string name, string password, int accesslevel, string company, string phone, string email, int via, string keyWord, int maxInactive)
         {
             string query = "UPDATE Person SET Name = @Name, Level = @Level, Company = @Company, Phone = @Phone, Email = @Email, Via = @Via, KeyWord = @KeyWord, MaxInactive = @MaxInactive " +
-                            (password.Length > 3 ? ", Password = @Password " : string.Empty) +
+                            (password?.Length > 3 ? ", Password = @Password " : string.Empty) +
                             "WHERE ID = @ID; ";
 
             Dictionary<string, object> args = new Dictionary<string, object>()
@@ -346,7 +346,7 @@ namespace MelBox2
                 { "@MaxInactive", maxInactive }
             };
 
-            if (password.Length > 3) args.Add("@Password", Encrypt(password));
+            if (password?.Length > 3) args.Add("@Password", Encrypt(password));
 
             return NonQuery(query, args);
         }
