@@ -296,7 +296,7 @@ namespace MelBox2
             #endregion
 
             #region Anzuzeigenden Benutzer 
-            int showId = user.Id;
+            int showId = -1;// user.Id;
             string companyFilter = string.Empty;
 
             if (context.Request.QueryString.HasKeys())
@@ -311,51 +311,56 @@ namespace MelBox2
             }
 
             Person account = Sql.SelectPerson(showId);
+            string form = string.Empty;
             #endregion
 
-            bool viaSms = (account.Via & Sql.Via.Sms) > 0;
-            bool viaEmail = (account.Via & Sql.Via.Email) > 0;
-            bool viaAlwaysEmail = (account.Via & Sql.Via.PermanentEmail) > 0;
-            bool onEmailWhitelist = (account.Via & Sql.Via.EmailWhitelist) > 0;
-            bool noCalls = (account.Via & Sql.Via.NoCalls) > 0;
-
-            string userRole = "Aspirant";
-            if (account.Level >= Server.Level_Admin) userRole = "Admin";
-            else if (account.Level >= Server.Level_Reciever) userRole = "Benutzer";
-            else if (account.Level > 0) userRole = "Beobachter";
-
-            Dictionary<string, string> pairs = new Dictionary<string, string>
+            if (showId >= 0)
             {
-                { "@readonly1", isAdmin ? string.Empty : "readonly" },
-                { "@disabled1", isAdmin ? string.Empty : "disabled" },
-                { "@disabled2", user.Level >= Server.Level_Reciever ? string.Empty : "disabled" },
-                { "@Id", account.Id.ToString() },
-                { "@Name", account.Name },
-                { "@Accesslevel", account.Level.ToString() },
-                { "@UserRole", userRole },
-                { "@UserAccesslevel", user.Level.ToString() },
-                { "@Company", account.Company },
-                { "@viaEmail", viaEmail ? "checked" : string.Empty },
-                { "@viaAlwaysEmail", viaAlwaysEmail ? "checked" : string.Empty },
-                { "@onEmailWhitelist", onEmailWhitelist ? "checked" : string.Empty },
-                { "@Email", account.Email },
-                { "@viaPhone", viaSms ? "checked" : string.Empty },
-                { "@noCalls", noCalls ? "checked" : string.Empty },
-                { "@Phone", account.Phone },
-                { "@MaxInactiveHours", account.MaxInactive.ToString() },
-                { "@KeyWord", account.KeyWord },
+                bool viaSms = (account.Via & Sql.Via.Sms) > 0;
+                bool viaEmail = (account.Via & Sql.Via.Email) > 0;
+                bool viaAlwaysEmail = (account.Via & Sql.Via.PermanentEmail) > 0;
+                bool onEmailWhitelist = (account.Via & Sql.Via.EmailWhitelist) > 0;
+                bool noCalls = (account.Via & Sql.Via.NoCalls) > 0;
 
-                { "@NewContact", isAdmin ? Html.ButtonNew("account") : string.Empty },
-                { "@DeleteContact", isAdmin ? Html.ButtonDelete("account", account.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")},
-                { "@UpdateContact", user.Level < Server.Level_Reciever ? string.Empty : "<button class='w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left w3-right' type='submit'>&Auml;ndern</button>"}
-            };
+                string userRole = "Aspirant";
+                if (account.Level >= Server.Level_Admin) userRole = "Admin";
+                else if (account.Level >= Server.Level_Reciever) userRole = "Benutzer";
+                else if (account.Level > 0) userRole = "Beobachter";
 
+                Dictionary<string, string> pairs = new Dictionary<string, string>
+                {
+                    { "@readonly1", isAdmin ? string.Empty : "readonly" },
+                    { "@disabled1", isAdmin ? string.Empty : "disabled" },
+                    { "@disabled2", user.Level >= Server.Level_Reciever ? string.Empty : "disabled" },
+                    { "@Id", account.Id.ToString() },
+                    { "@Name", account.Name },
+                    { "@Accesslevel", account.Level.ToString() },
+                    { "@UserRole", userRole },
+                    { "@UserAccesslevel", user.Level.ToString() },
+                    { "@Company", account.Company },
+                    { "@viaEmail", viaEmail ? "checked" : string.Empty },
+                    { "@viaAlwaysEmail", viaAlwaysEmail ? "checked" : string.Empty },
+                    { "@onEmailWhitelist", onEmailWhitelist ? "checked" : string.Empty },
+                    { "@Email", account.Email },
+                    { "@viaPhone", viaSms ? "checked" : string.Empty },
+                    { "@noCalls", noCalls ? "checked" : string.Empty },
+                    { "@Phone", account.Phone },
+                    { "@MaxInactiveHours", account.MaxInactive.ToString() },
+                    { "@KeyWord", account.KeyWord },
+
+                    { "@NewContact", isAdmin ? Html.ButtonNew("account") : string.Empty },
+                    { "@DeleteContact", isAdmin && showId > 0 ? Html.ButtonDelete("account", account.Id) : Html.ButtonDeleteDisabled("Kann nur durch einen Administrator gelöscht werden.")},
+                    { "@UpdateContact", user.Level < Server.Level_Reciever || showId == 0 ? string.Empty : "<button class='w3-button w3-block w3-cyan w3-section w3-padding w3-col w3-quarter w3-margin-left w3-right' type='submit'>&Auml;ndern</button>"}
+                };
+
+                form = Html.Page(Server.Html_FormAccount, pairs);
+            }
             string filter = isAdmin ? Html.AccountFilter("kreu") : string.Empty;
-            string form = Html.Page(Server.Html_FormAccount, pairs);
+            string addButton = isAdmin ? "<a href='/account/0'><i class='w3-button material-icons-outlined'>person_add</i></a>" : string.Empty;
             string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
             string info = Html.Modal("Benutzerkategorien", Html.InfoAccount());
 
-            await Html.PageAsync(context, "Benutzerverwaltung", filter + form + info + table, user);
+            await Html.PageAsync(context, "Benutzerverwaltung", addButton + filter + info + form + table, user);
         }
 
         [RestRoute("Post", "/account/new")]
@@ -421,7 +426,7 @@ namespace MelBox2
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
 
-            string companyFilter = p.Company.Substring(0, 3); //Filter hier sinnvoll?
+            string companyFilter = String.Empty; //p.Company.Substring(0, 3); //Filter hier sinnvoll?
             string table = Html.FromTable(Sql.SelectViewablePersons(user, companyFilter), true, "account");
 
             await Html.PageAsync(context, "Benutzerkonto ändern", alert + table, user);

@@ -88,10 +88,10 @@ namespace MelBox2
                 string company = dt.Rows[i]["Firma"].ToString();
                 string due = dt.Rows[i]["Fällig_seit"].ToString();
 
-                string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<{(company.Length > 0 ? $", >{company}<" : string.Empty)}. Meldung fällig seit >{due}<. \r\nMelsys bzw. Segno vor Ort prüfen.";
+                string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}<" : string.Empty)}. Meldung fällig seit >{due}<. \r\nMelsys bzw. Segno vor Ort prüfen.";
 
                 Log.Info(text, 60723);
-                Email.Send(Email.Admin, text, $"Inaktivität >{name}<{(company.Length > 0 ? $", >{company}< " : string.Empty)}", true);
+                Email.Send(Email.Admin, text, $"Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}< " : string.Empty)}");
             }
         }
 
@@ -102,14 +102,13 @@ namespace MelBox2
             Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Versende tägliche Kontroll-SMS an " + Gsm.AdminPhone);
             Gsm.SmsSend(Gsm.AdminPhone, $"SMS-Zentrale Routinemeldung.");
 
-            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
-            //Email.Send(Email.Admin, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.");
-
+            Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: Versende tägliche Kontroll-E-Mail an " + Email.Admin);
+           
             System.Net.Mail.MailAddressCollection mailAddresses = new System.Net.Mail.MailAddressCollection
             {
                 Email.Admin
             };
-            Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", false, DateTime.UtcNow.Millisecond); //Test Doku Routinemeldung in Tabelle Sent
+            Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", DateTime.UtcNow.Millisecond); //Test Doku Routinemeldung in Tabelle Sent
         }
 
         private static void DailyBackup(object sender, ElapsedEventArgs e)

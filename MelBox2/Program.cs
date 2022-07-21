@@ -266,8 +266,9 @@ namespace MelBox2
             sb.AppendLine("Sms Read All".PadRight(32) + "Liest alle im Modemspeicher vorhandenen SMSen aus und zeigt sie in der Console an.");
             sb.AppendLine("Sms Read Sim".PadRight(32) + "Simuliert den Empfang einer SMS (wird ggf. an Bereitschaft weitergeleitet).");
             sb.AppendLine("Email Read".PadRight(32) + "Liest auf dem Mailserver vorhandenen neue (ungelesen) E-Mails.");
-            sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");  
-            
+            sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
+            sb.AppendLine("AT".PadRight(32) + "AT-Befehl direkt eingeben (vorher Debug-Byte auf 7).");
+
             sb.AppendLine("\u250C" + new string('\u2500', 32) + "\u2510");
             sb.AppendLine("\u2502 HILFE ENDE " + new string(' ', 20) + "\u2502");
             sb.AppendLine("\u2514" + new string('\u2500', 32) + "\u2518");

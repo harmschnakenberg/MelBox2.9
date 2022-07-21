@@ -26,6 +26,7 @@ TODO:
 -	Automatische Rufnummern-Link in Browser unterdrücken? 
 		Wenn ja im Header ergänzen:
 	    <meta name="format-detection" content="telephone=no">
+	SIM: PIN-Eingabe begrenzen, sodass keine PUK-Freischaltung notwendig wird. 'AT^SPIC' prüfen.
 
 
 PRAXISTEST:

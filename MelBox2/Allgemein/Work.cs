@@ -181,21 +181,28 @@ namespace MelBox2
 
             string subject = $"SMS-Eingang >{p.Name}<{(p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, SMS-Text >{smsIn.Message}<";
 
-            //Email An: nur an eingeteilte Bereitschaft
-            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked && !isStartupTimeStartup;
+            int emailId = new Random().Next(256, 9999);
 
-            System.Net.Mail.MailAddressCollection mc = isMsgForShift
-                                                        ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger
-                                                        : Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger
+            #region Empfänger bestimmen
+            System.Net.Mail.MailAddressCollection mc = new System.Net.Mail.MailAddressCollection();
+
+            if (!isLifeMessage && !isStartupTimeStartup) // MelSysOK nur an Admin && bei Neustart nur an Admin
+            {
+                if (isWatchTime && !isMessageBlocked) // Es ist Bereitschaftszeit und die Nachricht ist nicht gesperrt
+                {
+                    mc = Sql.GetCurrentEmailRecievers(false); //Bereitschaft per Email + permanete Empfänger
+                    if (mc.Count == 0) mc.Add(Email.Admin);
+                    Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+                }
+                else
+                    mc = Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger (Email-Verteiler)
+            }
 
             if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft und keine Dauerempfänger eingeteilt: Email geht an Admin
 
-            int emailId = new Random().Next(256, 9999);
-
-            if (isMsgForShift)
-                Sql.InsertSent(mc[0], smsIn.Message, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
-
-            Email.Send(mc, body, subject, true, emailId);
+            #endregion
+               
+            Email.Send(mc, body, subject, emailId);
 
         }
 
@@ -222,23 +229,29 @@ namespace MelBox2
 
             Person p = Sql.SelectOrCreatePerson(mail.From);
 
-            string subject = $"Email-Eingang >{p.Name}<{(p.Company?.Length == 0 ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
-
-            //Email an nur an eingeteilte Bereitschaft, wenn...
-            bool isMsgForShift = isWatchTime && !isLifeMessage && !isMessageBlocked;
-
-            System.Net.Mail.MailAddressCollection mc = isMsgForShift
-                                                        ? Sql.GetCurrentEmailRecievers(false) //Bereitschaft per Email und permanente Empfänger
-                                                        : Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger
-
-            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft und keine Dauerempfänger eingeteilt: Email geht an Admin
+            string subject = $"Email-Eingang >{p.Name}<{(p.Company?.Length == 0 || p.Company == p.Name ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
 
             int emailId = new Random().Next(256, 9999);
 
-            if (isMsgForShift)
-                Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+            #region Empfänger bestimmen
+            System.Net.Mail.MailAddressCollection mc = new System.Net.Mail.MailAddressCollection();
 
-            Email.Send(mc, body, subject, true, emailId);
+            if (!isLifeMessage && !isStartupTimeStartup) // MelSysOK nur an Admin && bei Neustart nur an Admin
+            {
+                if (isWatchTime && !isMessageBlocked) // Es ist Bereitschaftszeit und die Nachricht ist nicht gesperrt
+                {
+                    mc = Sql.GetCurrentEmailRecievers(false); //Bereitschaft per Email + permanete Empfänger
+                    if (mc.Count == 0) mc.Add(Email.Admin);
+                    Sql.InsertSent(mc[0], recText, emailId);  //Protokollierung nur, wenn für Bereitschaft und nur einmal pro mail, nicht für jden Empfänger einzeln! ok?
+                }
+                else
+                    mc = Sql.GetCurrentEmailRecievers(true); //nur permanete Empfänger (Email-Verteiler)
+            }
+
+            if (mc.Count == 0) mc.Add(Email.Admin); //Keine Email-Bereitschaft und keine Dauerempfänger eingeteilt: Email geht an Admin
+
+            #endregion
+            Email.Send(mc, body, subject, emailId);
         }
 
     }

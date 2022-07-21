@@ -36,12 +36,12 @@ namespace MelBox2
         /// <param name="message">Inhalt der Email</param>
         /// <param name="subject">Betreff. Leer: Wird aus message generiert.</param>
         /// <param name="sendCC">Sende an Ständige Empänger in CC</param>
-        public static void Send(MailAddress to, string message, string subject = "", bool cc = false)
+        public static void Send(MailAddress to, string message, string subject = "")
         {
             var toList = new MailAddressCollection { to };
             int emailId = new Random().Next(256, int.MaxValue);
 
-            Send(toList, message, subject, cc, emailId);
+            Send(toList, message, subject, emailId);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace MelBox2
         /// <param name="subject">Betreff. Leer: Wird aus message generiert.</param>
         /// <param name="emailId">Id zur Protokollierung der Sendungsverfolgung in der Datenbank</param>
         /// <param name="sendCC">Sende an Ständige Empänger in CC</param>
-        public static void Send(MailAddressCollection toList, string message, string subject, bool cc, int emailId)
+        public static void Send(MailAddressCollection toList, string message, string subject, int emailId)
         {
 #if DEBUG
             Console.WriteLine("Sende Email: " + message);
@@ -78,18 +78,18 @@ namespace MelBox2
                     mail.To.Add(to);
                 }
 
-                if (cc)
-                {
-                    foreach (var CC in Sql.GetCurrentEmailRecievers())
-                    {
-#if DEBUG           //nur zu mir
-                        if (CC.Address.ToLower() != Admin.Address.ToLower())
-                            Console.WriteLine("Send(): Emailadresse gesperrt: " + CC.Address);
-                        else
-#endif
-                        mail.CC.Add(CC);
-                    }
-                }
+//                if (cc)
+//                {
+//                    foreach (var CC in Sql.GetCurrentEmailRecievers())
+//                    {
+//#if DEBUG           //nur zu mir
+//                        if (CC.Address.ToLower() != Admin.Address.ToLower())
+//                            Console.WriteLine("Send(): Emailadresse gesperrt: " + CC.Address);
+//                        else
+//#endif
+//                        mail.CC.Add(CC);
+//                    }
+//                }
 
                 if (!mail.To.Contains(Admin) && !mail.CC.Contains(Admin)) //Email geht in jedem Fall an Admin
                     mail.Bcc.Add(Admin);

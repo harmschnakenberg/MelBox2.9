@@ -329,14 +329,16 @@ namespace MelBox2
 
         internal static bool UpdatePerson(int id, string name, string password, int accesslevel, string company, string phone, string email, int via, string keyWord, int maxInactive)
         {
-            string query = "UPDATE Person SET Name = @Name, Level = @Level, Company = @Company, Phone = @Phone, Email = @Email, Via = @Via, KeyWord = @KeyWord, MaxInactive = @MaxInactive " +
-                            (password?.Length > 3 ? ", Password = @Password " : string.Empty) +
-                            "WHERE ID = @ID; ";
+            try
+            {
+                string query = "UPDATE Person SET Name = @Name, Level = @Level, Company = @Company, Phone = @Phone, Email = @Email, Via = @Via, KeyWord = @KeyWord, MaxInactive = @MaxInactive " +
+                                (password?.Length > 3 ? ", Password = @Password " : string.Empty) +
+                                "WHERE ID = @ID; ";
 
-            Dictionary<string, object> args = new Dictionary<string, object>()
+                Dictionary<string, object> args = new Dictionary<string, object>()
             {
                 { "@ID", id },
-                { "@Name", name },//not null
+                { "@Name", name?? string.Empty },
                 { "@Level", accesslevel },
                 { "@Company", company?? string.Empty  },
                 { "@Phone", NormalizePhone( phone?? string.Empty ) },
@@ -346,9 +348,14 @@ namespace MelBox2
                 { "@MaxInactive", maxInactive }
             };
 
-            if (password?.Length > 3) args.Add("@Password", Encrypt(password));
+                if (password?.Length > 3) args.Add("@Password", Encrypt(password));
 
-            return NonQuery(query, args);
+                return NonQuery(query, args);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         internal static bool DeletePerson(int id)

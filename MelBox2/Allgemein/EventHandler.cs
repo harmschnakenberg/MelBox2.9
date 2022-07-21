@@ -86,7 +86,7 @@ namespace MelBox2
             Console.WriteLine(dummy.Message);
             Sql.InsertRecieved(dummy);
 
-            Email.Send(Email.Admin, $"Sprachanruf {dummy.TimeUtc.ToLocalTime()} weitergeleitet an >{CallForwardingNumber}<.", $"Sprachanruf >{e}<", true);
+            Email.Send(Email.Admin, $"Sprachanruf {dummy.TimeUtc.ToLocalTime()} weitergeleitet an >{CallForwardingNumber}<.", $"Sprachanruf >{e}<");
         }
 
         static readonly Timer emailTimer = new Timer();
