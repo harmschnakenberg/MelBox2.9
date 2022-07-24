@@ -237,7 +237,7 @@ namespace MelBox2
             var regex = new Regex(pattern, RegexOptions.IgnoreCase);
 
             Match m = regex.Match(txt);
-            return (m.Groups[1].Value + ", " + m.Groups[2].Value).Trim();
+            return (m.Groups[1].Value + ", " + m.Groups[2].Value).Replace("()", string.Empty).Trim();
         }
 
     }

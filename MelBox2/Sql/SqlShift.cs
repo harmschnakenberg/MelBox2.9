@@ -159,7 +159,7 @@ namespace MelBox2
         internal static MailAddressCollection GetCurrentEmailRecievers(bool permanentRecieversOnly = true)
         {
             const string query1 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via IN (4,5);"; //nur Dauerempfänger
-            const string query2 = "SELECT Email, Name FROM Person WHERE Email NOT NULL AND Via IN (4,5) OR ( (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3) );"; //Bereitschaft per Email + Dauerempfänger
+            const string query2 = "SELECT Email, Name FROM Person WHERE (Email NOT NULL AND Via IN (4,5)) OR (Email NOT NULL AND (ID IN (SELECT PersonId FROM Shift WHERE CURRENT_TIMESTAMP BETWEEN Start AND End) AND Via IN (2,3) ) );"; //Bereitschaft per Email + Dauerempfänger
 
             DataTable dt = SelectDataTable(permanentRecieversOnly ? query1 : query2, null);
 
@@ -173,11 +173,10 @@ namespace MelBox2
 
                 try
                 {
-                    emailAddresses.Add(
-                        new MailAddress(
-                            email, dt.Rows[i]["Name"].ToString()
-                            )
-                        );
+                    var addr = new MailAddress(email, dt.Rows[i]["Name"].ToString());
+
+                    if (!emailAddresses.Contains(addr))
+                        emailAddresses.Add(addr);
 #if DEBUG
                     Log.Info($"DEBUG: Bereitschaft: Sende Email an >{email}<", 61312);
 #endif

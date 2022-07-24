@@ -389,7 +389,7 @@ namespace MelBox2
             else if (Sql.InsertPerson(p.Name, p.Password, p.Level, p.Company, p.Phone, p.Email, p.Via, p.MaxInactive))
             {
                 alert = Html.Alert(3, "Neuen Kontakt gespeichert", "Der Kontakt " + p.Name + " wurde erfolgreich neu erstellt.");
-                Sql.InsertLog(2, "Der Kontakt " + p.Name + " wurde neu erstellt durch " + user.Name + " [" + user.Level + "]");
+                Sql.InsertLog(2, "Der Kontakt " + p.Name + " wurde neu erstellt durch " + user.Name + " (" + user.Level + ")");
             }
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt " + p.Name + " konnte nicht in der Datenbank gespeichert werden.");
@@ -421,7 +421,7 @@ namespace MelBox2
             if (success)
             {
                 alert = Html.Alert(3, "Kontakt gespeichert", "Der Kontakt [" + p.Id + "] " + p.Name + " wurde erfolgreich geändert.");
-                Sql.InsertLog(2, "Der Kontakt [" + p.Id + "] " + p.Name + " wurde geändert durch " + user.Name + " [" + user.Level + "]");
+                Sql.InsertLog(2, "Der Kontakt [" + p.Id + "] " + p.Name + " wurde geändert durch " + user.Name + " (" + user.Level + ")");
             }
             else
                 alert = Html.Alert(1, "Fehler beim speichern des Kontakts", "Der Kontakt [" + p.Id + "] " + p.Name + " konnte in der Datenbank nicht geändert werden.");
@@ -975,6 +975,48 @@ namespace MelBox2
 
         #endregion
 
+        #region TEST Excel
+        [RestRoute("Get", "/excel/{table:alpha}")]
+        public static async Task DownloadExcelFile(IHttpContext context)
+        {
+            try
+            {
+                #region Anfragenden Benutzer identifizieren
+                Person user = await Html.GetLogedInUserAsync(context);
+                if (user == null) return;
+                #endregion
+
+                var table = context.Request.PathParameters["table"];
+                //_ = int.TryParse(recIdStr, out int recId);
+
+                System.Data.DataTable t = new System.Data.DataTable();
+
+                switch (table?.ToLower())
+                {
+                    case "in":
+                        t = Sql.SelectLastRecieved();
+                        break;
+                    default:
+                        string alert = Html.Alert(2, "Download fehlgeschlagen", $"Die Tabelle mit der Bezeichnung '{table}' ist ungültig.");
+                        await Html.PageAsync(context, "Excel Download fehlgeschlagen", alert);
+                        break;
+                }
+
+                byte[] content = MelBox2.Excel.Sample(t);
+
+                //Quelle: https://stackoverflow.com/questions/28048835/downloading-excel-file-after-creating-using-epplus
+                context.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                context.Response.AddHeader("content-disposition", string.Format("attachment;  filename={0}", "ExcellData.xlsx"));
+                await context.Response.SendResponseAsync(content);
+            }
+            catch (Exception ex)
+            {
+                await context.Response.SendResponseAsync(ex.Message + ex.InnerException + ex.StackTrace).ConfigureAwait(false);
+            }
+        }
+
+
+        #endregion
 
         #region Modem & Sendemedien
 

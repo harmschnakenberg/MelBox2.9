@@ -20,6 +20,18 @@ namespace MelBox2
             return SelectDataTable(query, args);
         }
 
+        internal static DataTable SelectLastRecieved(int count = 1000)
+        {
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@Count", count }
+            };
+
+            const string query = "SELECT Nr, Empfangen, Von, Inhalt FROM View_Recieved ORDER BY Empfangen DESC LIMIT @Count;";
+
+            return SelectDataTable(query, args);
+        }
+
 
         internal static DataTable SelectRecieved(System.DateTime date)
         {

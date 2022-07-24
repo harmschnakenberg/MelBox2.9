@@ -82,6 +82,11 @@ namespace MelBox2
 
             DataTable dt = Sql.SelectOverdueSenders();
 
+            System.Net.Mail.MailAddressCollection mailAddresses = Sql.GetCurrentEmailRecievers(true); //E-Mail-Verteiler
+
+            if (!mailAddresses.Contains(Email.Admin))
+                mailAddresses.Add(Email.Admin);
+            
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 string name = dt.Rows[i]["Name"].ToString();
@@ -91,7 +96,8 @@ namespace MelBox2
                 string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}<" : string.Empty)}. Meldung fällig seit >{due}<. \r\nMelsys bzw. Segno vor Ort prüfen.";
 
                 Log.Info(text, 60723);
-                Email.Send(Email.Admin, text, $"Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}< " : string.Empty)}");
+
+                Email.Send(mailAddresses, text, $"Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}< " : string.Empty)}", DateTime.Now.Millisecond);
             }
         }
 
@@ -108,7 +114,9 @@ namespace MelBox2
             {
                 Email.Admin
             };
-            Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", DateTime.UtcNow.Millisecond); //Test Doku Routinemeldung in Tabelle Sent
+
+            //diese Überladung von Send() dokumentiert die gesendete Routinemeldung in der Tabelle Sent:
+            Email.Send(mailAddresses, "Routinemeldung. E-Mail-Versand aus MelBox2 ok.", "SMS-Zentrale Routinemeldung.", DateTime.UtcNow.Millisecond); 
         }
 
         private static void DailyBackup(object sender, ElapsedEventArgs e)

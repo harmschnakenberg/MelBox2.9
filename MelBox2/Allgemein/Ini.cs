@@ -90,7 +90,9 @@ namespace MelBox2
             {
                 return GetIniValue(propertyName, standardValue);
             }
-
+#if Debug
+            Console.WriteLine("Ini: " + propertyName + " = " + result);
+#endif
             return int.Parse((result ?? 0).ToString());
         }
 
@@ -104,6 +106,9 @@ namespace MelBox2
                 return GetIniValue(propertyName, standardValue).ToString();
             }
 
+#if Debug
+            Console.WriteLine("Ini: " + propertyName + " = " + result);
+#endif
             return (result ?? string.Empty).ToString();
         }
 
@@ -123,6 +128,9 @@ namespace MelBox2
             else if (rawEmail.Length == 1)
                 mail = new System.Net.Mail.MailAddress(rawEmail[0].TrimStart('<'), rawEmail[0].Trim());
 
+#if Debug
+            Console.WriteLine("Ini: " + propertyName + " = " + mail);
+#endif
             return mail;
         }
 
@@ -135,6 +143,9 @@ namespace MelBox2
                 return GetIniValue(propertyName, standardValue);
             }
 
+#if Debug
+            Console.WriteLine("Ini: " + propertyName + " = " + result);
+#endif
             return bool.Parse(result.ToString());
         }
     }
