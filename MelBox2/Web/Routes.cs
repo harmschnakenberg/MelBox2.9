@@ -50,8 +50,9 @@ namespace MelBox2
 
             refreshScript += "</script>\r\n";
 
+            string buttonDownload = Html.ButtonDownload("In");
 
-            await Html.PageAsync(context, "Empfangene Nachrichten", table + refreshScript + Html.SearchBySenderForm, user);
+            await Html.PageAsync(context, "Empfangene Nachrichten", buttonDownload + table + refreshScript + Html.SearchBySenderForm, user);
         }
 
         [RestRoute("Get", "/in/special")]
@@ -169,6 +170,7 @@ namespace MelBox2
             #region Anfragenden Benutzer identifizieren
             Person user = await Html.GetLogedInUserAsync(context);
             if (user == null) return;
+            bool isAdmin = user != null && user.Level >= Server.Level_Admin;
             #endregion
 
             System.Data.DataTable overdue = Sql.SelectOverdueSenders();
@@ -179,12 +181,12 @@ namespace MelBox2
                 html = Html.Alert(3, "Keine Zeit&uuml;berschreitung", "Kein &uuml;berwachter Sender ist &uuml;berf&auml;llig: Kein Handlungsbedarf.");
                 html += "<h3>Liste &uuml;berwachter Sender</h3>";
                 html += "<p>Diese Sender werden auf regelm&auml;&szlig;ige Nachrichteneing&auml;nge &uuml;berwacht:</p>";
-                html += Html.FromTable(Sql.SelectWatchedSenders(), false);
+                html += Html.FromTable(Sql.SelectWatchedSenders(), isAdmin, "account");
             }
             else
             {
                 html = Html.Alert(1, "Zeit&uuml;berschreitung", "Diese Absender haben l&auml;nger keine Nachricht geschickt. Bitte Meldeweg &Uuml;berpr&uuml;fen.");
-                html += Html.FromTable(overdue, false);
+                html += Html.FromTable(overdue, isAdmin, "account");
             }
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
@@ -587,8 +589,9 @@ namespace MelBox2
             Person user = await Html.GetLogedInUserAsync(context, false);
             string table = Html.FromShiftTable(user);
             string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
+            string buttonDownload = Html.ButtonDownload("Planer");
 
-            await Html.PageAsync(context, "Planer Bereitschaft", shiftActive + table, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", shiftActive + buttonDownload +  table, user);
         }
 
         [RestRoute("Get", "/shift/{shiftId:num}")]
@@ -619,10 +622,11 @@ namespace MelBox2
             };
 
             string form = Html.Page(Server.Html_FormShift, pairs);
-
+            string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
+            string buttonDownload = Html.ButtonDownload("Planer");
             string table = Html.FromShiftTable(user);
 
-            await Html.PageAsync(context, "Planer Bereitschaft", table + form, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", shiftActive + buttonDownload + table + form, user);
         }
 
         [RestRoute("Get", "/shift/{shiftDate}")]
@@ -655,10 +659,11 @@ namespace MelBox2
             };
 
             string form = Html.Page(Server.Html_FormShift, pairs);
-
             string table = Html.FromShiftTable(user);
+            string shiftActive = $"<span class='material-icons-outlined w3-display-topmiddle w3-text-blue w3-xxlarge' style='Top:90px;' " + (Sql.IsWatchTime() ? "title='Benachrichtigungen an Rufannahme aktiv'>notifications" : "title='zur Zeit werden keine Benachrichtungen weitergeleitet'>notifications_paused") + "</span>";
+            string buttonDownload = Html.ButtonDownload("Planer");
 
-            await Html.PageAsync(context, "Planer Bereitschaft", table + form, user);
+            await Html.PageAsync(context, "Planer Bereitschaft", shiftActive + buttonDownload + table + form, user);
         }
 
         [RestRoute("Post", "/shift/new")]
@@ -783,7 +788,6 @@ namespace MelBox2
 
         #region Log
         [RestRoute("Get", "/log")]
-        //[RestRoute("Get", "/log/{maxPrio:num}")]
         public static async Task LoggingShow(IHttpContext context)
         {
             #region Anfragenden Benutzer identifizieren
@@ -796,13 +800,10 @@ namespace MelBox2
             if (context.Request.QueryString.HasKeys())
                 _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio);
 
-            //if (context.Request.PathParameters.ContainsKey("maxPrio"))
-            //    _ = int.TryParse(context.Request.PathParameters["maxPrio"], out maxPrio);
-
             System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
-            string table = Html.FromTable(log, false, "");
+            string table = Html.FromTable(log, false, String.Empty);
             int del = 100;
-            string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:100px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
+            string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:150px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
 
             html += Html.Modal("Ereignisprotokoll", Html.InfoLog());
             html += "<span style='top:140px;left:200px;'><a href='/log/?prio=1' class='w3-button material-icons-outlined'>filter_1</a>\r\n" +
@@ -810,7 +811,9 @@ namespace MelBox2
                 "<a href='/log/?prio=3' class='w3-button material-icons-outlined'>filter_3</a>\r\n" +
                 "<a href='/log/?prio=4' class='w3-button material-icons-outlined'>filter_4</a></span>\r\n";
 
-            await Html.PageAsync(context, "Log", html + table, user);
+            string buttonDownload = Html.ButtonDownload("Log");
+
+            await Html.PageAsync(context, "Log", buttonDownload + html + table, user);
         }
 
 
@@ -975,7 +978,7 @@ namespace MelBox2
 
         #endregion
 
-        #region TEST Excel
+        #region Excel
         [RestRoute("Get", "/excel/{table:alpha}")]
         public static async Task DownloadExcelFile(IHttpContext context)
         {
@@ -987,14 +990,19 @@ namespace MelBox2
                 #endregion
 
                 var table = context.Request.PathParameters["table"];
-                //_ = int.TryParse(recIdStr, out int recId);
-
+                
                 System.Data.DataTable t = new System.Data.DataTable();
 
                 switch (table?.ToLower())
                 {
                     case "in":
-                        t = Sql.SelectLastRecieved();
+                        t = Sql.SelectLastRecieved();                        
+                        break;
+                    case "planer":
+                        t = Sql.SelectShifts4Excel();
+                        break;
+                    case "log":
+                        t = Sql.SelectLastLogs(1000, 5);
                         break;
                     default:
                         string alert = Html.Alert(2, "Download fehlgeschlagen", $"Die Tabelle mit der Bezeichnung '{table}' ist ungültig.");
@@ -1002,16 +1010,21 @@ namespace MelBox2
                         break;
                 }
 
-                byte[] content = MelBox2.Excel.Sample(t);
+                if (t.TableName.Length < 2)
+                    t.TableName = table;
+
+                byte[] content = MelBox2.Excel.ConvertToExcel(t);
+                string fileName = $"T_{table}_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm")}.xlsx";
 
                 //Quelle: https://stackoverflow.com/questions/28048835/downloading-excel-file-after-creating-using-epplus
                 context.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                context.Response.AddHeader("content-disposition", string.Format("attachment;  filename={0}", "ExcellData.xlsx"));
+                context.Response.AddHeader("content-disposition", $"attachment;  filename={fileName}");
                 await context.Response.SendResponseAsync(content);
             }
             catch (Exception ex)
             {
-                await context.Response.SendResponseAsync(ex.Message + ex.InnerException + ex.StackTrace).ConfigureAwait(false);
+                string alert = Html.Alert(1, "Download fehlgeschlagen", $"Die Tabelle konnte nicht erstellt werden: " + ex.Message + ex.InnerException);
+                await Html.PageAsync(context, "Fehler Excel Download", alert); 
             }
         }
 

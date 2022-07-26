@@ -149,6 +149,15 @@ namespace MelBox2
             return $"<button style='width:20%' class='w3-button w3-block w3-pink w3-section w3-padding w3-col type='submit' title='{tooltip}' disabled>Löschen</button>\r\n";
         }
 
+        internal static string ButtonDownload(string table)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"<a href='\\excel\\{table.ToLower()}' class='w3-button w3-white w3-display-position w3-badge material-icons-outlined' title='Download Tabelle \"{table}\"' style='top:140px;right:80px;';>file_download</a>");
+
+            return sb.ToString();
+        }
+
+
         /// <summary>
         /// 'Popup'-Nachrichten
         /// </summary>
@@ -755,6 +764,7 @@ namespace MelBox2
 
             sb.AppendLine("<div class='w3-container w3-margin-top'><ul class='w3-ul 3-card'>");
             sb.AppendLine(" <li><span class='material-icons-outlined'>edit</span> &Ouml;ffnet die Maske zum &Auml;ndern des Benutzerkontos.</li>");
+            sb.AppendLine(" <li><span class='material-icons-outlined'>person_add</span> &Ouml;ffnet die Maske zum Hinzuf&uuml;gen des Benutzerkontos.</li>");
             sb.AppendLine(" <li><hr></li>");
             sb.AppendLine(" <li><b>Filter</b> - nur bei meheren Eintr&auml;gen vorhanden.</li>");
             sb.AppendLine(" <li><span class='material-icons-outlined'>filter_none</span> Setzt alle Anzeigefilter zurück.</li>");
@@ -763,8 +773,7 @@ namespace MelBox2
             sb.AppendLine(" <li><hr></li>");
             sb.AppendLine(" <li><b>Attribute</b></li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>smartphone</span>Versand von SMS an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
-            sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");
-            //sb.AppendLine(" <li><span class='material-icons-outlined'>markunread_mailbox</span> Ist autorisiert E-Mails an MelBox2 zu senden. Andere Absender werden ignoriert.</li>");
+            sb.AppendLine($" <li><span class='material-icons-outlined'>email</span>Versand von E-Mail an diesen Empf&auml;nger ist freigegeben. Siehe Bereitschaft.</li>");            
             sb.AppendLine("  <li><span class='material-icons-outlined'>call</span>Sprachanrufe werden aktuell an diesen Empf&auml;nger weitergeleitet.</li>");
             sb.AppendLine("  <li><span class='material-icons-outlined'>phone_disabled</span>Dieser Empf&auml;nger bekommt keine Sprachanrufe.</li>");
             sb.AppendLine($" <li><span class='material-icons-outlined'>loyalty</span>Dieser Empf&auml;nger wird bei allen eingehenden Nachrichten per Email benachrichtigt. Zurzeit gibt es {Sql.PermanentEmailRecievers} Abonnenten.</li>");

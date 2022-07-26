@@ -26,11 +26,10 @@ TODO:
 -	Automatische Rufnummern-Link in Browser unterdrücken? 
 		Wenn ja im Header ergänzen:
 	    <meta name="format-detection" content="telephone=no">
-	SIM: PIN-Eingabe begrenzen, sodass keine PUK-Freischaltung notwendig wird. 'AT^SPIC' prüfen.
 
 
 PRAXISTEST:
 -	DeliveryCode prüfen: Siehe GSM 03.40 section 9.2.3.15 (TP-Status) Seite 51
 		- Statusreport für gesendete SMS: Wird immer der passende Deleviery-Code bei Fehlern/Verzögerung angezeigt?
 
--	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft testen! 					
+-	Rufumleitung:	Autom. Rufumleitung zu Bereitschaft in der Praxis testen! 					

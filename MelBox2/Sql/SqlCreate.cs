@@ -156,7 +156,7 @@ namespace MelBox2
                 NonQuery(query, null);
 
                 query = "CREATE VIEW View_Overdue AS  " +
-                         "SELECT Recieved.ID AS Id, Person.Name, Person.Company AS Firma, Person.MaxInactive || ' Std.' AS Max_Inaktiv, " +
+                         "SELECT Person.ID AS Id, Person.Name, Person.Company AS Firma, Person.MaxInactive || ' Std.' AS Max_Inaktiv, " +
                          "MAX(datetime(Recieved.Time, 'localtime')) AS Letzte_Nachricht, " +
                          "Message.Content AS Inhalt, " +
                          "CAST((strftime('%s', 'now') - strftime('%s', Recieved.Time, '+' || MaxInactive || ' hours')) / 3600 AS INTEGER) || ' Std.' AS Fällig_seit " +

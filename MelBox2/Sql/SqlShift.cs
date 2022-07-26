@@ -199,6 +199,15 @@ namespace MelBox2
             return SelectDataTable(query, null);
         }
 
+        internal static DataTable SelectShifts4Excel()
+        {
+            const string query = "SELECT View_Calendar.ID, Name, Way, Start, End FROM View_Calendar " +
+                "JOIN SendWay " +
+                "ON SendWay.ID = View_Calendar.Via";
+
+            return SelectDataTable(query, null);
+        }
+
         public static DataTable SelectShift(int shiftId)
         {
             Dictionary<string, object> args = new Dictionary<string, object>
