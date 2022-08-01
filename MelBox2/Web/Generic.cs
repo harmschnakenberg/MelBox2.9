@@ -536,6 +536,23 @@ namespace MelBox2
 
                         html += $"<td><span class='material-icons-outlined {(confirmation < 3 ? "w3-text-teal" : "")}' title='Wert: [{val}] {deliveryStatus} - {detaildStatus}'>{icon}</span></td>";
                     }
+                    else if(colName == "Inhalt")
+                    {
+                        bool isMelSysOk = false;
+                        foreach (var trigger in Program.LifeMessageTrigger)
+                        {
+                            if (dt.Rows[i][j].ToString().Contains(trigger))
+                            {
+                                isMelSysOk = true;
+                                break;
+                            }
+                        }
+
+                        if (isMelSysOk)
+                            html += "<td class='w3-text-gray'>" + dt.Rows[i][j].ToString() + "</td>";
+                        else
+                            html += "<td>" + dt.Rows[i][j].ToString() + "</td>";
+                    }
                     else
                     {
                         html += "<td>" + dt.Rows[i][j].ToString() + "</td>";
