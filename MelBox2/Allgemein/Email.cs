@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Exchange.WebServices.Data;
+using System.Linq;
 
 namespace MelBox2
 {
@@ -75,7 +76,9 @@ namespace MelBox2
                         Console.WriteLine("Send(): Emailadresse gesperrt: " + to.Address);
                     else                        
 #endif
-                    mail.To.Add(to);
+
+                    if (mail.To.Count < 50) //Geraten: Maximale Anzahl Empänger ist abhängig vom Provider.
+                        mail.To.Add(to);
                 }
 
 //                if (cc)
@@ -139,7 +142,9 @@ namespace MelBox2
                     if (status == SmtpStatusCode.MailboxBusy ||
                         status == SmtpStatusCode.MailboxUnavailable)
                     {
-                        Sql.InsertLog(2, $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message);
+                        string txt = $"Senden der Email fehlgeschlagen. Neuer Sendeversuch.\r\n" + message;
+                        Console.WriteLine(txt);
+                        Sql.InsertLog(2, txt);
                         Sql.UpdateSent(emailId, MelBoxGsm.Gsm.DeliveryStatus.SendRetry); //Erneut senden
 
                         System.Threading.Thread.Sleep(5000);
@@ -156,17 +161,19 @@ namespace MelBox2
             }
             catch (System.Net.Mail.SmtpException ex_smtp)
             {
-                Sql.InsertLog(1, "Fehler beim Versenden einer Email: " + ex_smtp.Message);
-                Log.Error(ex_smtp.Message, 61350);
+                string txt = "Fehler beim Versenden einer Email: " + ex_smtp.Message;
+                Sql.InsertLog(1, txt);
+                Log.Error(txt, 61350);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception)
+            catch (Exception ex)
             {
 #if DEBUG
                 throw;
 #else
-                Sql.InsertLog(1, "Unbekannter Fehler beim Versenden einer Email");
-                Log.Error("Unbekannter Fehler beim Versenden einer Email", 61351);
+                string txt = "Unbekannter Fehler beim Versenden einer Email: " + ex.Message;
+                Sql.InsertLog(1, txt);
+                Log.Error(txt, 61351);
 #endif
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -233,11 +240,11 @@ namespace MelBox2
         {
             string txt = Sql.RemoveHTMLTags(body).Replace(Environment.NewLine, " ").Replace('\t', ' ');
 
-            string pattern = @"Anlage:(.*)Datum(?:.*)Fehler(.*)Regleradresse";
+            string pattern = @"Anlage:(.*)Datum(?:.*)Fehler(.*)Regleradresse(?:.*)Reglertyp(.*)Link";
             var regex = new Regex(pattern, RegexOptions.IgnoreCase);
 
             Match m = regex.Match(txt);
-            return (m.Groups[1].Value + ", " + m.Groups[2].Value).Replace("()", string.Empty).Trim();
+            return (m.Groups[1].Value.Trim() + ", " + m.Groups[2].Value).Replace("()", string.Empty).Replace("\"", string.Empty).Trim() + ", " + m.Groups[3].Value;
         }
 
     }
@@ -257,8 +264,9 @@ namespace MelBox2
             try
             {
                 Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
-                Client.IdleError += Client_IdleError;
 
+                //TEST if (Client.Supports("IDLE"))
+                 //TEST   Client.IdleError += Client_IdleError;
 #if DEBUG
                     Console.WriteLine("ImapServer:" + ImapServer + ":" + ImapPort);
 #endif
@@ -279,6 +287,18 @@ namespace MelBox2
                 Console.WriteLine(txt);
                 Sql.InsertLog(1, txt);
             }
+            catch (System.IO.IOException ex_io)
+            {
+                string txt = "E-Mails Listener Lesefehler: " + ex_io + "\r\n" + ex_io.InnerException;
+                Console.WriteLine(txt);
+            }
+            catch (Exception ex)
+            {
+
+                string txt = "E-Mails Listener Fehler: " + ex;
+                Console.WriteLine(txt);
+                Sql.InsertLog(1, txt);
+            }
         }
 
         public EmailListener(string imapServer, int imapPort, string imapUserName, string imapPassword, bool imapEnableSSL)
@@ -290,7 +310,7 @@ namespace MelBox2
             ImapEnableSSL = imapEnableSSL;
 
             Client = new ImapClient(ImapServer, ImapPort, ImapUserName, ImapPassword, AuthMethod.Login, ImapEnableSSL);
-            Client.IdleError += Client_IdleError;
+           //TEST Client.IdleError += Client_IdleError;
 #if DEBUG
                 foreach (var item in Client.ListMailboxes())
                 {
@@ -306,11 +326,12 @@ namespace MelBox2
 
         private void Client_IdleError(object sender, IdleErrorEventArgs e)
         {
-            string txt = "Es ist ein Verbindungsproblem mit dem SMTP-Server aufgetreten. Verbindung wird erneuert.";
+            string txt = "Es ist ein Verbindungsproblem mit dem SMTP-Server aufgetreten (Client Idle Error). Verbindung wird NICHT erneuert.";
 
             Console.WriteLine(txt);
             Log.Error(txt + e.Exception, 44765);
             Client.Logout();
+            System.Threading.Thread.Sleep(2000);
             Client.Login(ImapUserName, ImapPassword, AuthMethod.Login);
         }
 
@@ -353,19 +374,29 @@ namespace MelBox2
                 Log.Warning("Ungelesen Emails können nicht abgeholt werden. Keine Verbindung zum Email-Server.", 9641);
                 return;
             }
-            //Download unseen mail messages
-            IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
-            IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1, FetchOptions.Normal);
 
-            foreach (MailMessage m in messages1)
+            try
             {
+                //Download unseen mail messages
+                IEnumerable<uint> uids1 = Client.Search(SearchCondition.Unseen());
+                IEnumerable<MailMessage> messages1 = Client.GetMessages(uids1, FetchOptions.Normal);
+
+                Console.WriteLine($"{DateTime.Now.ToShortTimeString()}\t{messages1.Count()} neue E-Mails.");
+
+                foreach (MailMessage m in messages1)
+                {
 #if DEBUG
                     Console.WriteLine($"{DateTime.Now.ToShortTimeString()} - Neue Email; gesendet {m.Headers["Date"]}; " +
                             $"<{(m.IsBodyHtml ? "html" : "Text")}>; BodyEncoding <{m.BodyEncoding}>; " +
                             $"von {m.From.Address}<"); //: {m.Body.Substring(0, Math.Min(m.Body.Length, 160))}");
 #endif
 
-                EmailInEvent?.Invoke(this, m);
+                    EmailInEvent?.Invoke(this, m);
+                }
+            } 
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ungelesene E-Mails konnten nicht vom Mailserver gelesen werden.\r\n" + ex);
             }
         }
 

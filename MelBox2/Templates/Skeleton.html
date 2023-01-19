@@ -20,8 +20,19 @@
     </script>
 </head>
 <body onload="setQuality();">
+
+
     <div class="w3-bar w3-light-grey w3-border">
-        <a href="/" class="w3-bar-item w3-button w3-border-right" title="Login"><i class='w3-xlarge material-icons-outlined'>password</i></a>
+        <a class="w3-bar-item">
+          <svg height="35" width="40">
+            <line x1="0" y1="0" x2="0" y2="35" style="stroke:darkcyan;stroke-width:2" />
+            <polygon points="10,0 10,15 25,0" style="fill:#00004d;" />
+            <polygon points="10,20 10,35 25,35" style="fill:#00004d;" />
+            <polygon points="20,17 37,0 37,35" style="fill:darkcyan;" />
+            Sorry, your browser does not support inline SVG.
+          </svg>
+        </a>
+        <a href="/" class="w3-bar-item w3-button w3-border-right w3-border-left" title="Login"><i class='w3-xlarge material-icons-outlined'>password</i></a>
         <a href="/in" class="w3-bar-item w3-button w3-border-right" title="Empfangene Nachrichten"><i class='w3-xlarge material-icons-outlined'>move_to_inbox</i></a>
         <a href="/out" class="w3-bar-item w3-button w3-border-right" title="Gesendete Nachrichten"><i class='w3-xlarge material-icons-outlined'>outbox</i></a>
         <a href="/blocked" class="w3-bar-item w3-button w3-border-right" title="Gesperrte Nachrichten"><i class='w3-xlarge material-icons-outlined'>notifications_off</i></a>

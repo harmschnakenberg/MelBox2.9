@@ -134,6 +134,14 @@ namespace MelBox2
 
         #region html-Snippets
 
+        public static string Logo { get; } = @"<svg height='35' width='40'>
+            <line x1='0' y1='0' x2='0' y2='35' style='stroke:darkcyan;stroke-width:2' />
+            <polygon points='10,0 10,15 25,0' style='fill:#00004d;' />
+            <polygon points='10,20 10,35 25,35' style='fill:#00004d;' />
+            <polygon points='20,17 37,0 37,35' style='fill:darkcyan;' />
+            Sorry, your browser does not support inline SVG.
+          </svg>";
+   
         internal static string ButtonNew(string root, string caption = "Neu")
         {
             return $"<button style='width:20%' class='w3-button w3-block w3-blue w3-section w3-padding w3-margin-right w3-col type='submit' formaction='/{root}/new'>{caption}</button>\r\n";
@@ -1007,15 +1015,16 @@ namespace MelBox2
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<table class='w3-table'>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td></td>");
-            sb.AppendLine("  <td>Hier werden Sender (Anlagen) aufgelistet, die in regelm&auml;ßigen Abst&auml;nden eine Nachricht senden m&uuml;ssen (&uuml;berwachte Sender).</td>");
+            sb.AppendLine("  <td>&nbsp;</td>");
+            sb.AppendLine("  <td>Hier werden Sender (Anlagen) aufgelistet, die in regelm&auml;ßigen Abst&auml;nden ihre Aktivit&auml; mit einer Nachricht nachweisen m&uuml;ssen (&uuml;berwachte Sender).</td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td></td>");
-            sb.AppendLine("  <td>Liegt der letzte Eingang einer Nachricht eines dieser &uuml;berwachten Sender l&auml;nger zur&uuml;ck als in Spalte &apos;Max&nbsp;Inaktiv&apos; angegeben, ist davon auszugehen, dass der Meldeweg gest&ouml;rt ist. (&uuml;berf&auml;llige Sender)</td>");
+            sb.AppendLine("  <td>&nbsp;</td>");
+            sb.AppendLine("  <td>Liegt der letzte Eingang einer Nachricht eines dieser &uuml;berwachten Sender l&auml;nger zur&uuml;ck als in Spalte &apos;Max&nbsp;Inaktiv&apos; angegeben, sind sie inaktiv (&uuml;berf&auml;llige Sender). ");
+            sb.AppendLine("  <br/>Es ist davon auszugehen, dass der Meldeweg gest&ouml;rt ist. </td>");
             sb.AppendLine("</tr>");
             sb.AppendLine("<tr>");
-            sb.AppendLine("  <td></td>");
+            sb.AppendLine("  <td>&nbsp;</td>");
             sb.AppendLine("  <td>Gibt es &uuml;berf&auml;llige Sender, werden sie hier gesondert angezeigt. Bei den &uumlberf&auml;lligen Sendern muss die Meldekette &uuml;berpr&uuml;ft werden." +
                         "<ol> " +
                         "<li>Waren im Zeitraum &apos;Max&nbsp;Inaktiv&apos; Meldungen vorhanden?</li>" +
@@ -1064,7 +1073,7 @@ namespace MelBox2
                 "<form class='w3-margin'>" +
                 Html.ButtonNew("gsm", "Reinitialisieren") +
                 "<span class='w3-margin w3-opacity'>Die Reinitialisierung dauert ca. 20 Sekunden.</span></form>" : string.Empty) +
-                "<br/><div class='w3-margin'>Sprachanrufe können an eine fest vergebene Nummer oder an die aktuelle Rufbereitschaft weitergelietet werden. " +
+                "<br/><div class='w3-margin'>Sprachanrufe können an eine fest vergebene Nummer oder an die aktuelle Rufbereitschaft weitergeleitet werden. " +
                 "Die Umschaltung bei Wechsel der Rufbereitschaft erfolgt immer zur vollen Stunde.</div>" +
                 "<h3>E-Mail Server</h3><div class='w3-margin'>Hier werden Informationen zu E-Mail-Empfang und -Versand angezeigt.</div>" +
                 "<h3>MelBox2</h3><div class='w3-margin'>Der hier hinterlegte Kontakt ist für die technische Betreuung von MelBox2 verantwortlich.</div>"

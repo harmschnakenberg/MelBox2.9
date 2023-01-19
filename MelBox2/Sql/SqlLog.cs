@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace MelBox2
 {
@@ -18,13 +19,27 @@ namespace MelBox2
         }
 
         public static DataTable SelectLastLogs(int maxRows = 300, int maxPrio = 3)
-        {
-            string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, 'P'|| Prio AS Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
-
+        {           
+            const string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, 'P'|| Prio AS Prio, Content AS Eintrag FROM Log WHERE Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
+             
             Dictionary<string, object> args = new Dictionary<string, object>
             {
                 { "@LIMIT", maxRows },
                 { "@Prio", maxPrio }
+            };
+
+            return SelectDataTable(query, args);
+        }
+
+        public static DataTable SelectLogRange(int startId, int count = 300, int maxPrio = 3)
+        {          
+            const string query = "SELECT Id, datetime(Time, 'localtime') AS Zeit, 'P'|| Prio AS Prio, Content AS Eintrag FROM Log WHERE Id >= @StartId AND Prio <= @Prio ORDER BY Time DESC LIMIT @LIMIT;";
+
+            Dictionary<string, object> args = new Dictionary<string, object>
+            {
+                { "@StartId", startId },
+                { "@Prio", maxPrio },
+                { "@LIMIT", count }                
             };
 
             return SelectDataTable(query, args);

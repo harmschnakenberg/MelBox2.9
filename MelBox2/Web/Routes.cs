@@ -191,7 +191,7 @@ namespace MelBox2
 
             string info = Html.Modal("Sender&uuml;berwachung", Html.InfoOverdue());
 
-            await Html.PageAsync(context, "Sender&uuml;berwachung", info + html);
+            await Html.PageAsync(context, "Sender&uuml;berwachung - Inaktivit&auml;tsmeldungen", info + html);
         }
         #endregion
 
@@ -797,10 +797,11 @@ namespace MelBox2
 
             int maxPrio = 3;
 
-            if (context.Request.QueryString.HasKeys())
-                _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio);
-
+            if (context.Request.QueryString.HasKeys())            
+                _ = int.TryParse(context.Request.QueryString.Get("prio"), out maxPrio);                           
+            
             System.Data.DataTable log = Sql.SelectLastLogs(Html.MaxTableRowsShow, maxPrio);
+            
             string table = Html.FromTable(log, false, String.Empty);
             int del = 100;
             string html = user?.Level < 9900 ? string.Empty : $"<p><a href='/log/delete/{del}' class='w3-button w3-red w3-display-position' style='top:140px;right:150px;'>Bis auf letzten {del} Eintr&auml;ge alle l&ouml;schen</a></p>\r\n";
@@ -1002,7 +1003,7 @@ namespace MelBox2
                         t = Sql.SelectShifts4Excel();
                         break;
                     case "log":
-                        t = Sql.SelectLastLogs(1000, 5);
+                        t = Sql.SelectLastLogs(1000, 12345);
                         break;
                     default:
                         string alert = Html.Alert(2, "Download fehlgeschlagen", $"Die Tabelle mit der Bezeichnung '{table}' ist ungültig.");
@@ -1014,7 +1015,7 @@ namespace MelBox2
                     t.TableName = table;
 
                 byte[] content = MelBox2.Excel.ConvertToExcel(t);
-                string fileName = $"T_{table}_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm")}.xlsx";
+                string fileName = $"T_{table}_{DateTime.Now:yyyy-MM-dd_HH-mm}.xlsx";
 
                 //Quelle: https://stackoverflow.com/questions/28048835/downloading-excel-file-after-creating-using-epplus
                 context.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

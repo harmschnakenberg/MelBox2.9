@@ -32,7 +32,7 @@ namespace MelBox2
 
                 Sql.CheckDbFile();
                 GetIniValues();
-
+#if !DEBUG
                 #region COM-Port vorhanden?
                 if (System.IO.Ports.SerialPort.GetPortNames()?.Length < 1)
                 {
@@ -75,7 +75,7 @@ namespace MelBox2
                 Sql.DbBackup();
                 #endregion
 
-                ShowHelp();
+                //ShowHelp();
 
                 #region Ereignisse abonieren
                 ReliableSerialPort.SerialPortErrorEvent += ReliableSerialPort_SerialPortErrorEvent;
@@ -98,10 +98,10 @@ namespace MelBox2
 
                 Scheduler.CeckOrCreateWatchDog();
 
-                //Emails empfangen
+                //Emails empfangen                
                 Console.WriteLine("Automatische E-Mail Empfangsbenachrichtigung " + (emailListener.IsIdleEmailSupported() ? "aktiviert." : "wird nicht unterstützt."));
                 emailListener.EmailInEvent += EmailListener_EmailInEvent;
-                emailListener.ReadUnseen();
+                //emailListener.ReadUnseen(); //IO-Exception
 
                 //Neustart melden
                 Email.Send(Email.Admin, $"MelBox2 Neustart um {DateTime.Now.ToLongTimeString()}\r\n\r\n" +
@@ -110,11 +110,15 @@ namespace MelBox2
                     $"Rufweiterleitung auf >{Gsm.CallForwardingNumber}< " +
                     $"ist{(Gsm.CallForwardingActive ? " " : " nicht")} aktiv.", "MelBox2 Neustart");
 
+                //ReliableSerialPort.Debug = ReliableSerialPort.GsmDebug.UnsolicatedResult;                
+#endif
+                ShowHelp();
+
                 bool run = true;
                 while (run)
                 {
                     string input = Console.ReadLine();
-                    if (input == null) continue;
+                   // if (input == null) continue;
 
                     switch (input.ToLower())
                     {
@@ -167,6 +171,10 @@ namespace MelBox2
                             System.Threading.Thread.Sleep(2000);
                             listener.EmailInEvent -= EmailListener_EmailInEvent;
                             listener.Dispose();
+                            break;
+                        case "email read test":
+                            // MelBox2.MelExchange.InitializeGraph();
+                            MelBox2.MelExchange.Test();
                             break;
                         case "debug":
                             Console.WriteLine($"Aktuelles Debug-Byte: {(int)ReliableSerialPort.Debug}. Neuer Debug?");
@@ -249,9 +257,9 @@ namespace MelBox2
         private static void ShowHelp()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("\u250C" + new string('\u2500', 32) + "\u2510");
-            sb.AppendLine("\u2502 HILFE MELBOX CONSOLE "+ new string(' ', 10) + "\u2502");
-            sb.AppendLine("\u2514" + new string('\u2500', 32) + "\u2518");
+            sb.AppendLine("\u250C" + new string('\u2500', 30) + "\u2510");
+            sb.AppendLine("\u2502 HILFE MELBOX CONSOLE "+ new string(' ', 8) + "\u2502");
+            sb.AppendLine("\u2514" + new string('\u2500', 30) + "\u2518");
             sb.AppendLine("Exit".PadRight(32) + "Beendet das Programm. Fährt den Webserver herunter. Schließt den Seriellen Port.");
             sb.AppendLine("Help".PadRight(32) + "Ruft diese Hilfe auf.");
             sb.AppendLine("CLS".PadRight(32) + "Löscht den Fensterinhalt.");
@@ -269,9 +277,9 @@ namespace MelBox2
             sb.AppendLine("Import Contact".PadRight(32) + "Kontaktdaten aus altem MelBox per CSV-Datei importieren.");
             sb.AppendLine("AT".PadRight(32) + "AT-Befehl direkt eingeben (vorher Debug-Byte auf 7).");
 
-            sb.AppendLine("\u250C" + new string('\u2500', 32) + "\u2510");
-            sb.AppendLine("\u2502 HILFE ENDE " + new string(' ', 20) + "\u2502");
-            sb.AppendLine("\u2514" + new string('\u2500', 32) + "\u2518");
+            sb.AppendLine("\u250C" + new string('\u2500', 30) + "\u2510");
+            sb.AppendLine("\u2502 HILFE ENDE " + new string(' ', 18) + "\u2502");
+            sb.AppendLine("\u2514" + new string('\u2500', 30) + "\u2518");
 
             Console.WriteLine(sb.ToString());
         }

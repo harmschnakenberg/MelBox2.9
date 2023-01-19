@@ -82,6 +82,12 @@ namespace MelBox2
                 //TODO Email im Posteingang löschen?
             }
 
+            if (mail.From.Address.EndsWith("@kreutztraeger.de")) //E-Mail-Abruf analog zu SMSAbruf
+            {
+                Email.Send(mail.From, mail.Body + "\r\n\r\nEmpfangen von MelBox2 " + DateTime.Now);
+                return;
+            }
+
             bool isLifeMessage = Program.IsLifeMessage(mail); //Meldung mit 'MelSysOK' oder 'SgnAlarmOK'?
             bool isMessageBlocked = Sql.IsMessageBlockedNow(Sql.RemoveHTMLTags(mail.Body));
             bool isWatchTime = Sql.IsWatchTime();
@@ -229,7 +235,8 @@ namespace MelBox2
 
             Person p = Sql.SelectOrCreatePerson(mail.From);
 
-            string subject = $"Email-Eingang >{p.Name}<{(p.Company?.Length == 0 || p.Company == p.Name ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
+            //string subject = $"Email-Eingang >{p.Name}<{(p.Company?.Length == 0 || p.Company == p.Name ? string.Empty : $", >{p.Company}<")}, Email-Text >{mail.Body}<";
+            string subject = $"Email-Eingang >{p.Name}<, Email-Text >{mail.Body}<";
 
             int emailId = new Random().Next(256, 9999);
 

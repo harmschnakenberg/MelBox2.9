@@ -94,10 +94,10 @@ namespace MelBox2
                 string due = dt.Rows[i]["Fällig_seit"].ToString();
 
                 string text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + $" Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}<" : string.Empty)}. Meldung fällig seit >{due}<. \r\nMelsys bzw. Segno vor Ort prüfen.";
-
+                
                 Log.Info(text, 60723);
 
-                Email.Send(mailAddresses, text, $"Inaktivität >{name}<{(company.Length > 0 && name != company ? $", >{company}< " : string.Empty)}", DateTime.Now.Millisecond);
+                Email.Send(mailAddresses, text, $"Inaktivität >{name}<", DateTime.Now.Millisecond);
             }
         }
 

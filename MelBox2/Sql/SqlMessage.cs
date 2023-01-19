@@ -207,7 +207,7 @@ namespace MelBox2
         public static string RemoveHTMLTags(string html)
         {
             //Log.Info("orig. EMail-Text:\r\n" + html, 22222); //nur zum Testen
-            string result = Regex.Replace(html.Replace(Environment.NewLine, " "), @"<.*?>|&.*?;|\t|{.*?}", string.Empty); //Entfernt HTML <p>, HTML-Entities &nbsp, Tabstop; Skripte { if()..}
+            string result = Regex.Replace(html.Replace(Environment.NewLine, " "), @"<.*?>|&.*?;|\t|{.*?}", string.Empty).Replace("-->", string.Empty); //Entfernt HTML <p>, HTML-Entities &nbsp, Tabstop; Skripte { if()..} und HTML-Kommentare
 
             return Regex.Replace(result, "[ ]+", " "); //Mehrfach-Leerzeichen entfernen
         }
